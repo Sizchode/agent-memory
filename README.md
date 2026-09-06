@@ -26,3 +26,25 @@ over `sample.question_answers`.
 The official benchmark uses a 4096-token default chunk size and
 the prompt templates in `utils/prompts.py`. Its accuracy shorthand maps to
 substring-exact-match for Accurate Retrieval and Conflict Resolution.
+
+The combined evaluation suite also supports two official-protocol groups:
+
+| Benchmark group | Loader input | Metrics |
+| --- | --- | --- |
+| LoCoMo | `data/locomo10.json` from the official repository | token F1; BLEU-1 |
+| MuSiQue / 2WikiMultiHopQA / HotpotQA | HippoRAG 2 `reproduce/dataset` JSON files | gold-passage Recall@5; answer F1 |
+
+The HippoRAG 2 loader defaults to the released 1,000-query samples and keeps
+the corpus, gold passages, answer aliases, and query IDs intact. It does not
+create data or labels.
+
+Download the official files from
+[HippoRAG2Official/reproduce/dataset](https://github.com/WeijianQ/HippoRAG2Official/tree/main/reproduce/dataset)
+and pass that directory as `--data-root`. The scoring helpers in
+`utils/hipporag_metrics.py` implement the official set-based gold-passage
+Recall@5 and normalized answer F1.
+
+```bash
+./experiments/run_baseline.sh 'LoCoMo' --path /path/to/locomo10.json
+./experiments/run_baseline.sh 'MuSiQue' --data-root /path/to/reproduce/dataset
+```
