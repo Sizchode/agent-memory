@@ -4,10 +4,6 @@ from collections import Counter
 import math
 import re
 import string
-from nltk.stem import PorterStemmer
-
-
-_STEMMER = PorterStemmer()
 
 
 def locomo_tokens(text: str) -> list[str]:
@@ -24,8 +20,13 @@ def locomo_normalize(text: str) -> str:
 
 
 def locomo_token_f1(prediction: str, ground_truth: str) -> float:
-    predicted = [_STEMMER.stem(token) for token in locomo_normalize(prediction).split()]
-    expected = [_STEMMER.stem(token) for token in locomo_normalize(ground_truth).split()]
+    try:
+        from nltk.stem import PorterStemmer
+    except ImportError as exc:
+        raise RuntimeError("install nltk to compute LoCoMo token F1") from exc
+    stemmer = PorterStemmer()
+    predicted = [stemmer.stem(token) for token in locomo_normalize(prediction).split()]
+    expected = [stemmer.stem(token) for token in locomo_normalize(ground_truth).split()]
     if not predicted or not expected:
         return float(predicted == expected)
     overlap = sum((Counter(predicted) & Counter(expected)).values())
