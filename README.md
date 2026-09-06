@@ -3,7 +3,7 @@
 MemoryAgentBench experiment layout for dataset loading and baseline evaluation.
 
 ```text
-dataset_loader/   MemoryAgentBench HF loading, task mapping, and chunking
+dataset_loader/   One loader.py for MemoryAgentBench, LoCoMo, and HippoRAG 2 data
 baseline/         Baseline algorithms
 experiments/      Experiment launcher scripts
 utils/            Metrics and shared helpers
