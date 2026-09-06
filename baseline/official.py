@@ -8,6 +8,7 @@ from typing import Any
 from .base import RetrievedItem
 
 _ROOT = Path(__file__).resolve().parents[1]
+_OFFICIAL_ALGORITHMS = _ROOT / "baseline_algorithms"
 
 
 def _prepend(path: Path) -> None:
@@ -18,7 +19,7 @@ def _prepend(path: Path) -> None:
 
 class LightMemBaseline:
     def __init__(self, official_config: dict[str, Any]) -> None:
-        _prepend(_ROOT / "third_party" / "LightMem" / "src")
+        _prepend(_OFFICIAL_ALGORITHMS / "LightMem" / "src")
         from lightmem.memory.lightmem import LightMemory
         self._memory = LightMemory.from_config(official_config)
 
@@ -37,7 +38,7 @@ class LightMemBaseline:
 
 class HippoRAG2Baseline:
     def __init__(self, official_config: dict[str, Any], save_dir: str | Path) -> None:
-        _prepend(_ROOT / "third_party" / "HippoRAG" / "src")
+        _prepend(_OFFICIAL_ALGORITHMS / "HippoRAG" / "src")
         from hipporag import HippoRAG
         from hipporag.utils.config_utils import BaseConfig
         self._memory = HippoRAG(global_config=BaseConfig(**official_config), save_dir=str(save_dir))
@@ -56,7 +57,7 @@ class HippoRAG2Baseline:
 
 class Mem0Baseline:
     def __init__(self, official_config: dict[str, Any], namespace: str) -> None:
-        _prepend(_ROOT / "third_party" / "mem0")
+        _prepend(_OFFICIAL_ALGORITHMS / "mem0")
         from mem0 import Memory
         self._memory = Memory.from_config(official_config)
         self._filters = {"user_id": namespace}
@@ -77,7 +78,7 @@ class MAGMABaseline:
     """Official MAGMA adapter; its algorithm builds from structured sessions."""
 
     def __init__(self, cache_dir: str | Path, llm_model: str, embedding_model: str, use_episodes: bool = False) -> None:
-        _prepend(_ROOT / "third_party" / "MAGMA")
+        _prepend(_OFFICIAL_ALGORITHMS / "MAGMA")
         from memory.memory_builder import MemoryBuilder
         self._builder = MemoryBuilder(cache_dir=str(cache_dir), llm_model=llm_model, use_episodes=use_episodes, embedding_model=embedding_model)
         self._query_engine = None

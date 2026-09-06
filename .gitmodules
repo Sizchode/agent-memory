@@ -1,12 +1,12 @@
-[submodule "third_party/LightMem"]
-	path = third_party/LightMem
+[submodule "baseline_algorithms/LightMem"]
+	path = baseline_algorithms/LightMem
 	url = https://github.com/zjunlp/LightMem.git
-[submodule "third_party/MAGMA"]
-	path = third_party/MAGMA
+[submodule "baseline_algorithms/MAGMA"]
+	path = baseline_algorithms/MAGMA
 	url = https://github.com/FredJiang0324/MAGMA.git
-[submodule "third_party/HippoRAG"]
-	path = third_party/HippoRAG
+[submodule "baseline_algorithms/HippoRAG"]
+	path = baseline_algorithms/HippoRAG
 	url = https://github.com/OSU-NLP-Group/HippoRAG.git
-[submodule "third_party/mem0"]
-	path = third_party/mem0
+[submodule "baseline_algorithms/mem0"]
+	path = baseline_algorithms/mem0
 	url = https://github.com/mem0ai/mem0.git
