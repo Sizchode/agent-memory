@@ -1,0 +1,12 @@
+[submodule "third_party/LightMem"]
+	path = third_party/LightMem
+	url = https://github.com/zjunlp/LightMem.git
+[submodule "third_party/MAGMA"]
+	path = third_party/MAGMA
+	url = https://github.com/FredJiang0324/MAGMA.git
+[submodule "third_party/HippoRAG"]
+	path = third_party/HippoRAG
+	url = https://github.com/OSU-NLP-Group/HippoRAG.git
+[submodule "third_party/mem0"]
+	path = third_party/mem0
+	url = https://github.com/mem0ai/mem0.git

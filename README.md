@@ -48,3 +48,7 @@ Recall@5 and normalized answer F1.
 ./experiments/run_baseline.sh 'LoCoMo' --path /path/to/locomo10.json
 ./experiments/run_baseline.sh 'MuSiQue' --data-root /path/to/reproduce/dataset
 ```
+
+The six baseline implementations and controlled-variable policy are documented
+in [`docs/baseline_integration.md`](docs/baseline_integration.md). Clone this
+repository with `--recurse-submodules` to fetch the pinned official sources.
