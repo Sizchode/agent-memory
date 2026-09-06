@@ -1,5 +1,5 @@
 """Baseline algorithms."""
 
-from .majority_classifier import MajorityClassifier
+from .keyword_memory import KeywordMemory
 
-__all__ = ["MajorityClassifier"]
+__all__ = ["KeywordMemory"]
