@@ -1,0 +1,4 @@
+# HippoRAG's package metadata pins its compatible runtime dependencies.
+# The extras select its official local embedding implementation and Qdrant API.
+-r common.in
+-e ../baseline_algorithms/HippoRAG[qdrant,transformers-embedding]

@@ -61,19 +61,34 @@ LightMem/Mem0 summary and update policy remain; MAGMA retains its native graph
 and LoCoMo session/timestamp representation. Those modules receive the common
 generation model, but are not added to BM25 or Dense retrieval.
 
-The initial practical choice is **`gpt-4o-mini` + `text-embedding-3-small`**:
-it is the only pairing directly represented in all four official codebases or
-their released evaluation paths, needs the least adapter work, and is the most
-comparable reproduction setting. It is API-based, so HPC supplies orchestration
-and embeddings/indexing but does not host the LLM.
+For a local primary setting, choose one generator after a small structured
+output pilot; do not silently mix cloud answering with local extraction. The
+candidate set is intentionally not Qwen-only:
 
-If the project requires all inference to run on HPC, make that a separate
-primary setting rather than silently substituting models: deploy one
-OpenAI-compatible instruct model with vLLM, then add the missing MAGMA endpoint
-adapter and smoke-test structured JSON/OpenIE outputs for every method. This is
-a legitimate local-model table, but it is not a one-line reproduction of the
-official defaults. Do not mix a cloud answerer with a local extraction model in
-the main controlled table.
+| Candidate | Scale / deployment reason | Caution |
+| --- | --- | --- |
+| `Qwen2.5-14B-Instruct` | lowest-cost serious pilot; fits the requested ten-billion scale | use only if the pilot shows reliable multi-hop and JSON extraction |
+| `Qwen2.5-32B-Instruct` | conservative 32B instruction-following primary candidate | higher GPU memory and latency |
+| `mistralai/Mistral-Small-3.1-24B-Instruct-2503` | 24B, Apache-2.0, 128K context, and official vLLM/function-calling guidance | needs the same benchmark-specific JSON pilot |
+| `google/gemma-3-27b-it` | 27B with 128K context; a credible non-Qwen comparison | Gemma 3 is the current official Gemma family; no official Gemma 4 release was found |
+| `gpt-oss-20b` | 21B total / 3.6B active, Apache-2.0, local reasoning and structured-output support | reasoning must be disabled or held fixed to avoid variable hidden test-time compute |
+| `meta-llama/Llama-3.3-70B-Instruct` | strong 128K reference model | 70B is outside the intended low-cost tier and has a custom licence |
+
+For the first HPC pilot, compare `Qwen2.5-14B-Instruct`,
+`Mistral-Small-3.1-24B-Instruct-2503`, `Gemma-3-27B-IT`, and `gpt-oss-20b` on
+the same fixed 100-question development slice. Measure JSON validity, OpenIE
+parse validity, deterministic-metric score, GPU memory, latency, and token
+throughput. Select one winner before the full run, then freeze it for every
+method and benchmark. `Qwen3-30B-A3B-Instruct-2507` remains a candidate only
+after it passes the same pilot; its vLLM structured-output path has a reported
+non-termination issue.
+
+Primary sources for this shortlist: [Mistral Small 3.1 model
+card](https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503),
+[Gemma 3 model card](https://huggingface.co/google/gemma-3-27b-pt),
+[gpt-oss-20b documentation](https://developers.openai.com/api/docs/models/gpt-oss-20b),
+[Llama 3.3 model card](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct),
+and [Qwen3 vLLM deployment notes](https://github.com/QwenLM/Qwen3/blob/main/docs/source/deployment/vllm.md).
 
 ## Required before the first HPC experiment
 

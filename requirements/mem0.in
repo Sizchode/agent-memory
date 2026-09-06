@@ -1,0 +1,3 @@
+# Mem0's default OSS configuration uses Qdrant, already included at runtime.
+-r common.in
+-e ../baseline_algorithms/mem0

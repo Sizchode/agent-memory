@@ -1,0 +1,3 @@
+# Python 3.10 or 3.11 only: imposed by LightMem's official pyproject.
+-r common.in
+-e ../baseline_algorithms/LightMem
