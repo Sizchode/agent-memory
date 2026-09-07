@@ -1,0 +1,16 @@
+{
+  "llm": {
+    "provider": "openai",
+    "config": {}
+  },
+  "embedder": {
+    "provider": "openai",
+    "config": {}
+  },
+  "vector_store": {
+    "provider": "faiss",
+    "config": {
+      "distance_strategy": "cosine"
+    }
+  }
+}

@@ -18,12 +18,27 @@ set -euo pipefail
 # their Cartesian product into a Slurm array automatically.
 BASELINES=(
   bm25
+  dense
+  lightmem
+  hipporag2
+  mem0
 )
 EVALUATION_BACKBONES=(
+  "Qwen/Qwen3.5-35B-A3B"
   "Qwen/Qwen3.5-27B"
+  "google/gemma-4-12B-it"
+  "google/gemma-4-26B-A4B-it"
 )
 TASKS=(
   "SH-Doc QA"
+  "MH-Doc QA"
+  "EventQA"
+  "FactConsolidation-SH"
+  "FactConsolidation-MH"
+  "LoCoMo"
+  "MuSiQue"
+  "2WikiMultiHopQA"
+  "HotpotQA"
 )
 MAX_CONCURRENT_JOBS=4
 
@@ -73,6 +88,11 @@ case "${BASELINE}" in
   hipporag2) PYTHON_BIN="${ENV_ROOT}/hipporag/bin/python" ;;
   *) echo "Unknown baseline: ${BASELINE}" >&2; exit 2 ;;
 esac
+
+if [[ "${BASELINE}" == "hipporag2" ]]; then
+  : "${HIPPORAG_API_KEY:?Set HIPPORAG_API_KEY for HippoRAG OpenAI-compatible clients.}"
+  export OPENAI_API_KEY="${HIPPORAG_API_KEY}"
+fi
 if [[ ! -x "${PYTHON_BIN}" ]]; then
   echo "Missing UV environment: ${PYTHON_BIN}" >&2
   exit 2

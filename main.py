@@ -66,13 +66,15 @@ class ExperimentConfig:
         result = deepcopy(official_config)
         result.setdefault("memory_manager", {}).setdefault("configs", {}).update(
             model=self.generator.model,
-            base_url=self.generator.base_url,
+            api_key=self.generator.api_key(),
+            openai_base_url=self.generator.base_url,
             max_tokens=self.internal_max_tokens,
             temperature=self.temperature,
         )
         result.setdefault("text_embedder", {}).setdefault("configs", {}).update(
             model=self.embedding.model,
-            base_url=self.embedding.base_url,
+            api_key=self.embedding.api_key(),
+            openai_base_url=self.embedding.base_url,
             embedding_dims=self.embedding_dimensions,
         )
         return result
@@ -81,12 +83,14 @@ class ExperimentConfig:
         result = deepcopy(official_config)
         result.setdefault("llm", {}).setdefault("config", {}).update(
             model=self.generator.model,
+            api_key=self.generator.api_key(),
             openai_base_url=self.generator.base_url,
             temperature=self.temperature,
             max_tokens=self.internal_max_tokens,
         )
         result.setdefault("embedder", {}).setdefault("config", {}).update(
             model=self.embedding.model,
+            api_key=self.embedding.api_key(),
             openai_base_url=self.embedding.base_url,
             embedding_dims=self.embedding_dimensions,
         )
@@ -176,12 +180,19 @@ def _create_baseline(kind: str, config: ExperimentConfig, official_config: dict[
     if kind == "dense":
         return DenseRetrievalBaseline(OpenAIEmbedder(config.embedding, dimensions=config.embedding_dimensions))
     if kind == "lightmem":
-        return LightMemBaseline(config.lightmem_config(_required_official_config(kind, official_config)))
+        resolved = config.lightmem_config(_required_official_config(kind, official_config))
+        resolved["embedding_retriever"]["configs"].update(
+            collection_name=group.group_id,
+            path=str(Path(output_dir) / "lightmem_indices" / group.group_id),
+        )
+        return LightMemBaseline(resolved)
     if kind == "hipporag2":
         save_dir = Path(output_dir) / "hipporag_indices" / group.group_id
         return HippoRAG2Baseline(config.hipporag_config(_required_official_config(kind, official_config)), save_dir)
     if kind == "mem0":
-        return Mem0Baseline(config.mem0_config(_required_official_config(kind, official_config)), group.group_id)
+        resolved = config.mem0_config(_required_official_config(kind, official_config))
+        resolved["vector_store"]["config"]["path"] = str(Path(output_dir) / "mem0_indices" / group.group_id)
+        return Mem0Baseline(resolved, group.group_id)
     raise ValueError(f"unsupported baseline {kind!r}")
 
 

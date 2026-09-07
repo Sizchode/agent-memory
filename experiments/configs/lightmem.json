@@ -1,0 +1,23 @@
+{
+  "pre_compress": false,
+  "topic_segment": false,
+  "messages_use": "user_only",
+  "metadata_generate": true,
+  "text_summary": true,
+  "memory_manager": {
+    "model_name": "openai",
+    "configs": {}
+  },
+  "extract_threshold": 0.1,
+  "index_strategy": "embedding",
+  "text_embedder": {
+    "model_name": "openai",
+    "configs": {}
+  },
+  "retrieve_strategy": "embedding",
+  "embedding_retriever": {
+    "model_name": "qdrant",
+    "configs": {}
+  },
+  "update": "offline"
+}
