@@ -61,6 +61,75 @@ LightMem/Mem0 summary and update policy remain; MAGMA retains its native graph
 and LoCoMo session/timestamp representation. Those modules receive the common
 generation model, but are not added to BM25 or Dense retrieval.
 
+### 2025--2026 backbone plan
+
+The project uses deterministic benchmark metrics, so an ``evaluation backbone``
+must not mean an LLM judge. A backbone is the held-fixed `generation_model`
+used for every method's LLM-based memory operation and final answer generation.
+The four proposed models are sufficient for a model-robustness section:
+
+| Family | Dense | MoE | Role in paper |
+| --- | --- | --- | --- |
+| Qwen | `Qwen/Qwen3.5-27B` | `Qwen/Qwen3.5-35B-A3B` | same-family dense/MoE comparison |
+| Gemma | `google/gemma-4-12B-it` | `google/gemma-4-26B-A4B-it` | cross-family dense/MoE comparison |
+
+This matrix spans two current model families, two scale bands, and dense/MoE
+architectures. Do not add a fifth model by default: it expands the full
+method-by-benchmark grid without providing a new controlled axis. If a third
+family is required for a robustness claim, add exactly one model (prefer a
+roughly 20--30B dense instruct model), not another scale sweep.
+
+`deepseek-v4-flash` is a valid separate **generator backbone**, not a judge.
+The official model card identifies it as a 284B-total / 13B-active MoE model;
+therefore it is not comparable to a 12--35B local-weight deployment merely
+because its active parameter count is small. Use it only as the primary
+high-capability setting if the HPC allocation or a version-pinned API supports
+it. When using the API, record the dated deployment (`DeepSeek-V4-Flash-0731`)
+rather than relying only on the moving `deepseek-v4-flash` alias.
+
+Recommended table layout:
+
+1. **Primary controlled table:** one declared generator backbone (DeepSeek V4
+   Flash only if its deployment is pinned and affordable), all six methods,
+   all deterministic metrics.
+2. **Backbone robustness table:** the four Qwen/Gemma models above, a fixed
+   representative subset of methods and benchmarks. Each row replaces the
+   generator backbone; none is an evaluator or judge.
+3. **No LLM judge in either table.** An optional appendix judge, if ever used,
+   is a separately named held-fixed model and never chooses answers.
+
+Sources: [Qwen3.5-35B-A3B model card](https://huggingface.co/Qwen/Qwen3.5-35B-A3B),
+[Qwen3.5-27B model card](https://huggingface.co/Qwen/Qwen3.5-27B),
+[Gemma 4 official overview](https://deepmind.google/models/gemma/gemma-4/),
+and [DeepSeek V4 Flash model card](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash).
+
+### Embedding backbone
+
+Use one local dense embedding model for the controlled table. The recommended
+default is **`Qwen/Qwen3-Embedding-0.6B` at 1,024 dimensions**: it is local,
+instruction-aware, supports 32K input, 100+ languages, and has Matryoshka
+dimension support. Fix the output dimension at 1,024 for every method and do
+not tune it per method.
+
+`BAAI/bge-m3` is the appropriate backup/robustness embedding setting: it is a
+widely adopted local 0.57B multilingual model with 1,024 dimensions and 8K
+context. If used, use its dense representation only; enabling its sparse or
+multi-vector modes would add retrieval mechanisms unavailable to every method.
+
+The official baselines use heterogeneous embeddings and therefore motivate,
+rather than replace, this control: LightMem reports `all-MiniLM-L6-v2` and
+`text-embedding-3-small`; MAGMA exposes the same MiniLM/OpenAI pair; HippoRAG
+defaults to `nvidia/NV-Embed-v2`; and Mem0 examples default to
+`text-embedding-3-small`. Their original choices remain only for an
+official-reproduction appendix.
+
+Sources: [Qwen3-Embedding-0.6B model card](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B),
+[BGE-M3 model card](https://huggingface.co/BAAI/bge-m3),
+[LightMem LoCoMo configuration](https://github.com/zjunlp/LightMem/blob/8449d574df6bae1bdf3314a1564da65e2f37e046/experiments/locomo/readme.md),
+[MAGMA configuration](https://github.com/FredJiang0324/MAGMA/blob/467cb70b67ac337b22fdb42194d37c04ad701b62/test_fixed_memory.py),
+[HippoRAG configuration](https://github.com/OSU-NLP-Group/HippoRAG/blob/1438aba3fc44ff10573e5a5e1e7cc3c7f9794aff/src/hipporag/utils/config_utils.py),
+and [Mem0 configuration guide](https://github.com/mem0ai/mem0/blob/dae67f74f5cc7bf138c7d7d6f9cec5ce4b4373b3/LLM.md).
+
 For a local primary setting, choose one generator after a small structured
 output pilot; do not silently mix cloud answering with local extraction. The
 candidate set is intentionally not Qwen-only:
