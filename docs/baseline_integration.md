@@ -34,9 +34,9 @@ to the corresponding adapter.
 
 ## Decisions required before HPC runs
 
-1. One answer/internal LLM model and endpoint. The primary controlled table
+1. One DeepSeek generator model and endpoint. The primary controlled table
    uses it for every baseline operation that invokes an LLM.
-2. One embedding model, endpoint, and exact vector dimension.
+2. One local Hugging Face embedding model and exact vector dimension.
 3. One input chunk size and whether each algorithm receives benchmark chunks
    or its official internal segmentation input. These are not equivalent.
 4. Retrieval budget: the same final top-k is required; decide whether large

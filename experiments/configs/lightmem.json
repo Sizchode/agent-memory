@@ -11,7 +11,7 @@
   "extract_threshold": 0.1,
   "index_strategy": "embedding",
   "text_embedder": {
-    "model_name": "openai",
+    "model_name": "huggingface",
     "configs": {}
   },
   "retrieve_strategy": "embedding",

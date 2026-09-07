@@ -4,7 +4,7 @@
     "config": {}
   },
   "embedder": {
-    "provider": "openai",
+    "provider": "huggingface",
     "config": {}
   },
   "vector_store": {

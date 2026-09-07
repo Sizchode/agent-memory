@@ -90,8 +90,8 @@ case "${BASELINE}" in
 esac
 
 if [[ "${BASELINE}" == "hipporag2" ]]; then
-  : "${HIPPORAG_API_KEY:?Set HIPPORAG_API_KEY for HippoRAG OpenAI-compatible clients.}"
-  export OPENAI_API_KEY="${HIPPORAG_API_KEY}"
+  : "${DEEPSEEK_API_KEY:?Set DEEPSEEK_API_KEY for HippoRAG OpenIE generation.}"
+  export OPENAI_API_KEY="${DEEPSEEK_API_KEY}"
 fi
 if [[ ! -x "${PYTHON_BIN}" ]]; then
   echo "Missing UV environment: ${PYTHON_BIN}" >&2
@@ -111,7 +111,6 @@ case "${TASK}" in
 esac
 
 OFFICIAL_ARGS=()
-EMBEDDING_ARGS=()
 case "${BASELINE}" in
   lightmem|hipporag2|mem0)
     CONFIG_PATH="${OFFICIAL_CONFIG_DIR}/${BASELINE}.json"
@@ -120,13 +119,6 @@ case "${BASELINE}" in
       exit 2
     fi
     OFFICIAL_ARGS+=(--official-config "${CONFIG_PATH}")
-    ;;
-esac
-
-case "${BASELINE}" in
-  dense|lightmem|hipporag2|mem0)
-    : "${EMBEDDING_BASE_URL:?Set EMBEDDING_BASE_URL before launching this baseline.}"
-    EMBEDDING_ARGS+=(--embedding-base-url "${EMBEDDING_BASE_URL}")
     ;;
 esac
 
@@ -148,7 +140,6 @@ nvidia-smi
   --evaluation-backbone "${EVALUATION_BACKBONE}" \
   --evaluation-dtype "${EVALUATION_DTYPE:-bfloat16}" \
   --evaluation-device-map "${EVALUATION_DEVICE_MAP:-auto}" \
-  "${EMBEDDING_ARGS[@]}" \
   "${LIMIT_ARGS[@]}" \
   "${DATA_ARGS[@]}" \
   "${OFFICIAL_ARGS[@]}"

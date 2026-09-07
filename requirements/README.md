@@ -26,8 +26,8 @@ uv pip install --python "$ENV_ROOT/mem0/bin/python" -r requirements/mem0/require
 
 The `runner` environment runs BM25/Dense and hosts local Hugging Face evaluator
 inference. The official baseline environments also include the common runner
-dependencies. The evaluator never uses an API endpoint; only DeepSeek
-generation and embeddings may use OpenAI-compatible services.
+dependencies. Evaluation and embedding models are loaded locally from Hugging
+Face. Only DeepSeek generation uses an API key.
 
 Use `uv pip compile` on HPC to materialize platform-specific lock files only
 after selecting the CUDA/PyTorch wheel index and GPU architecture. Commit the

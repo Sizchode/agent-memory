@@ -17,7 +17,7 @@ from experiments.runner import (
     memory_agent_bench_groups,
     run_groups,
 )
-from utils.models import HuggingFaceChatModel, ModelEndpoint, OpenAIEmbedder
+from utils.models import HuggingFaceChatModel, HuggingFaceEmbedder, ModelEndpoint
 
 
 BENCHMARKS = [task.value for task in TaskName] + ["LoCoMo", "MuSiQue", "2WikiMultiHopQA", "HotpotQA"]
@@ -35,7 +35,7 @@ class ExperimentConfig:
     """Comparison controls, with generator and evaluation roles kept separate."""
 
     generator: ModelEndpoint
-    embedding: ModelEndpoint
+    embedding_model: str
     embedding_dimensions: int
     input_chunk_size: int
     final_retrieval_top_k: int
@@ -53,8 +53,7 @@ class ExperimentConfig:
         result.update(
             llm_name=self.generator.model,
             llm_base_url=self.generator.base_url,
-            embedding_model_name=self.embedding.model,
-            embedding_base_url=self.embedding.base_url,
+            embedding_model_name=f"Transformers/{self.embedding_model}",
             retrieval_top_k=self.final_retrieval_top_k,
             qa_top_k=self.final_retrieval_top_k,
             max_new_tokens=self.internal_max_tokens,
@@ -71,11 +70,11 @@ class ExperimentConfig:
             max_tokens=self.internal_max_tokens,
             temperature=self.temperature,
         )
+        result["text_embedder"]["model_name"] = "huggingface"
         result.setdefault("text_embedder", {}).setdefault("configs", {}).update(
-            model=self.embedding.model,
-            api_key=self.embedding.api_key(),
-            openai_base_url=self.embedding.base_url,
+            model=self.embedding_model,
             embedding_dims=self.embedding_dimensions,
+            model_kwargs={"device": "cuda"},
         )
         return result
 
@@ -88,11 +87,11 @@ class ExperimentConfig:
             temperature=self.temperature,
             max_tokens=self.internal_max_tokens,
         )
+        result["embedder"]["provider"] = "huggingface"
         result.setdefault("embedder", {}).setdefault("config", {}).update(
-            model=self.embedding.model,
-            api_key=self.embedding.api_key(),
-            openai_base_url=self.embedding.base_url,
+            model=self.embedding_model,
             embedding_dims=self.embedding_dimensions,
+            model_kwargs={"device": "cuda"},
         )
         result.setdefault("vector_store", {}).setdefault("config", {}).setdefault("embedding_model_dims", self.embedding_dimensions)
         return result
@@ -117,8 +116,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--evaluation-dtype", choices=["auto", "float16", "bfloat16", "float32"], default="bfloat16")
     parser.add_argument("--evaluation-device-map", default="auto")
     parser.add_argument("--embedding-model", default="Qwen/Qwen3-Embedding-0.6B")
-    parser.add_argument("--embedding-base-url")
-    parser.add_argument("--embedding-api-key-env", default="EMBEDDING_API_KEY")
     parser.add_argument("--embedding-dimensions", type=int, default=1024)
     parser.add_argument("--answer-max-tokens", type=int, default=256)
     parser.add_argument("--internal-max-tokens", type=int, default=1024)
@@ -151,7 +148,7 @@ def main() -> None:
 def _config_from_args(args: argparse.Namespace) -> ExperimentConfig:
     return ExperimentConfig(
         generator=ModelEndpoint(args.generator_model, args.generator_base_url, args.generator_api_key_env),
-        embedding=ModelEndpoint(args.embedding_model, args.embedding_base_url, args.embedding_api_key_env),
+        embedding_model=args.embedding_model,
         embedding_dimensions=args.embedding_dimensions,
         input_chunk_size=args.chunk_size,
         final_retrieval_top_k=args.top_k,
@@ -178,7 +175,7 @@ def _create_baseline(kind: str, config: ExperimentConfig, official_config: dict[
     if kind == "bm25":
         return BM25Baseline()
     if kind == "dense":
-        return DenseRetrievalBaseline(OpenAIEmbedder(config.embedding, dimensions=config.embedding_dimensions))
+        return DenseRetrievalBaseline(HuggingFaceEmbedder(config.embedding_model))
     if kind == "lightmem":
         resolved = config.lightmem_config(_required_official_config(kind, official_config))
         resolved["embedding_retriever"]["configs"].update(
