@@ -1,136 +1,203 @@
-"""Experiment entry point and the single source of shared comparison controls."""
+"""Run a controlled memory benchmark: data loading, retrieval, QA, and deterministic evaluation."""
 
 import argparse
 from copy import deepcopy
 from dataclasses import dataclass
+import json
+from pathlib import Path
 from typing import Any
 
-from baseline import BM25Baseline
-from dataset_loader import (
-    TaskName,
-    load_hipporag2_dataset,
-    load_locomo,
-    load_memory_agent_bench,
+from baseline import BM25Baseline, DenseRetrievalBaseline, HippoRAG2Baseline, LightMemBaseline, Mem0Baseline
+from baseline.base import MemoryBaseline
+from dataset_loader import TaskName, load_hipporag2_dataset, load_locomo, load_memory_agent_bench
+from experiments.runner import (
+    MemoryGroup,
+    hipporag_groups,
+    locomo_groups,
+    memory_agent_bench_groups,
+    run_groups,
 )
+from utils.models import ModelEndpoint, OpenAIChatModel, OpenAIEmbedder
+
+
+BENCHMARKS = [task.value for task in TaskName] + ["LoCoMo", "MuSiQue", "2WikiMultiHopQA", "HotpotQA"]
+BASELINES = ["bm25", "dense", "lightmem", "magma", "hipporag2", "mem0"]
+EVALUATION_BACKBONES = [
+    "Qwen/Qwen3.5-35B-A3B",
+    "Qwen/Qwen3.5-27B",
+    "google/gemma-4-12B-it",
+    "google/gemma-4-26B-A4B-it",
+]
 
 
 @dataclass(frozen=True)
 class ExperimentConfig:
-    """Resources held fixed whenever an algorithm invokes the corresponding service."""
+    """Comparison controls, with generator and evaluation roles kept separate."""
 
-    llm_model: str
-    embedding_model: str
+    generator: ModelEndpoint
+    evaluation: ModelEndpoint
+    embedding: ModelEndpoint
     embedding_dimensions: int
     input_chunk_size: int
     final_retrieval_top_k: int
     answer_max_tokens: int
     internal_max_tokens: int
     temperature: float = 0.0
-    llm_base_url: str | None = None
-    embedding_base_url: str | None = None
     answer_system_prompt: str = "Answer only from the supplied evidence. Return only the answer."
 
     def __post_init__(self) -> None:
-        if not self.llm_model or not self.embedding_model:
-            raise ValueError("llm_model and embedding_model are required")
-        if self.embedding_dimensions <= 0:
-            raise ValueError("embedding_dimensions must be positive")
-        if min(self.input_chunk_size, self.final_retrieval_top_k, self.answer_max_tokens, self.internal_max_tokens) <= 0:
-            raise ValueError("all experiment budgets must be positive")
+        if min(self.embedding_dimensions, self.input_chunk_size, self.final_retrieval_top_k, self.answer_max_tokens, self.internal_max_tokens) <= 0:
+            raise ValueError("all resource budgets must be positive")
 
     def hipporag_config(self, official_config: dict[str, Any]) -> dict[str, Any]:
-        """Apply only shared service choices; retain HippoRAG graph/OpenIE settings."""
         result = deepcopy(official_config)
         result.update(
-            llm_name=self.llm_model,
-            embedding_model_name=self.embedding_model,
+            llm_name=self.generator.model,
+            llm_base_url=self.generator.base_url,
+            embedding_model_name=self.embedding.model,
+            embedding_base_url=self.embedding.base_url,
             retrieval_top_k=self.final_retrieval_top_k,
             qa_top_k=self.final_retrieval_top_k,
             max_new_tokens=self.internal_max_tokens,
+            temperature=self.temperature,
         )
-        if self.llm_base_url is not None:
-            result["llm_base_url"] = self.llm_base_url
-        if self.embedding_base_url is not None:
-            result["embedding_base_url"] = self.embedding_base_url
         return result
 
     def lightmem_config(self, official_config: dict[str, Any]) -> dict[str, Any]:
-        """Apply shared model and generation budgets without changing LightMem stages."""
         result = deepcopy(official_config)
         result.setdefault("memory_manager", {}).setdefault("configs", {}).update(
-            model=self.llm_model,
+            model=self.generator.model,
+            base_url=self.generator.base_url,
             max_tokens=self.internal_max_tokens,
             temperature=self.temperature,
         )
         result.setdefault("text_embedder", {}).setdefault("configs", {}).update(
-            model=self.embedding_model,
+            model=self.embedding.model,
+            base_url=self.embedding.base_url,
             embedding_dims=self.embedding_dimensions,
         )
-        for name in ("embedding_retriever", "summary_retriever"):
-            if name in result:
-                result[name].setdefault("configs", {})["embedding_model_dims"] = self.embedding_dimensions
         return result
 
     def mem0_config(self, official_config: dict[str, Any]) -> dict[str, Any]:
-        """Apply shared model and generation budgets without replacing Mem0's policy."""
         result = deepcopy(official_config)
         result.setdefault("llm", {}).setdefault("config", {}).update(
-            model=self.llm_model,
+            model=self.generator.model,
+            openai_base_url=self.generator.base_url,
             temperature=self.temperature,
             max_tokens=self.internal_max_tokens,
         )
-        result.setdefault("embedder", {}).setdefault("config", {})["model"] = self.embedding_model
-        if self.llm_base_url is not None:
-            result["llm"]["config"]["openai_base_url"] = self.llm_base_url
+        result.setdefault("embedder", {}).setdefault("config", {}).update(
+            model=self.embedding.model,
+            openai_base_url=self.embedding.base_url,
+            embedding_dims=self.embedding_dimensions,
+        )
+        result.setdefault("vector_store", {}).setdefault("config", {}).setdefault("embedding_model_dims", self.embedding_dimensions)
         return result
-
-    def magma_arguments(self) -> dict[str, str]:
-        """Return MAGMA's supported shared model arguments; retain its graph settings."""
-        return {"llm_model": self.llm_model, "embedding_model": self.embedding_model}
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--task",
-        required=True,
-        choices=[task.value for task in TaskName] + ["LoCoMo", "MuSiQue", "2WikiMultiHopQA", "HotpotQA"],
-    )
-    parser.add_argument("--chunk-size", type=int, default=4096, help="Shared source chunking budget.")
-    parser.add_argument("--top-k", type=int, default=5, help="Shared final evidence budget.")
-    parser.add_argument("--max-contexts", type=int, default=None)
-    parser.add_argument("--path", help="LoCoMo JSON path")
-    parser.add_argument("--data-root", help="HippoRAG 2 reproduce/dataset directory")
+    parser.add_argument("--task", required=True, choices=BENCHMARKS)
+    parser.add_argument("--baseline", required=True, choices=BASELINES)
+    parser.add_argument("--output-dir", required=True, help="Directory for predictions.jsonl and summary.json.")
+    parser.add_argument("--chunk-size", type=int, default=4096)
+    parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument("--max-contexts", type=int)
+    parser.add_argument("--max-queries", type=int, default=1000)
+    parser.add_argument("--path", help="Official LoCoMo JSON path.")
+    parser.add_argument("--data-root", help="HippoRAG 2 reproduce/dataset directory.")
+    parser.add_argument("--official-config", help="JSON config retained from the selected official baseline.")
+    parser.add_argument("--generator-model", default="deepseek-v4-flash-0731")
+    parser.add_argument("--generator-base-url", default="https://api.deepseek.com")
+    parser.add_argument("--generator-api-key-env", default="DEEPSEEK_API_KEY")
+    parser.add_argument("--evaluation-backbone", required=True, choices=EVALUATION_BACKBONES)
+    parser.add_argument("--evaluation-base-url", required=True)
+    parser.add_argument("--evaluation-api-key-env", default="EVALUATION_API_KEY")
+    parser.add_argument("--embedding-model", default="Qwen/Qwen3-Embedding-0.6B")
+    parser.add_argument("--embedding-base-url", required=True)
+    parser.add_argument("--embedding-api-key-env", default="EMBEDDING_API_KEY")
+    parser.add_argument("--embedding-dimensions", type=int, default=1024)
+    parser.add_argument("--answer-max-tokens", type=int, default=256)
+    parser.add_argument("--internal-max-tokens", type=int, default=1024)
+    parser.add_argument("--temperature", type=float, default=0.0)
     return parser
 
 
 def main() -> None:
     args = build_parser().parse_args()
+    config = _config_from_args(args)
+    groups = _load_groups(args)
+    if args.baseline == "magma":
+        raise SystemExit("MAGMA's released MemoryBuilder accepts only its native LoCoMo turn/session objects; this runner preserves that boundary and does not coerce other benchmarks into MAGMA input.")
+    official_config = _read_config(args.official_config)
+    answer_model = OpenAIChatModel(config.evaluation, max_tokens=config.answer_max_tokens, temperature=config.temperature)
+    summary = run_groups(
+        groups,
+        create_baseline=lambda group: _create_baseline(args.baseline, config, official_config, group, args.output_dir),
+        answer_model=answer_model,
+        top_k=config.final_retrieval_top_k,
+        output_dir=args.output_dir,
+        system_prompt=config.answer_system_prompt,
+    )
+    print(json.dumps(summary, indent=2, sort_keys=True))
+
+
+def _config_from_args(args: argparse.Namespace) -> ExperimentConfig:
+    return ExperimentConfig(
+        generator=ModelEndpoint(args.generator_model, args.generator_base_url, args.generator_api_key_env),
+        evaluation=ModelEndpoint(args.evaluation_backbone, args.evaluation_base_url, args.evaluation_api_key_env),
+        embedding=ModelEndpoint(args.embedding_model, args.embedding_base_url, args.embedding_api_key_env),
+        embedding_dimensions=args.embedding_dimensions,
+        input_chunk_size=args.chunk_size,
+        final_retrieval_top_k=args.top_k,
+        answer_max_tokens=args.answer_max_tokens,
+        internal_max_tokens=args.internal_max_tokens,
+        temperature=args.temperature,
+    )
+
+
+def _load_groups(args: argparse.Namespace):
     if args.task == "LoCoMo":
         if not args.path:
             raise SystemExit("--path is required for LoCoMo")
-        conversations = load_locomo(args.path)
-        print(f"conversations={len(conversations)}")
-        print(f"questions={sum(len(item.questions) for item in conversations)}")
-        return
-    if args.task in {"MuSiQue", "2WikiMultiHopQA", "HotpotQA"}:
+        return locomo_groups(load_locomo(args.path))
+    external = {"MuSiQue": "musique", "2WikiMultiHopQA": "2wikimultihopqa", "HotpotQA": "hotpotqa"}
+    if args.task in external:
         if not args.data_root:
             raise SystemExit("--data-root is required for HippoRAG 2 datasets")
-        dataset_name = {"MuSiQue": "musique", "2WikiMultiHopQA": "2wikimultihopqa", "HotpotQA": "hotpotqa"}[args.task]
-        queries = load_hipporag2_dataset(args.data_root, dataset_name)
-        print(f"dataset={dataset_name} queries={len(queries)}")
-        return
+        return hipporag_groups(load_hipporag2_dataset(args.data_root, external[args.task], max_queries=args.max_queries))
+    return memory_agent_bench_groups(load_memory_agent_bench(args.task, chunk_size=args.chunk_size, max_contexts=args.max_contexts))
 
-    samples = load_memory_agent_bench(args.task, chunk_size=args.chunk_size, max_contexts=args.max_contexts)
-    print(f"contexts={len(samples)}")
-    for context_index, sample in enumerate(samples):
-        memory = BM25Baseline()
-        memory.build(sample.chunks)
-        print(
-            f"context={context_index} source={sample.source} "
-            f"chunks={len(sample.chunks)} questions={len(sample.question_answers)} "
-            f"first_retrieval_chars={len(memory.retrieve(sample.question_answers[0].question, args.top_k)[0].text)}"
-        )
+
+def _create_baseline(kind: str, config: ExperimentConfig, official_config: dict[str, Any], group: MemoryGroup, output_dir: str) -> MemoryBaseline:
+    if kind == "bm25":
+        return BM25Baseline()
+    if kind == "dense":
+        return DenseRetrievalBaseline(OpenAIEmbedder(config.embedding, dimensions=config.embedding_dimensions))
+    if kind == "lightmem":
+        return LightMemBaseline(config.lightmem_config(_required_official_config(kind, official_config)))
+    if kind == "hipporag2":
+        save_dir = Path(output_dir) / "hipporag_indices" / group.group_id
+        return HippoRAG2Baseline(config.hipporag_config(_required_official_config(kind, official_config)), save_dir)
+    if kind == "mem0":
+        return Mem0Baseline(config.mem0_config(_required_official_config(kind, official_config)), group.group_id)
+    raise ValueError(f"unsupported baseline {kind!r}")
+
+
+def _required_official_config(kind: str, config: dict[str, Any]) -> dict[str, Any]:
+    if not config:
+        raise ValueError(f"--official-config is required for {kind}; it preserves the official algorithm-specific settings while shared services are overridden centrally")
+    return config
+
+
+def _read_config(path: str | None) -> dict[str, Any]:
+    if path is None:
+        return {}
+    with Path(path).open(encoding="utf-8") as stream:
+        payload = json.load(stream)
+    if not isinstance(payload, dict):
+        raise ValueError("--official-config must contain a JSON object")
+    return payload
 
 
 if __name__ == "__main__":

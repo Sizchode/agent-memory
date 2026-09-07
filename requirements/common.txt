@@ -1,5 +1,7 @@
 # Dependencies shared by the experiment runner and deterministic evaluators.
 datasets>=3.0
 nltk>=3.9
+openai>=1.0
 PyYAML>=6.0
+tiktoken>=0.8
 tqdm>=4.65
