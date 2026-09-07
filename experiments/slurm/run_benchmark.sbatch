@@ -9,14 +9,42 @@
 #SBATCH --time=25:59:59
 #SBATCH --mail-type=begin,end,fail
 #SBATCH --mail-user=zhenkeliu@163.com
-#SBATCH --output=agent_memory_%j.out
+#SBATCH --array=0-35
+#SBATCH --output=agent_memory_%A_%a.out
 #SBATCH --export=ALL,PYTORCH_JIT=0
 
 set -euo pipefail
 
-: "${TASK:?Set TASK, for example: SH-Doc QA}"
 : "${BASELINE:?Set BASELINE: bm25, dense, lightmem, hipporag2, or mem0}"
-: "${EVALUATION_BACKBONE:?Set EVALUATION_BACKBONE to a Hugging Face model ID}"
+
+# The array is a Cartesian product: task index varies slowest, model index fastest.
+# 9 benchmark tasks x 4 local Hugging Face evaluation backbones = 36 workers.
+TASKS=(
+  "SH-Doc QA"
+  "MH-Doc QA"
+  "EventQA"
+  "FactConsolidation-SH"
+  "FactConsolidation-MH"
+  "LoCoMo"
+  "MuSiQue"
+  "2WikiMultiHopQA"
+  "HotpotQA"
+)
+EVALUATION_BACKBONES=(
+  "Qwen/Qwen3.5-35B-A3B"
+  "Qwen/Qwen3.5-27B"
+  "google/gemma-4-12B-it"
+  "google/gemma-4-26B-A4B-it"
+)
+PAIR_INDEX="${SLURM_ARRAY_TASK_ID:-0}"
+MODEL_COUNT="${#EVALUATION_BACKBONES[@]}"
+PAIR_COUNT="$(( ${#TASKS[@]} * MODEL_COUNT ))"
+if (( PAIR_INDEX < 0 || PAIR_INDEX >= PAIR_COUNT )); then
+  echo "Array index ${PAIR_INDEX} is outside 0-$((PAIR_COUNT - 1))" >&2
+  exit 2
+fi
+TASK="${TASKS[$((PAIR_INDEX / MODEL_COUNT))]}"
+EVALUATION_BACKBONE="${EVALUATION_BACKBONES[$((PAIR_INDEX % MODEL_COUNT))]}"
 
 PROJECT_DIR="${PROJECT_DIR:-$SLURM_SUBMIT_DIR}"
 HF_HOME="${HF_HOME:-/oscar/data/sbach/zliu328/hf_output}"
@@ -45,7 +73,8 @@ fi
 
 mkdir -p "${PROJECT_DIR}/logs"
 MODEL_TAG="${EVALUATION_BACKBONE//\//_}"
-RUN_DIR="${OUTPUT_ROOT}/${BASELINE}/${TASK// /_}/${MODEL_TAG}/${SLURM_JOB_ID}"
+RUN_ID="${SLURM_ARRAY_JOB_ID:-${SLURM_JOB_ID}}_${PAIR_INDEX}"
+RUN_DIR="${OUTPUT_ROOT}/${BASELINE}/${TASK// /_}/${MODEL_TAG}/${RUN_ID}"
 
 DATA_ARGS=()
 case "${TASK}" in
@@ -75,6 +104,7 @@ if [[ -n "${MAX_CONTEXTS:-}" ]]; then
 fi
 
 echo "Job ${SLURM_JOB_ID} on $(hostname)"
+echo "Array pair ${PAIR_INDEX}: task=${TASK}; evaluator=${EVALUATION_BACKBONE}"
 echo "Python: ${PYTHON_BIN}"
 echo "UV environment root: ${ENV_ROOT}"
 echo "Evaluation backbone (local Hugging Face): ${EVALUATION_BACKBONE}"
