@@ -1,5 +1,0 @@
-# Isolated local embedding service/runtime. Qwen3-Embedding-8B requires a
-# modern Transformers stack; it intentionally remains separate from HippoRAG.
-torch>=2.5
-transformers>=4.45
-sentence-transformers>=3.0

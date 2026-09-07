@@ -1,3 +1,0 @@
-# Isolated OpenAI-compatible inference service for the common local generator.
-# Resolve this against the HPC CUDA driver; do not install it in a baseline env.
-vllm>=0.8.5

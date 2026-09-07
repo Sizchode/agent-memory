@@ -1,5 +1,4 @@
 # Dependencies shared by the experiment runner and deterministic evaluators.
-# Install this file together with exactly one method-specific file.
 datasets>=3.0
 nltk>=3.9
 PyYAML>=6.0
