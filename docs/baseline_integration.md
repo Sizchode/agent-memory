@@ -10,22 +10,19 @@ official source.
 | BM25 | local | Okapi BM25 | chunks, top-k |
 | Dense retrieval | local | cosine retrieval | embedding function, chunks, top-k |
 | LightMem | `zjunlp/LightMem@8449d574` | segmentation, extraction, summaries, offline update, retrieval | LLM, embedding, dimensions, generation budget |
-| MAGMA | `FredJiang0324/MAGMA@467cb70b` | event extraction, semantic/temporal/causal/entity graphs, adaptive traversal | LLM and embedding selected in `MemoryBuilder`; retrieval budget |
 | HippoRAG 2 | `OSU-NLP-Group/HippoRAG@1438aba3` | OpenIE, graph, fact linking, PPR and official prompts | LLM, embedding, retrieval/QA top-k, output budget |
 | Mem0 | `mem0ai/mem0@dae67f74` | fact extraction and ADD/UPDATE/DELETE policy with official prompts | LLM, embedding, generation budget |
 
 Primary sources:
 
 - LightMem configuration and implementation: <https://github.com/zjunlp/LightMem>
-- MAGMA implementation: <https://github.com/FredJiang0324/MAGMA>
 - HippoRAG 2 configuration and prompts: <https://github.com/OSU-NLP-Group/HippoRAG>
 - Mem0 OSS implementation and configuration: <https://github.com/mem0ai/mem0>
 
 ## Policy
 
 Internal prompts that define an algorithm are not replaced. This includes
-LightMem summary/update prompts, MAGMA event and relation extraction prompts,
-HippoRAG OpenIE/linking prompts, and Mem0 fact/update prompts. The final QA
+LightMem summary/update prompts, HippoRAG OpenIE/linking prompts, and Mem0 fact/update prompts. The final QA
 prompt and answer model are benchmark-runner concerns and must be shared.
 
 `main.py` owns `ExperimentConfig`, the only location for common model choices,
@@ -33,8 +30,7 @@ input chunking, final evidence budget, output budget, and answer protocol.
 Baseline adapters retain only algorithm-private behavior.
 
 Pass `ExperimentConfig.hipporag_config`, `.lightmem_config`, or `.mem0_config`
-to the corresponding adapter; construct `MAGMABaseline` with
-`**experiment.magma_arguments()`.
+to the corresponding adapter.
 
 ## Decisions required before HPC runs
 
@@ -47,10 +43,8 @@ to the corresponding adapter; construct `MAGMABaseline` with
    internal candidate pools (for example HippoRAG's graph candidate pool) stay
    algorithm-native.
 
-Vector-store backends, OpenIE, summary/update policy, graph construction, and
-MAGMA's temporal/causal mapping are method-private. Keep each official
-implementation's choice and report it. For LoCoMo, MAGMA consumes the native
-session/turn/timestamp structure; no synthetic temporal metadata is added.
+Vector-store backends, OpenIE, summary/update policy, and graph construction
+are method-private. Keep each official implementation's choice and report it.
 
 ## Checkout
 

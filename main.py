@@ -21,7 +21,7 @@ from utils.models import ModelEndpoint, OpenAIChatModel, OpenAIEmbedder
 
 
 BENCHMARKS = [task.value for task in TaskName] + ["LoCoMo", "MuSiQue", "2WikiMultiHopQA", "HotpotQA"]
-BASELINES = ["bm25", "dense", "lightmem", "magma", "hipporag2", "mem0"]
+BASELINES = ["bm25", "dense", "lightmem", "hipporag2", "mem0"]
 EVALUATION_BACKBONES = [
     "Qwen/Qwen3.5-35B-A3B",
     "Qwen/Qwen3.5-27B",
@@ -127,8 +127,6 @@ def main() -> None:
     args = build_parser().parse_args()
     config = _config_from_args(args)
     groups = _load_groups(args)
-    if args.baseline == "magma":
-        raise SystemExit("MAGMA's released MemoryBuilder accepts only its native LoCoMo turn/session objects; this runner preserves that boundary and does not coerce other benchmarks into MAGMA input.")
     official_config = _read_config(args.official_config)
     answer_model = OpenAIChatModel(config.evaluation, max_tokens=config.answer_max_tokens, temperature=config.temperature)
     summary = run_groups(

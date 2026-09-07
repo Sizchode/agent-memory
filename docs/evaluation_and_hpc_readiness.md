@@ -27,7 +27,6 @@ with a held-fixed judge and never used to choose an answer.
 | Method | LLM role during memory / answering | Evaluation-time LLM role | Default or reported model |
 | --- | --- | --- | --- |
 | LightMem | memory extraction/consolidation and QA answerer | optional binary semantic judge: question + gold + prediction -> `CORRECT`/`WRONG`, JSON, temperature 0 | reported answerers: `gpt-4o-mini` and `qwen3-30b-a3b-instruct-2507`; reported judges: `gpt-4o-mini` and `qwen2.5-32b-instruct` |
-| MAGMA | event/relation construction and answerer | optional continuous semantic scorer (0--1), `gpt-4o-mini` hard-coded in the judge module | answerer CLI defaults to `gpt-4o-mini`; README also lists `gpt-4.1-mini` and `gpt-4o` |
 | HippoRAG 2 | online OpenIE (NER + triples) and QA generation | none; retrieval recall and QA EM/F1 are deterministic | `gpt-4o-mini` default LLM; `nvidia/NV-Embed-v2` default embedding |
 | Mem0 | fact extraction and ADD/UPDATE/DELETE memory policy; benchmark answerer is external to memory store | the current public memory-benchmarks suite requires an answerer/judge LLM | OSS suite defaults to `gpt-4o-mini` for fact extraction and `text-embedding-3-small` for embeddings |
 
@@ -38,11 +37,6 @@ Evidence:
   Its judge sees no retrieved context; it grades only question, reference, and
   generated answer, then outputs a binary JSON label:
   [official judge implementation](https://github.com/zjunlp/LightMem/blob/8449d574df6bae1bdf3314a1564da65e2f37e046/experiments/locomo/llm_judge.py).
-- MAGMA exposes `gpt-4o-mini` as its evaluation CLI default and defaults to
-  three generations with `llm_judge` selection:
-  [official evaluation entry point](https://github.com/FredJiang0324/MAGMA/blob/467cb70b67ac337b22fdb42194d37c04ad701b62/test_fixed_memory.py).
-  Its judge is an answer semantic scorer, not part of retrieval:
-  [official judge implementation](https://github.com/FredJiang0324/MAGMA/blob/467cb70b67ac337b22fdb42194d37c04ad701b62/memory/llm_judge.py).
 - HippoRAG's configuration defaults to `gpt-4o-mini`, `NV-Embed-v2`,
   online OpenIE, and a 2,048-token LLM output cap:
   [official config](https://github.com/OSU-NLP-Group/HippoRAG/blob/1438aba3fc44ff10573e5a5e1e7cc3c7f9794aff/src/hipporag/utils/config_utils.py).
@@ -59,10 +53,9 @@ downstream answer. Hold each role's model, temperature, output caps, endpoint
 implementation, input chunk stream, and final evidence budget fixed across
 methods. An evaluation backbone is not an LLM judge.
 
-Do not replace method-private operations. OpenIE remains in HippoRAG;
-LightMem/Mem0 summary and update policy remain; MAGMA retains its native graph
-and LoCoMo session/timestamp representation. Those modules receive the common
-generation model, but are not added to BM25 or Dense retrieval.
+Do not replace method-private operations. OpenIE remains in HippoRAG, and
+LightMem/Mem0 summary and update policy remain. Those modules receive the
+common generation model, but are not added to BM25 or Dense retrieval.
 
 ### 2025--2026 backbone plan
 
@@ -94,7 +87,7 @@ Recommended table layout:
 
 1. **Primary controlled table:** one declared generator backbone (DeepSeek V4
    Flash only if its deployment is pinned and affordable), one declared
-   evaluation backbone, all six methods, and all deterministic metrics.
+   evaluation backbone, all five methods, and all deterministic metrics.
 2. **Evaluation-backbone robustness table:** the four Qwen/Gemma models above,
    a fixed representative subset of methods and benchmarks. Each row replaces
    the reader/answerer only; it does not rebuild memory and is not a judge.
@@ -122,8 +115,7 @@ multi-vector modes would add retrieval mechanisms unavailable to every method.
 
 The official baselines use heterogeneous embeddings and therefore motivate,
 rather than replace, this control: LightMem reports `all-MiniLM-L6-v2` and
-`text-embedding-3-small`; MAGMA exposes the same MiniLM/OpenAI pair; HippoRAG
-defaults to `nvidia/NV-Embed-v2`; and Mem0 examples default to
+`text-embedding-3-small`; HippoRAG defaults to `nvidia/NV-Embed-v2`; and Mem0 examples default to
 `text-embedding-3-small`. Their original choices remain only for an
 official-reproduction appendix.
 
@@ -146,7 +138,6 @@ controlled setting; the 4B variant is the natural quality-oriented upgrade.
 Sources: [Qwen3-Embedding-0.6B model card](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B),
 [BGE-M3 model card](https://huggingface.co/BAAI/bge-m3),
 [LightMem LoCoMo configuration](https://github.com/zjunlp/LightMem/blob/8449d574df6bae1bdf3314a1564da65e2f37e046/experiments/locomo/readme.md),
-[MAGMA configuration](https://github.com/FredJiang0324/MAGMA/blob/467cb70b67ac337b22fdb42194d37c04ad701b62/test_fixed_memory.py),
 [HippoRAG configuration](https://github.com/OSU-NLP-Group/HippoRAG/blob/1438aba3fc44ff10573e5a5e1e7cc3c7f9794aff/src/hipporag/utils/config_utils.py),
 and [Mem0 configuration guide](https://github.com/mem0ai/mem0/blob/dae67f74f5cc7bf138c7d7d6f9cec5ce4b4373b3/LLM.md).
 
@@ -184,40 +175,34 @@ and [Qwen3 vLLM deployment notes](https://github.com/QwenLM/Qwen3/blob/main/docs
 The repository is **not yet ready** for an end-to-end HPC run. The following
 are blocking implementation tasks, in order.
 
-1. **One real experiment runner.** `main.py` currently loads data and runs a
-   BM25 inspection only. Implement selection and execution of all six methods,
-   final answer generation, the benchmark-specific metric call, and one common
-   prediction/result schema.
-2. **Complete the adapters.** Smoke-test each official algorithm with one
-   context and one query in its own environment. MAGMA needs a native structured
-   LoCoMo path; it must not receive synthetic timestamps for document datasets.
-   The other document/conversation ingestion paths need explicit benchmark
-   adapters rather than treating all data as interchangeable strings.
-3. **Disable evaluation leakage.** Never use MAGMA's default `best-of-3` and
-   `llm_judge` answer selection. Generate exactly one temperature-0 answer per
-   question, then score it with the predetermined deterministic metric.
-4. **Lock environments per method.** The root `requirements.txt` contains only
+1. **Complete the adapters.** Smoke-test each official algorithm with one
+   context and one query in its own environment. The document/conversation
+   ingestion paths need explicit benchmark adapters rather than treating all
+   data as interchangeable strings.
+2. **Disable evaluation leakage.** Generate exactly one temperature-0 answer
+   per question, then score it with the predetermined deterministic metric.
+3. **Lock environments per method.** The root `requirements.txt` contains only
    loader dependencies. Add reproducible lock files or containers for LightMem,
-   MAGMA, HippoRAG, and Mem0. Do not force their incompatible official
+   HippoRAG, and Mem0. Do not force their incompatible official
    dependency stacks into one environment; communicate through a JSONL
    prediction contract.
-5. **Data manifest and fetch step.** Automate/record the exact HF revision for
+4. **Data manifest and fetch step.** Automate/record the exact HF revision for
    MemoryAgentBench, the LoCoMo file revision, and the HippoRAG2 released
    1,000-query files. Store paths, checksums, and dataset revision in each run
    artifact; do not commit benchmark data.
-6. **Experiment config and provenance.** Add a checked-in config containing
+5. **Experiment config and provenance.** Add a checked-in config containing
    model IDs, embedding dimension, chunk policy, top-k, temperature, token
    caps, seed, and endpoint name. Each run must save that resolved config,
    source commit, submodule commits, package versions, predictions, retrieved
    evidence IDs, token/API-call counts, elapsed time, and failures.
-7. **HPC launch and recovery.** Add Slurm launchers with a per-run output
+6. **HPC launch and recovery.** Add Slurm launchers with a per-run output
    directory, environment activation, secret handling through environment
    variables, rate/concurrency limits for API methods, retry policy, and
    resume-by-completed-query semantics.
-8. **Pilot acceptance gate.** Before the full suite, run one context or one
+7. **Pilot acceptance gate.** Before the full suite, run one context or one
    conversation per benchmark-method pair; verify non-empty retrieval, one
    prediction per question, deterministic scoring, resume behavior, and that
    every output can be aggregated without manual edits.
 
-Only after items 1--8 are complete is cloning the repository on HPC expected
+Only after items 1--7 are complete is cloning the repository on HPC expected
 to lead directly to experiment runs rather than integration debugging.

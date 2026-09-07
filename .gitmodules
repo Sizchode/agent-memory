@@ -1,9 +1,6 @@
 [submodule "baseline_algorithms/LightMem"]
 	path = baseline_algorithms/LightMem
 	url = https://github.com/zjunlp/LightMem.git
-[submodule "baseline_algorithms/MAGMA"]
-	path = baseline_algorithms/MAGMA
-	url = https://github.com/FredJiang0324/MAGMA.git
 [submodule "baseline_algorithms/HippoRAG"]
 	path = baseline_algorithms/HippoRAG
 	url = https://github.com/OSU-NLP-Group/HippoRAG.git

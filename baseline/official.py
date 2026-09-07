@@ -72,37 +72,3 @@ class Mem0Baseline:
 
     def close(self) -> None:
         return None
-
-
-class MAGMABaseline:
-    """Official MAGMA adapter; its algorithm builds from structured sessions."""
-
-    def __init__(self, cache_dir: str | Path, llm_model: str, embedding_model: str, use_episodes: bool = False) -> None:
-        _prepend(_OFFICIAL_ALGORITHMS / "MAGMA")
-        from memory.memory_builder import MemoryBuilder
-        self._builder = MemoryBuilder(cache_dir=str(cache_dir), llm_model=llm_model, use_episodes=use_episodes, embedding_model=embedding_model)
-        self._query_engine = None
-
-    def build_structured(self, locomo_sample: Any) -> None:
-        from memory.query_engine import QueryEngine
-        self._builder.build_memory(locomo_sample)
-        self._query_engine = QueryEngine(self._builder.trg, self._builder.node_index, entity_session_map=self._builder.entity_session_map, entity_dia_map=self._builder.entity_dia_map)
-
-    def build_locomo_file(self, path: str | Path, sample_index: int) -> None:
-        from load_dataset import load_locomo_dataset
-        samples = load_locomo_dataset(path)
-        if not 0 <= sample_index < len(samples):
-            raise IndexError(f"sample_index {sample_index} is outside the LoCoMo dataset")
-        self.build_structured(samples[sample_index])
-
-    def retrieve(self, query: str, top_k: int) -> list[RetrievedItem]:
-        if self._query_engine is None:
-            raise RuntimeError("build_structured must be called before retrieve")
-        context, _ = self._query_engine.query(query, top_k=top_k)
-        return [
-            RetrievedItem(str(node.content), float(getattr(node, "similarity_score", 0.0)), {"node_id": node.node_id})
-            for node in context.anchor_nodes[:top_k]
-        ]
-
-    def close(self) -> None:
-        return None
