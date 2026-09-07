@@ -22,7 +22,7 @@ For a first BM25 smoke run, submit only one task/model pair:
 ```bash
 cd /oscar/home/zliu328/agent-memory
 export HUGGINGFACE_HUB_TOKEN='set this in your shell; never commit it'
-export HF_HOME=/oscar/data/sbach/zliu328/hf_output
+export HF_HOME=/oscar/scratch/zliu328/hf_output
 sbatch --array=1 --export=ALL,BASELINE=bm25,MAX_CONTEXTS=1 \
   experiments/slurm/run_benchmark.sbatch
 ```

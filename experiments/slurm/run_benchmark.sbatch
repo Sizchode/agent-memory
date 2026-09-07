@@ -47,10 +47,11 @@ TASK="${TASKS[$((PAIR_INDEX / MODEL_COUNT))]}"
 EVALUATION_BACKBONE="${EVALUATION_BACKBONES[$((PAIR_INDEX % MODEL_COUNT))]}"
 
 PROJECT_DIR="${PROJECT_DIR:-$SLURM_SUBMIT_DIR}"
-HF_HOME="${HF_HOME:-/oscar/data/sbach/zliu328/hf_output}"
-OUTPUT_ROOT="${OUTPUT_ROOT:-${PROJECT_DIR}/outputs}"
+SCRATCH_ROOT="${SCRATCH_ROOT:-/oscar/scratch/zliu328}"
+HF_HOME="${HF_HOME:-${SCRATCH_ROOT}/hf_output}"
+OUTPUT_ROOT="${OUTPUT_ROOT:-${SCRATCH_ROOT}/agent-memory-outputs}"
 CONDA_ENV="${CONDA_ENV:-llm_ft}"
-ENV_ROOT="${ENV_ROOT:-/oscar/scratch/zliu328/agent-memory-envs}"
+ENV_ROOT="${ENV_ROOT:-${SCRATCH_ROOT}/agent-memory-envs}"
 
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate "${CONDA_ENV}"
@@ -106,6 +107,7 @@ fi
 echo "Job ${SLURM_JOB_ID} on $(hostname)"
 echo "Array pair ${PAIR_INDEX}: task=${TASK}; evaluator=${EVALUATION_BACKBONE}"
 echo "Python: ${PYTHON_BIN}"
+echo "Scratch root: ${SCRATCH_ROOT}"
 echo "UV environment root: ${ENV_ROOT}"
 echo "Evaluation backbone (local Hugging Face): ${EVALUATION_BACKBONE}"
 echo "HF_HOME: ${HF_HOME}"

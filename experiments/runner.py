@@ -11,7 +11,7 @@ from dataset_loader import BenchmarkSample, HippoRAGQuery, LoCoMoConversation
 from utils.hipporag_metrics import gold_passage_recall_at_k, hipporag_answer_f1
 from utils.locomo_metrics import locomo_bleu1, locomo_token_f1
 from utils.metrics import substring_exact_match
-from utils.prompts import query_prompt
+from utils.prompts import memorize_prompt, query_prompt
 
 
 MetricKind = Literal["subem", "locomo", "hipporag"]
@@ -52,7 +52,7 @@ def memory_agent_bench_groups(samples: Sequence[BenchmarkSample]) -> Iterable[Me
     for index, sample in enumerate(samples):
         yield MemoryGroup(
             group_id=f"mab-{index}",
-            memory_items=sample.chunks,
+            memory_items=tuple(memorize_prompt(sample.source, chunk) for chunk in sample.chunks),
             cases=tuple(
                 EvaluationCase(
                     case_id=pair.qa_pair_id or f"{index}-{question_index}",
