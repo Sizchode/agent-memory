@@ -17,7 +17,7 @@ from experiments.runner import (
     memory_agent_bench_groups,
     run_groups,
 )
-from utils.models import ModelEndpoint, OpenAIChatModel, OpenAIEmbedder
+from utils.models import HuggingFaceChatModel, ModelEndpoint, OpenAIEmbedder
 
 
 BENCHMARKS = [task.value for task in TaskName] + ["LoCoMo", "MuSiQue", "2WikiMultiHopQA", "HotpotQA"]
@@ -35,7 +35,6 @@ class ExperimentConfig:
     """Comparison controls, with generator and evaluation roles kept separate."""
 
     generator: ModelEndpoint
-    evaluation: ModelEndpoint
     embedding: ModelEndpoint
     embedding_dimensions: int
     input_chunk_size: int
@@ -111,8 +110,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--generator-base-url", default="https://api.deepseek.com")
     parser.add_argument("--generator-api-key-env", default="DEEPSEEK_API_KEY")
     parser.add_argument("--evaluation-backbone", required=True, choices=EVALUATION_BACKBONES)
-    parser.add_argument("--evaluation-base-url", required=True)
-    parser.add_argument("--evaluation-api-key-env", default="EVALUATION_API_KEY")
+    parser.add_argument("--evaluation-dtype", choices=["auto", "float16", "bfloat16", "float32"], default="bfloat16")
+    parser.add_argument("--evaluation-device-map", default="auto")
     parser.add_argument("--embedding-model", default="Qwen/Qwen3-Embedding-0.6B")
     parser.add_argument("--embedding-base-url", required=True)
     parser.add_argument("--embedding-api-key-env", default="EMBEDDING_API_KEY")
@@ -128,7 +127,12 @@ def main() -> None:
     config = _config_from_args(args)
     groups = _load_groups(args)
     official_config = _read_config(args.official_config)
-    answer_model = OpenAIChatModel(config.evaluation, max_tokens=config.answer_max_tokens, temperature=config.temperature)
+    answer_model = HuggingFaceChatModel(
+        args.evaluation_backbone,
+        max_tokens=config.answer_max_tokens,
+        dtype=args.evaluation_dtype,
+        device_map=args.evaluation_device_map,
+    )
     summary = run_groups(
         groups,
         create_baseline=lambda group: _create_baseline(args.baseline, config, official_config, group, args.output_dir),
@@ -143,7 +147,6 @@ def main() -> None:
 def _config_from_args(args: argparse.Namespace) -> ExperimentConfig:
     return ExperimentConfig(
         generator=ModelEndpoint(args.generator_model, args.generator_base_url, args.generator_api_key_env),
-        evaluation=ModelEndpoint(args.evaluation_backbone, args.evaluation_base_url, args.evaluation_api_key_env),
         embedding=ModelEndpoint(args.embedding_model, args.embedding_base_url, args.embedding_api_key_env),
         embedding_dimensions=args.embedding_dimensions,
         input_chunk_size=args.chunk_size,
