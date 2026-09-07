@@ -113,7 +113,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--evaluation-dtype", choices=["auto", "float16", "bfloat16", "float32"], default="bfloat16")
     parser.add_argument("--evaluation-device-map", default="auto")
     parser.add_argument("--embedding-model", default="Qwen/Qwen3-Embedding-0.6B")
-    parser.add_argument("--embedding-base-url", required=True)
+    parser.add_argument("--embedding-base-url")
     parser.add_argument("--embedding-api-key-env", default="EMBEDDING_API_KEY")
     parser.add_argument("--embedding-dimensions", type=int, default=1024)
     parser.add_argument("--answer-max-tokens", type=int, default=256)

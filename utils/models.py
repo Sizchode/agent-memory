@@ -10,7 +10,7 @@ class ModelEndpoint:
     """A model served through the OpenAI chat/embeddings API schema."""
 
     model: str
-    base_url: str
+    base_url: str | None
     api_key_env: str
 
     def api_key(self) -> str:
@@ -95,4 +95,6 @@ class OpenAIEmbedder:
             from openai import OpenAI
         except ImportError as exc:
             raise RuntimeError("install openai to use an OpenAI-compatible embedding endpoint") from exc
+        if not self.endpoint.base_url:
+            raise RuntimeError(f"an embedding base URL is required for model {self.endpoint.model!r}")
         return OpenAI(api_key=self.endpoint.api_key(), base_url=self.endpoint.base_url)

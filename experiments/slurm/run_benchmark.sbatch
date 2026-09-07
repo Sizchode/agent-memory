@@ -17,7 +17,6 @@ set -euo pipefail
 : "${TASK:?Set TASK, for example: SH-Doc QA}"
 : "${BASELINE:?Set BASELINE: bm25, dense, lightmem, hipporag2, or mem0}"
 : "${EVALUATION_BACKBONE:?Set EVALUATION_BACKBONE to a Hugging Face model ID}"
-: "${EMBEDDING_BASE_URL:?Set EMBEDDING_BASE_URL to the OpenAI-compatible embedding service}"
 
 PROJECT_DIR="${PROJECT_DIR:-$SLURM_SUBMIT_DIR}"
 HF_HOME="${HF_HOME:-/oscar/data/sbach/zliu328/hf_output}"
@@ -61,6 +60,14 @@ case "${BASELINE}" in
     ;;
 esac
 
+EMBEDDING_ARGS=()
+case "${BASELINE}" in
+  dense|lightmem|hipporag2|mem0)
+    : "${EMBEDDING_BASE_URL:?Set EMBEDDING_BASE_URL to the OpenAI-compatible embedding service}"
+    EMBEDDING_ARGS+=(--embedding-base-url "${EMBEDDING_BASE_URL}")
+    ;;
+esac
+
 LIMIT_ARGS=(--max-queries "${MAX_QUERIES:-1000}")
 if [[ -n "${MAX_CONTEXTS:-}" ]]; then
   LIMIT_ARGS+=(--max-contexts "${MAX_CONTEXTS}")
@@ -79,7 +86,7 @@ nvidia-smi
   --evaluation-backbone "${EVALUATION_BACKBONE}" \
   --evaluation-dtype "${EVALUATION_DTYPE:-bfloat16}" \
   --evaluation-device-map "${EVALUATION_DEVICE_MAP:-auto}" \
-  --embedding-base-url "${EMBEDDING_BASE_URL}" \
+  "${EMBEDDING_ARGS[@]}" \
   "${LIMIT_ARGS[@]}" \
   "${DATA_ARGS[@]}" \
   "${OFFICIAL_ARGS[@]}"
