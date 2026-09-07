@@ -1,7 +1,7 @@
 """Benchmark-neutral execution loop for memory retrieval experiments."""
 
 from collections.abc import Callable, Iterable, Sequence
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 import json
 from pathlib import Path
 from typing import Any, Literal, Protocol
@@ -11,6 +11,7 @@ from dataset_loader import BenchmarkSample, HippoRAGQuery, LoCoMoConversation
 from utils.hipporag_metrics import gold_passage_recall_at_k, hipporag_answer_f1
 from utils.locomo_metrics import locomo_bleu1, locomo_token_f1
 from utils.metrics import substring_exact_match
+from utils.models import release_accelerator_memory
 from utils.prompts import memorize_prompt, query_prompt
 
 
@@ -46,6 +47,13 @@ class CaseResult:
     prediction: str
     retrieved: tuple[RetrievedItem, ...]
     metrics: dict[str, float]
+
+
+@dataclass(frozen=True)
+class RetrievedCase:
+    group_id: str
+    case: EvaluationCase
+    retrieved: tuple[RetrievedItem, ...]
 
 
 def memory_agent_bench_groups(samples: Sequence[BenchmarkSample]) -> Iterable[MemoryGroup]:
@@ -112,28 +120,43 @@ def run_groups(
     output_dir: str | Path,
     system_prompt: str,
 ) -> dict[str, float]:
-    """Build memory once per group, answer every associated question, and persist protocol outputs."""
+    """Retrieve all evidence, release retrieval models, then load the evaluator."""
 
     if top_k <= 0:
         raise ValueError("top_k must be positive")
     destination = Path(output_dir)
     destination.mkdir(parents=True, exist_ok=True)
+    retrieved_cases: list[RetrievedCase] = []
+    for group in groups:
+        baseline = create_baseline(group)
+        try:
+            baseline.build(group.memory_items)
+            retrieved_cases.extend(
+                RetrievedCase(group.group_id, case, tuple(baseline.retrieve(case.question, top_k)))
+                for case in group.cases
+            )
+        finally:
+            try:
+                baseline.close()
+            finally:
+                del baseline
+                release_accelerator_memory()
+
     result_path = destination / "predictions.jsonl"
     metric_values: dict[str, list[float]] = {}
     with result_path.open("w", encoding="utf-8") as stream:
-        for group in groups:
-            baseline = create_baseline(group)
-            try:
-                baseline.build(group.memory_items)
-                for case in group.cases:
-                    retrieved = tuple(baseline.retrieve(case.question, top_k))
-                    prediction = answer_model.answer(system_prompt, _answer_prompt(case, retrieved))
-                    result = CaseResult(group.group_id, case.case_id, prediction, retrieved, _score(case, prediction, retrieved, top_k))
-                    for name, value in result.metrics.items():
-                        metric_values.setdefault(name, []).append(value)
-                    stream.write(json.dumps(_json_record(result), ensure_ascii=False) + "\n")
-            finally:
-                baseline.close()
+        for item in retrieved_cases:
+            prediction = answer_model.answer(system_prompt, _answer_prompt(item.case, item.retrieved))
+            result = CaseResult(
+                item.group_id,
+                item.case.case_id,
+                prediction,
+                item.retrieved,
+                _score(item.case, prediction, item.retrieved, top_k),
+            )
+            for name, value in result.metrics.items():
+                metric_values.setdefault(name, []).append(value)
+            stream.write(json.dumps(_json_record(result), ensure_ascii=False) + "\n")
     summary = {name: sum(values) / len(values) for name, values in metric_values.items() if values}
     (destination / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return summary

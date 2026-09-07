@@ -1,6 +1,7 @@
 """OpenAI-compatible model clients shared by every controlled experiment."""
 
 from collections.abc import Sequence
+import gc
 import os
 from dataclasses import dataclass
 
@@ -87,3 +88,15 @@ class HuggingFaceEmbedder:
             self._model = SentenceTransformer(self.model_id, device=self.device, trust_remote_code=True)
         vectors = self._model.encode(list(texts), normalize_embeddings=True, show_progress_bar=False)
         return vectors.tolist()
+
+
+def release_accelerator_memory() -> None:
+    """Release model objects collected between retrieval and answer phases."""
+
+    gc.collect()
+    try:
+        import torch
+    except (ImportError, OSError):
+        return
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()

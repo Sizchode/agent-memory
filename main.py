@@ -28,6 +28,7 @@ EVALUATION_BACKBONES = [
     "google/gemma-4-12B-it",
     "google/gemma-4-26B-A4B-it",
 ]
+EMBEDDING_MODEL = "Qwen/Qwen3-Embedding-0.6B"
 
 
 @dataclass(frozen=True)
@@ -115,7 +116,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--evaluation-backbone", required=True, choices=EVALUATION_BACKBONES)
     parser.add_argument("--evaluation-dtype", choices=["auto", "float16", "bfloat16", "float32"], default="bfloat16")
     parser.add_argument("--evaluation-device-map", default="auto")
-    parser.add_argument("--embedding-model", default="Qwen/Qwen3-Embedding-0.6B")
     parser.add_argument("--embedding-dimensions", type=int, default=1024)
     parser.add_argument("--answer-max-tokens", type=int, default=256)
     parser.add_argument("--internal-max-tokens", type=int, default=1024)
@@ -148,7 +148,7 @@ def main() -> None:
 def _config_from_args(args: argparse.Namespace) -> ExperimentConfig:
     return ExperimentConfig(
         generator=ModelEndpoint(args.generator_model, args.generator_base_url, args.generator_api_key_env),
-        embedding_model=args.embedding_model,
+        embedding_model=EMBEDDING_MODEL,
         embedding_dimensions=args.embedding_dimensions,
         input_chunk_size=args.chunk_size,
         final_retrieval_top_k=args.top_k,
