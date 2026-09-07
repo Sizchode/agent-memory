@@ -22,6 +22,7 @@ PROJECT_DIR="${PROJECT_DIR:-$SLURM_SUBMIT_DIR}"
 HF_HOME="${HF_HOME:-/oscar/data/sbach/zliu328/hf_output}"
 OUTPUT_ROOT="${OUTPUT_ROOT:-${PROJECT_DIR}/outputs}"
 CONDA_ENV="${CONDA_ENV:-llm_ft}"
+ENV_ROOT="${ENV_ROOT:-/oscar/scratch/zliu328/agent-memory-envs}"
 
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate "${CONDA_ENV}"
@@ -31,9 +32,9 @@ export TOKENIZERS_PARALLELISM=false
 export PYTHONPATH="${PROJECT_DIR}${PYTHONPATH:+:${PYTHONPATH}}"
 
 case "${BASELINE}" in
-  bm25|dense) PYTHON_BIN="$(command -v python)" ;;
-  lightmem|mem0) PYTHON_BIN="${PROJECT_DIR}/.venv/${BASELINE}/bin/python" ;;
-  hipporag2) PYTHON_BIN="${PROJECT_DIR}/.venv/hipporag/bin/python" ;;
+  bm25|dense) PYTHON_BIN="${ENV_ROOT}/runner/bin/python" ;;
+  lightmem|mem0) PYTHON_BIN="${ENV_ROOT}/${BASELINE}/bin/python" ;;
+  hipporag2) PYTHON_BIN="${ENV_ROOT}/hipporag/bin/python" ;;
   *) echo "Unknown BASELINE: ${BASELINE}" >&2; exit 2 ;;
 esac
 
@@ -75,6 +76,7 @@ fi
 
 echo "Job ${SLURM_JOB_ID} on $(hostname)"
 echo "Python: ${PYTHON_BIN}"
+echo "UV environment root: ${ENV_ROOT}"
 echo "Evaluation backbone (local Hugging Face): ${EVALUATION_BACKBONE}"
 echo "HF_HOME: ${HF_HOME}"
 nvidia-smi
