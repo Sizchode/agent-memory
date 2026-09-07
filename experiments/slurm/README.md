@@ -23,9 +23,12 @@ For a first BM25 smoke run, submit only one task/model pair:
 cd /oscar/home/zliu328/agent-memory
 export HUGGINGFACE_HUB_TOKEN='set this in your shell; never commit it'
 export HF_HOME=/oscar/data/sbach/zliu328/hf_output
-sbatch --array=0 --export=ALL,BASELINE=bm25,MAX_CONTEXTS=1 \
+sbatch --array=1 --export=ALL,BASELINE=bm25,MAX_CONTEXTS=1 \
   experiments/slurm/run_benchmark.sbatch
 ```
+
+Index `1` selects `Qwen/Qwen3.5-27B`, a safer first single-H100 smoke model
+than loading the larger 35B-A3B checkpoint at index `0`.
 
 To run all four evaluation backbones on the five MemoryAgentBench tasks, use
 `--array=0-19`. LoCoMo and the three multi-hop tasks additionally require the
