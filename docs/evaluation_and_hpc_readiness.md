@@ -51,10 +51,13 @@ Evidence:
 
 ## Fair comparison policy
 
-Use one `generation_model` for every LLM call that a method makes: memory
-extraction, summary/consolidation, OpenIE, relation construction, decision or
-reasoning, and final answer generation. Hold temperature, output caps, endpoint
-implementation, input chunk stream, and final evidence budget fixed.
+Use two held-fixed LLM roles. The **generator backbone** reads the source
+stream and performs memory extraction, summary/consolidation, OpenIE, relation
+construction, and any memory-update reasoning. The **evaluation backbone**
+receives a method's retrieved evidence or memory output and produces the final
+downstream answer. Hold each role's model, temperature, output caps, endpoint
+implementation, input chunk stream, and final evidence budget fixed across
+methods. An evaluation backbone is not an LLM judge.
 
 Do not replace method-private operations. OpenIE remains in HippoRAG;
 LightMem/Mem0 summary and update policy remain; MAGMA retains its native graph
@@ -64,9 +67,9 @@ generation model, but are not added to BM25 or Dense retrieval.
 ### 2025--2026 backbone plan
 
 The project uses deterministic benchmark metrics, so an ``evaluation backbone``
-must not mean an LLM judge. A backbone is the held-fixed `generation_model`
-used for every method's LLM-based memory operation and final answer generation.
-The four proposed models are sufficient for a model-robustness section:
+means the reader/answerer that consumes retrieved evidence or memory output,
+not an LLM judge. The four proposed models are sufficient for an evaluation-
+backbone robustness section:
 
 | Family | Dense | MoE | Role in paper |
 | --- | --- | --- | --- |
@@ -79,7 +82,7 @@ method-by-benchmark grid without providing a new controlled axis. If a third
 family is required for a robustness claim, add exactly one model (prefer a
 roughly 20--30B dense instruct model), not another scale sweep.
 
-`deepseek-v4-flash` is a valid separate **generator backbone**, not a judge.
+`deepseek-v4-flash` is a valid **generator backbone**, not a judge.
 The official model card identifies it as a 284B-total / 13B-active MoE model;
 therefore it is not comparable to a 12--35B local-weight deployment merely
 because its active parameter count is small. Use it only as the primary
@@ -90,11 +93,11 @@ rather than relying only on the moving `deepseek-v4-flash` alias.
 Recommended table layout:
 
 1. **Primary controlled table:** one declared generator backbone (DeepSeek V4
-   Flash only if its deployment is pinned and affordable), all six methods,
-   all deterministic metrics.
-2. **Backbone robustness table:** the four Qwen/Gemma models above, a fixed
-   representative subset of methods and benchmarks. Each row replaces the
-   generator backbone; none is an evaluator or judge.
+   Flash only if its deployment is pinned and affordable), one declared
+   evaluation backbone, all six methods, and all deterministic metrics.
+2. **Evaluation-backbone robustness table:** the four Qwen/Gemma models above,
+   a fixed representative subset of methods and benchmarks. Each row replaces
+   the reader/answerer only; it does not rebuild memory and is not a judge.
 3. **No LLM judge in either table.** An optional appendix judge, if ever used,
    is a separately named held-fixed model and never chooses answers.
 
@@ -109,7 +112,8 @@ Use one local dense embedding model for the controlled table. The recommended
 default is **`Qwen/Qwen3-Embedding-0.6B` at 1,024 dimensions**: it is local,
 instruction-aware, supports 32K input, 100+ languages, and has Matryoshka
 dimension support. Fix the output dimension at 1,024 for every method and do
-not tune it per method.
+not tune it per method. It is a high-throughput choice, not the largest
+available embedding model.
 
 `BAAI/bge-m3` is the appropriate backup/robustness embedding setting: it is a
 widely adopted local 0.57B multilingual model with 1,024 dimensions and 8K
@@ -122,6 +126,22 @@ rather than replace, this control: LightMem reports `all-MiniLM-L6-v2` and
 defaults to `nvidia/NV-Embed-v2`; and Mem0 examples default to
 `text-embedding-3-small`. Their original choices remain only for an
 official-reproduction appendix.
+
+Strength comparison must be task- and protocol-specific. MiniLM is clearly a
+weaker legacy option: it has 384 dimensions and truncates beyond 256 word
+pieces. Qwen3-Embedding-0.6B reports an MTEB English retrieval score of 61.83;
+the 7.8B NV-Embed-v2 reports 62.84 on a different published MTEB release, so
+NV-Embed-v2 is plausibly stronger but substantially more expensive, English-
+oriented, and CC-BY-NC licensed. `text-embedding-3-small` is a strong 2024 API
+baseline, but no same-protocol public head-to-head number establishes it as
+strictly above or below Qwen3-Embedding-0.6B. Do not infer a universal ordering
+from model names or vector dimension alone.
+
+If the primary goal is best local retrieval rather than maximum throughput,
+run a small embedding pilot before freezing the model: Qwen's own model card
+reports 68.46 retrieval for `Qwen3-Embedding-4B` and 69.44 for the 8B model,
+versus 61.83 for the 0.6B model. The 0.6B model is the recommended first
+controlled setting; the 4B variant is the natural quality-oriented upgrade.
 
 Sources: [Qwen3-Embedding-0.6B model card](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B),
 [BGE-M3 model card](https://huggingface.co/BAAI/bge-m3),
