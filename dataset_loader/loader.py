@@ -1,10 +1,11 @@
 """All benchmark loaders and official-protocol dataset preparation."""
 
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 import json
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 
 class TaskName(str, Enum):
@@ -43,8 +44,20 @@ class LoCoMoQuestion:
 @dataclass(frozen=True)
 class LoCoMoConversation:
     sample_id: str
-    sessions: tuple[str, ...]
+    memory_items: tuple[str, ...]
+    memory_timestamps: tuple[str, ...]
+    turns: tuple["LoCoMoTurn", ...]
     questions: tuple[LoCoMoQuestion, ...]
+
+
+@dataclass(frozen=True)
+class LoCoMoTurn:
+    text: str
+    speaker_name: str
+    speaker_id: str
+    role: str
+    timestamp: str
+    blip_caption: str
 
 
 @dataclass(frozen=True)
@@ -57,12 +70,14 @@ class HippoRAGQuery:
     paragraphs: tuple[str, ...]
 
 
-_TASK_SOURCES: dict[TaskName, tuple[str, tuple[str, ...]]] = {
-    TaskName.SH_DOC_QA: ("Accurate_Retrieval", ("ruler_qa1",)),
-    TaskName.MH_DOC_QA: ("Accurate_Retrieval", ("ruler_qa2",)),
-    TaskName.EVENT_QA: ("Accurate_Retrieval", ("eventqa_",)),
-    TaskName.FACT_CONSOLIDATION_SH: ("Conflict_Resolution", ("factconsolidation_sh_",)),
-    TaskName.FACT_CONSOLIDATION_MH: ("Conflict_Resolution", ("factconsolidation_mh_",)),
+_TASK_SOURCES: dict[TaskName, tuple[str, str]] = {
+    # These are the exact sub-datasets used by the official main-experiment
+    # configuration.  In particular, do not pool the length ablations.
+    TaskName.SH_DOC_QA: ("Accurate_Retrieval", "ruler_qa1_197K"),
+    TaskName.MH_DOC_QA: ("Accurate_Retrieval", "ruler_qa2_421K"),
+    TaskName.EVENT_QA: ("Accurate_Retrieval", "eventqa_full"),
+    TaskName.FACT_CONSOLIDATION_SH: ("Conflict_Resolution", "factconsolidation_sh_262k"),
+    TaskName.FACT_CONSOLIDATION_MH: ("Conflict_Resolution", "factconsolidation_mh_262k"),
 }
 
 
@@ -77,7 +92,7 @@ def load_memory_agent_bench(
     """Load one MemoryAgentBench task family and expand each context's QA list."""
 
     task_name = _coerce_task(task)
-    split_name, source_prefixes = _TASK_SOURCES[task_name]
+    split_name, expected_source = _TASK_SOURCES[task_name]
     if chunk_size <= 0 or max_contexts is not None and max_contexts <= 0:
         raise ValueError("chunk_size and max_contexts must be positive")
     try:
@@ -89,7 +104,7 @@ def load_memory_agent_bench(
     for row in load_dataset("ai-hyz/MemoryAgentBench", split=split_name, revision=revision):
         metadata = _as_mapping(row.get("metadata", {}))
         source = str(metadata.get("source", ""))
-        if not _matches_source(source, source_prefixes):
+        if source.casefold() != expected_source.casefold():
             continue
         samples.append(_make_memory_sample(task_name, row, metadata, source, chunk_size, tokenizer_model))
         if max_contexts is not None and len(samples) == max_contexts:
@@ -106,37 +121,76 @@ def load_locomo(path: str | Path) -> list[LoCoMoConversation]:
     conversations: list[LoCoMoConversation] = []
     for sample in payload:
         conversation = sample["conversation"]
+        speaker_a = str(conversation["speaker_a"])
+        speaker_b = str(conversation["speaker_b"])
         keys = sorted(
             (key for key in conversation if key.startswith("session_") and key[8:].isdigit()),
             key=lambda key: int(key[8:]),
         )
-        sessions = tuple("\n".join(str(turn["text"]) for turn in conversation[key]) for key in keys)
+        memory_items = tuple(
+            item
+            for key in keys
+            for item in _format_locomo_session(conversation, key)
+        )
+        memory_timestamps = tuple(
+            _normalize_locomo_timestamp(str(conversation[f"{key}_date_time"]))
+            for key in keys
+            for _ in conversation[key]
+        )
+        turns = tuple(
+            LoCoMoTurn(
+                text=str(turn["text"]),
+                speaker_name=str(turn["speaker"]),
+                speaker_id="speaker_a" if str(turn["speaker"]) == speaker_a else "speaker_b",
+                role="user" if str(turn["speaker"]) == speaker_a else "assistant",
+                timestamp=_normalize_locomo_timestamp(str(conversation[f"{key}_date_time"])),
+                blip_caption=str(turn.get("blip_caption", "")),
+            )
+            for key in keys
+            for turn in conversation[key]
+        )
         questions = tuple(
-            LoCoMoQuestion(str(item["question"]), str(item["answer"]), int(item["category"]), tuple(item.get("evidence", [])))
+            LoCoMoQuestion(
+                str(item["question"]),
+                str(item.get("answer", item.get("adversarial_answer", ""))),
+                int(item["category"]),
+                tuple(item.get("evidence", [])),
+            )
             for item in sample["qa"]
         )
-        conversations.append(LoCoMoConversation(str(sample["sample_id"]), sessions, questions))
+        conversations.append(
+            LoCoMoConversation(
+                str(sample["sample_id"]),
+                memory_items,
+                memory_timestamps,
+                turns,
+                questions,
+            )
+        )
     return conversations
 
 
 def load_hipporag2_dataset(root: str | Path, dataset: str, *, max_queries: int = 1000) -> list[HippoRAGQuery]:
-    """Load HippoRAG 2's released 1,000-query multi-hop evaluation format."""
+    """Load HippoRAG 2's released 1,000-query 2Wiki evaluation format."""
 
-    if dataset not in {"musique", "2wikimultihopqa", "hotpotqa"}:
-        raise ValueError("dataset must be musique, 2wikimultihopqa, or hotpotqa")
+    if dataset != "2wikimultihopqa":
+        raise ValueError("dataset must be 2wikimultihopqa")
     if max_queries <= 0:
         raise ValueError("max_queries must be positive")
     root_path = Path(root)
     corpus = _read_json(root_path / f"{dataset}_corpus.json")
-    corpus_by_title = {str(item["title"]): str(item["text"]) for item in corpus}
-    paragraphs = tuple(f"{title}\n{text}" for title, text in corpus_by_title.items())
+    paragraphs = tuple(_format_passage(item["title"], item["text"]) for item in corpus)
+    passages_by_title: dict[str, list[str]] = {}
+    for item in corpus:
+        passages_by_title.setdefault(str(item["title"]), []).append(_format_passage(item["title"], item["text"]))
     queries: list[HippoRAGQuery] = []
     for sample in _read_json(root_path / f"{dataset}.json")[:max_queries]:
-        gold_passages = tuple(
-            f"{title}\n{corpus_by_title[title]}" for title in _gold_titles(sample) if title in corpus_by_title
-        )
+        gold_passages = _gold_passages(sample, passages_by_title)
         answers = [str(sample["answer"]), *(str(item) for item in sample.get("answer_aliases", []))]
-        queries.append(HippoRAGQuery(dataset, str(sample["id"]), str(sample["question"]), tuple(dict.fromkeys(answers)), gold_passages, paragraphs))
+        query_id = sample.get("id", sample.get("_id"))
+        if query_id is None:
+            raise ValueError(f"{dataset} query is missing both 'id' and '_id'")
+        queries.append(HippoRAGQuery(dataset, str(query_id), str(sample["question"]), tuple(dict.fromkeys(answers)), gold_passages, paragraphs))
     return queries
 
 
@@ -148,7 +202,11 @@ def chunk_text_into_sentences(text: str, model_name: str = "gpt-4o-mini", chunk_
         import tiktoken
     except ImportError as exc:
         raise RuntimeError("install nltk and tiktoken to chunk MemoryAgentBench contexts") from exc
+    # NLTK >= 3.9 split the language tables into punkt_tab.  Downloading both
+    # mirrors the official implementation while making its current dependency
+    # work on a clean compute node.
     nltk.download("punkt", quiet=True)
+    nltk.download("punkt_tab", quiet=True)
     try:
         encoding = tiktoken.encoding_for_model(model_name)
     except KeyError:
@@ -186,12 +244,48 @@ def _make_memory_sample(task: TaskName, row: dict[str, Any], metadata: dict[str,
     return BenchmarkSample(task, source, context, tuple(chunk_text_into_sentences(context, tokenizer_model, chunk_size)), pairs, metadata)
 
 
-def _gold_titles(sample: dict[str, Any]) -> tuple[str, ...]:
-    if "supporting_facts" in sample:
-        return tuple(dict.fromkeys(str(item[0]) for item in sample["supporting_facts"]))
-    if "contexts" in sample:
-        return tuple(str(item["title"]) for item in sample["contexts"] if item["is_supporting"])
-    return tuple(str(item["title"]) for item in sample["paragraphs"] if item.get("is_supporting", True))
+def _gold_passages(sample: dict[str, Any], passages_by_title: dict[str, list[str]]) -> tuple[str, ...]:
+    if "supporting_facts" not in sample:
+        raise ValueError("query is missing official supporting passage annotations")
+    titles = tuple(dict.fromkeys(str(item[0]) for item in sample["supporting_facts"]))
+    missing_titles = [title for title in titles if title not in passages_by_title]
+    if missing_titles:
+        raise ValueError(f"gold passage titles are absent from the corpus: {missing_titles}")
+    ambiguous_titles = [title for title in titles if len(passages_by_title[title]) != 1]
+    if ambiguous_titles:
+        raise ValueError(f"gold passage titles are ambiguous in the corpus: {ambiguous_titles}")
+    supporting_titles = set(titles)
+    passages = tuple(
+        _format_passage(title, " ".join(sentences))
+        for title, sentences in sample["context"]
+        if str(title) in supporting_titles
+    )
+    if set(passages) != {passages_by_title[title][0] for title in titles}:
+        raise ValueError("official supporting contexts do not match the released corpus")
+    return tuple(dict.fromkeys(passages))
+
+
+def _format_passage(title: Any, text: Any) -> str:
+    return f"{title}\n{text}"
+
+
+def _format_locomo_session(conversation: dict[str, Any], session_key: str) -> tuple[str, ...]:
+    """Render LoCoMo's released RAG dialog records, including their dates."""
+
+    date_time = str(conversation.get(f"{session_key}_date_time", ""))
+    turns: list[str] = []
+    for turn in conversation[session_key]:
+        rendered = f'{turn["speaker"]} said, "{turn["text"]}"'
+        if turn.get("blip_caption"):
+            rendered += f' and shared {turn["blip_caption"]}'
+        turns.append(f"{date_time}: {rendered}")
+    return tuple(turns)
+
+
+def _normalize_locomo_timestamp(value: str) -> str:
+    """Apply LightMem's released LoCoMo timestamp conversion exactly."""
+
+    return datetime.strptime(value.strip("()"), "%I:%M %p on %d %B, %Y").strftime("%Y-%m-%d %H:%M:%S")
 
 
 def _as_mapping(value: Any) -> dict[str, Any]:
@@ -204,10 +298,6 @@ def _as_mapping(value: Any) -> dict[str, Any]:
 
 def _as_list(value: Any) -> list[Any]:
     return [] if value is None else value if isinstance(value, list) else [value]
-
-
-def _matches_source(source: str, prefixes: Iterable[str]) -> bool:
-    return any(source == prefix.rstrip("_") or source.startswith(prefix) for prefix in prefixes)
 
 
 def _read_json(path: str | Path) -> Any:

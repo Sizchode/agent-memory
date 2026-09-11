@@ -1,0 +1,29 @@
+diff --git a/src/lightmem/factory/memory_manager/vllm.py b/src/lightmem/factory/memory_manager/vllm.py
+index 4f4268d..852f84c 100644
+--- a/src/lightmem/factory/memory_manager/vllm.py
++++ b/src/lightmem/factory/memory_manager/vllm.py
+@@ -103,6 +103,8 @@ class VllmManager:
+         if tools:  # TODO: Remove tools if no issues found with new memory addition logic
+             params["tools"] = tools
+             params["tool_choice"] = tool_choice
++        if response_format is not None:
++            params["response_format"] = response_format
+ 
+         response = self.client.chat.completions.create(**params)
+         usage_info = {
+diff --git a/src/lightmem/memory/utils.py b/src/lightmem/memory/utils.py
+index ccf2067..986ed0d 100644
+--- a/src/lightmem/memory/utils.py
++++ b/src/lightmem/memory/utils.py
+@@ -270,8 +270,10 @@ def convert_extraction_results_to_memory_entries(
+                 
+                 resolved_topic_id = topic_id_map[seq_candidate]
+                 
++                corrected_fact_entry = dict(fact_entry)
++                corrected_fact_entry["source_id"] = sid
+                 mem_obj = _create_memory_entry_from_fact(
+-                    fact_entry,
++                    corrected_fact_entry,
+                     timestamps_list,
+                     weekday_list,
+                     speaker_list,

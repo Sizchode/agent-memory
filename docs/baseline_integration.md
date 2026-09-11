@@ -21,9 +21,11 @@ Primary sources:
 
 ## Policy
 
-Internal prompts that define an algorithm are not replaced. This includes
-LightMem summary/update prompts, HippoRAG OpenIE/linking prompts, and Mem0 fact/update prompts. The final QA
-prompt and answer model are benchmark-runner concerns and must be shared.
+Internal prompts that define an algorithm are retained. The only cross-domain
+adaptation is the disclosed document-fact extraction instruction for LightMem
+and Mem0 on document benchmarks; LoCoMo uses their native dialogue behavior.
+The final QA prompt and answer model are benchmark-runner concerns and are
+shared.
 
 `main.py` owns `ExperimentConfig`, the only location for common model choices,
 input chunking, final evidence budget, output budget, and answer protocol.
@@ -32,19 +34,38 @@ Baseline adapters retain only algorithm-private behavior.
 Pass `ExperimentConfig.hipporag_config`, `.lightmem_config`, or `.mem0_config`
 to the corresponding adapter.
 
-## Decisions required before HPC runs
+## Frozen experiment decisions
 
-1. One DeepSeek generator model and endpoint. The primary controlled table
-   uses it for every baseline operation that invokes an LLM.
-2. One local Hugging Face embedding model and exact vector dimension.
-3. One input chunk size and whether each algorithm receives benchmark chunks
-   or its official internal segmentation input. These are not equivalent.
-4. Retrieval budget: the same final top-k is required; decide whether large
-   internal candidate pools (for example HippoRAG's graph candidate pool) stay
-   algorithm-native.
+1. Generator Backbone: local
+   `Qwen/Qwen3-30B-A3B-Instruct-2507`, BF16, non-thinking.
+2. Embedding: `Qwen/Qwen3-Embedding-0.6B`, 1,024 dimensions.
+3. Benchmark input: official MemoryAgentBench main variants and chunk sizes;
+   LightMem then applies its official internal pre-compression and topic
+   segmentation.
+4. Final retrieval budget: top 5 for every method. Internal candidate pools
+   remain algorithm-native.
 
 Vector-store backends, OpenIE, summary/update policy, and graph construction
 are method-private. Keep each official implementation's choice and report it.
+
+## Adapter audit for the final run
+
+| Scope | Retained adaptation | Reason |
+| --- | --- | --- |
+| All methods | shared Qwen Generator Backbone where required, Qwen embedding, top 5, seed 42 | controlled comparison |
+| Benchmark | exact released task variants, splits, conversions, QA prompts, and deterministic metrics | benchmark protocol |
+| LightMem | document-fact prompt on document tasks; released roles and timestamps on LoCoMo | input-domain adapter |
+| LightMem | pass its existing `response_format` argument to vLLM; preserve the corrected source ID when constructing an entry | two implementation bugs, no method change |
+| Mem0 | document custom instruction on document tasks; released roles on LoCoMo | input-domain adapter |
+| HippoRAG 2 | request the JSON object already demonstrated by its OpenIE prompt | local structured-output adapter |
+| Measurement | build time, per-query retrieval time, and returned generation-token counts | efficiency reporting only |
+
+LightMem retains official pre-compression, topic segmentation, summarization,
+offline updating, and its 16,000-token generation allowance. Mem0 retains its
+official memory extraction/update pipeline with a 2,000-token allowance.
+HippoRAG 2 retains its graph pipeline with 512-token NER and 2,048-token triple
+extraction allowances. The repository has no DeepSeek or Google SDK execution
+path and no unused experimental memory algorithm in the final grid.
 
 ## Checkout
 
@@ -52,3 +73,6 @@ are method-private. Keep each official implementation's choice and report it.
 git clone --recurse-submodules https://github.com/Sizchode/agent-memory.git
 git submodule update --init --recursive
 ```
+
+The environment setup applies the exact, versioned compatibility patches in
+`baseline_patches/` before installing the two affected editable submodules.

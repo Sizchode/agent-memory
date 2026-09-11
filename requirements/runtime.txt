@@ -1,0 +1,6 @@
+# Benchmark loading and deterministic scoring shared by every process.
+datasets>=3,<6
+nltk>=3.9,<4
+PyYAML>=6,<7
+tiktoken>=0.7,<1
+tqdm>=4.65,<5

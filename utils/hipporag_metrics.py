@@ -26,6 +26,19 @@ def gold_passage_recall_at_k(
     return len(set(retrieved_passages[:k]) & gold) / len(gold)
 
 
+def gold_passage_precision_at_k(
+    gold_passages: Sequence[str], retrieved_passages: Sequence[str], k: int = 5
+) -> float:
+    """Return standard gold-passage Precision@k for the retrieved list."""
+
+    if k <= 0:
+        raise ValueError("k must be positive")
+    top = list(retrieved_passages[:k])
+    if not top or not gold_passages:
+        return 0.0
+    return len(set(top) & set(gold_passages)) / len(top)
+
+
 def hipporag_answer_f1(prediction: str, gold_answers: Sequence[str]) -> float:
     """Return the maximum normalized token F1 over answer aliases."""
 

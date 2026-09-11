@@ -1,6 +1,25 @@
 {
-  "pre_compress": false,
-  "topic_segment": false,
+  "pre_compress": true,
+  "pre_compressor": {
+    "model_name": "llmlingua-2",
+    "configs": {
+      "llmlingua_config": {
+        "model_name": "microsoft/llmlingua-2-bert-base-multilingual-cased-meetingbank",
+        "device_map": "cuda",
+        "use_llmlingua2": true
+      },
+      "compress_config": {
+        "instruction": "",
+        "rate": 0.6,
+        "target_token": -1
+      }
+    }
+  },
+  "topic_segment": true,
+  "precomp_topic_shared": true,
+  "topic_segmenter": {
+    "model_name": "llmlingua-2"
+  },
   "messages_use": "user_only",
   "metadata_generate": true,
   "text_summary": true,

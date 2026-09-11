@@ -1,4 +1,6 @@
 # HippoRAG's package metadata pins its compatible runtime dependencies.
 # The extras select its official local embedding implementation and Qdrant API.
--r ../common.txt
--e ../../baseline_algorithms/HippoRAG[qdrant,transformers-embedding]
+-r ../runtime.txt
+# Package dependencies are resolved from its checked-out pyproject. Its
+# Transformers pin is raised to Qwen3-Embedding's documented minimum (4.51.0),
+# and Accelerate is explicit because that Transformers loader imports it.

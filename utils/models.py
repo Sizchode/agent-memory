@@ -1,6 +1,6 @@
 """OpenAI-compatible model clients shared by every controlled experiment."""
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 import gc
 import os
 from dataclasses import dataclass
@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ModelEndpoint:
-    """A generator model served through the OpenAI-compatible API schema."""
+    """Generator model coordinates and the environment holding its credential."""
 
     model: str
     base_url: str | None
@@ -24,29 +24,57 @@ class ModelEndpoint:
 class HuggingFaceChatModel:
     """Single-process local Hugging Face inference for the evaluation backbone."""
 
-    def __init__(self, model_id: str, *, max_tokens: int, dtype: str = "bfloat16", device_map: str = "auto") -> None:
+    def __init__(
+        self,
+        model_id: str,
+        *,
+        max_tokens: int,
+        dtype: str = "bfloat16",
+        device_map: str = "auto",
+        seed: int = 42,
+    ) -> None:
         if max_tokens <= 0:
             raise ValueError("max_tokens must be positive")
         self.model_id = model_id
         self.max_tokens = max_tokens
         self.dtype = dtype
         self.device_map = device_map
+        self.seed = seed
         self._model = None
         self._tokenizer = None
 
-    def answer(self, system_prompt: str, user_prompt: str) -> str:
+    def answer(
+        self,
+        messages: Sequence[Mapping[str, str]],
+        *,
+        max_tokens: int | None = None,
+        temperature: float = 0.0,
+        top_k: int | None = None,
+        top_p: float | None = None,
+    ) -> str:
         self._ensure_loaded()
         import torch
 
         inputs = self._tokenizer.apply_chat_template(
-            [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}],
+            [dict(message) for message in messages],
             add_generation_prompt=True,
             return_dict=True,
             return_tensors="pt",
+            enable_thinking=False,
         )
         inputs = {name: value.to(self._model.get_input_embeddings().weight.device) for name, value in inputs.items()}
+        generation = {
+            "do_sample": temperature > 0,
+            "max_new_tokens": max_tokens or self.max_tokens,
+        }
+        if temperature > 0:
+            generation["temperature"] = temperature
+        if top_k is not None:
+            generation["top_k"] = top_k
+        if top_p is not None:
+            generation["top_p"] = top_p
         with torch.inference_mode():
-            output = self._model.generate(**inputs, do_sample=False, max_new_tokens=self.max_tokens)
+            output = self._model.generate(**inputs, **generation)
         generated = output[0, inputs["input_ids"].shape[1]:]
         text = self._tokenizer.decode(generated, skip_special_tokens=True).strip()
         if not text:
@@ -64,8 +92,11 @@ class HuggingFaceChatModel:
         dtype = "auto" if self.dtype == "auto" else getattr(torch, self.dtype, None)
         if dtype is None:
             raise ValueError("evaluation dtype must be auto, float16, bfloat16, or float32")
+        torch.manual_seed(self.seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(self.seed)
         self._tokenizer = AutoTokenizer.from_pretrained(self.model_id)
-        self._model = AutoModelForCausalLM.from_pretrained(self.model_id, torch_dtype=dtype, device_map=self.device_map)
+        self._model = AutoModelForCausalLM.from_pretrained(self.model_id, dtype=dtype, device_map=self.device_map)
         self._model.eval()
 
 

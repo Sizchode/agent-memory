@@ -8,9 +8,7 @@
     "config": {}
   },
   "vector_store": {
-    "provider": "faiss",
-    "config": {
-      "distance_strategy": "cosine"
-    }
+    "provider": "qdrant",
+    "config": {}
   }
 }

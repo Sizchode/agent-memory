@@ -1,7 +1,6 @@
-"""Deterministic LoCoMo token-level metrics from the released evaluator."""
+"""Deterministic LoCoMo QA metric from the released evaluator."""
 
 from collections import Counter
-import math
 import re
 import string
 
@@ -20,6 +19,7 @@ def locomo_normalize(text: str) -> str:
 
 
 def locomo_token_f1(prediction: str, ground_truth: str) -> float:
+    """Official stemmed token F1 for one prediction/reference pair."""
     try:
         from nltk.stem import PorterStemmer
     except ImportError as exc:
@@ -37,18 +37,18 @@ def locomo_token_f1(prediction: str, ground_truth: str) -> float:
     return 2 * precision * recall / (precision + recall)
 
 
-def locomo_bleu1(prediction: str, ground_truth: str) -> float:
-    """Compute LoCoMo's unigram BLEU with brevity penalty."""
+def locomo_qa_f1(prediction: str, ground_truth: str, category: int) -> float:
+    """Apply the official category-specific LoCoMo QA scoring policy."""
 
-    predicted = locomo_normalize(prediction).split()
-    expected = locomo_normalize(ground_truth).split()
-    if not predicted:
-        return 0.0
-    if not expected:
-        return float(not predicted)
-    clipped = sum((Counter(predicted) & Counter(expected)).values())
-    precision = clipped / len(predicted)
-    if precision == 0:
-        return 0.0
-    brevity_penalty = 1.0 if len(predicted) > len(expected) else math.exp(1 - len(expected) / len(predicted))
-    return brevity_penalty * precision
+    if category == 1:
+        predictions = [item.strip() for item in prediction.split(",")]
+        ground_truths = [item.strip() for item in ground_truth.split(",")]
+        return sum(max(locomo_token_f1(candidate, expected) for candidate in predictions) for expected in ground_truths) / len(ground_truths)
+    if category == 3:
+        return locomo_token_f1(prediction, ground_truth.split(";", 1)[0].strip())
+    if category in {2, 4}:
+        return locomo_token_f1(prediction, ground_truth)
+    if category == 5:
+        normalized = prediction.lower()
+        return float("no information available" in normalized or "not mentioned" in normalized)
+    raise ValueError(f"unsupported LoCoMo category: {category}")

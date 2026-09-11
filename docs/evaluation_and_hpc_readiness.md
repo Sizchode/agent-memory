@@ -1,208 +1,174 @@
-# Evaluation-model survey and HPC readiness
+# Evaluation protocol and HPC readiness
 
-## Decision for the primary table
+## Deterministic evaluation metrics
 
-The primary paper table should use **no LLM-as-a-judge**.  The selected
-benchmarks already provide deterministic metrics:
+The experiment uses no LLM judge. Metrics are selected from each benchmark's
+released deterministic evaluator, not from a baseline-specific judge.
 
-| Benchmark family | Primary metric | LLM judge |
-| --- | --- | --- |
-| MemoryAgentBench: SH-Doc QA, MH-Doc QA, EventQA, FactConsolidation-SH/MH | official Substring Exact Match | no |
-| LoCoMo | official token F1 and BLEU-1 | no |
-| MuSiQue, 2WikiMultiHopQA, HotpotQA | gold-passage Recall@5 and answer F1 | no |
+| Benchmark family | Metric |
+| --- | --- |
+| MemoryAgentBench main variants | official Substring Exact Match |
+| LoCoMo | official category-specific stemmed token F1 |
+| 2WikiMultiHopQA | gold-passage Recall@k, Precision@k, and normalized answer F1 |
 
-MemoryAgentBench explicitly assigns `substring_exact_match` to the Accurate
-Retrieval and Conflict Resolution datasets. [Official repository metric
-mapping](https://github.com/HUST-AI-HYZ/MemoryAgentBench#-clarification-on-evaluation-metrics)
-documents this. HippoRAG's own evaluator implements normalized EM/F1 rather
-than an LLM judge: [official `qa_eval.py`](https://github.com/OSU-NLP-Group/HippoRAG/blob/1438aba3fc44ff10573e5a5e1e7cc3c7f9794aff/src/hipporag/evaluation/qa_eval.py).
+MemoryAgentBench uses the exact main configurations from its released
+`rag_agents.txt`, rather than pooling length ablations. LoCoMo applies its
+released category rules: multi-answer matching for category 1, the reference
+before the semicolon for category 3, direct F1 for categories 2 and 4, and the
+released unanswerable rule for category 5. The 2Wiki supporting passages are
+read from HippoRAG's released files. LoCoMo evaluates all
+1,986 questions in the released ten-conversation file; 2WikiMultiHopQA uses its
+released 1,000-query file.
 
-LoCoMo has an optional semantic judge in some downstream method repositories,
-but it is not needed for our pre-registered main metric. It may be reported
-only as a clearly labelled appendix diagnostic, evaluated once per prediction
-with a held-fixed judge and never used to choose an answer.
+Primary references:
 
-## What the official baseline code actually uses
+- [MemoryAgentBench evaluation mapping](https://github.com/HUST-AI-HYZ/MemoryAgentBench#-clarification-on-evaluation-metrics)
+- [LoCoMo released evaluator](https://github.com/snap-research/locomo/blob/main/task_eval/evaluation.py)
+- [HippoRAG released evaluator](https://github.com/OSU-NLP-Group/HippoRAG/blob/1438aba3fc44ff10573e5a5e1e7cc3c7f9794aff/src/hipporag/evaluation/qa_eval.py)
 
-| Method | LLM role during memory / answering | Evaluation-time LLM role | Default or reported model |
-| --- | --- | --- | --- |
-| LightMem | memory extraction/consolidation and QA answerer | optional binary semantic judge: question + gold + prediction -> `CORRECT`/`WRONG`, JSON, temperature 0 | reported answerers: `gpt-4o-mini` and `qwen3-30b-a3b-instruct-2507`; reported judges: `gpt-4o-mini` and `qwen2.5-32b-instruct` |
-| HippoRAG 2 | online OpenIE (NER + triples) and QA generation | none; retrieval recall and QA EM/F1 are deterministic | `gpt-4o-mini` default LLM; `nvidia/NV-Embed-v2` default embedding |
-| Mem0 | fact extraction and ADD/UPDATE/DELETE memory policy; benchmark answerer is external to memory store | the current public memory-benchmarks suite requires an answerer/judge LLM | OSS suite defaults to `gpt-4o-mini` for fact extraction and `text-embedding-3-small` for embeddings |
+This differs from some baseline-paper headline results. HippoRAG 2 reports
+passage Recall@5 and token F1, matching this runner. LightMem's paper uses
+GPT-4o-mini judge accuracy as its main effectiveness metric. The Mem0 paper
+reports deterministic F1 and BLEU-1 alongside an LLM judge. We do not reproduce
+or report either paper's judge score, and we do not mix judge outputs with the
+benchmark metrics. For LoCoMo, every method is instead scored by the same
+released category-specific deterministic evaluator.
 
-Evidence:
+## Model-role terminology
 
-- LightMem's released commands and result tables name its answer and judge
-  models: [official LoCoMo README](https://github.com/zjunlp/LightMem/blob/8449d574df6bae1bdf3314a1564da65e2f37e046/experiments/locomo/readme.md).
-  Its judge sees no retrieved context; it grades only question, reference, and
-  generated answer, then outputs a binary JSON label:
-  [official judge implementation](https://github.com/zjunlp/LightMem/blob/8449d574df6bae1bdf3314a1564da65e2f37e046/experiments/locomo/llm_judge.py).
-- HippoRAG's configuration defaults to `gpt-4o-mini`, `NV-Embed-v2`,
-  online OpenIE, and a 2,048-token LLM output cap:
-  [official config](https://github.com/OSU-NLP-Group/HippoRAG/blob/1438aba3fc44ff10573e5a5e1e7cc3c7f9794aff/src/hipporag/utils/config_utils.py).
-- Mem0's maintained benchmark suite documents the OSS defaults:
-  [official memory-benchmarks README](https://github.com/mem0ai/memory-benchmarks/blob/main/README.md).
+**Generator Backbone** reads original articles or conversations and performs
+method-native memory generation, extraction, compression, consolidation, and
+updates. BM25 and dense retrieval do not use a Generator Backbone.
 
-## Fair comparison policy
+**Evaluation Backbone** consumes a method's retrieved evidence or memory and
+performs downstream QA to produce the final answer. It is not a judge and never
+receives the ground-truth answer.
 
-Use two held-fixed LLM roles. The **generator backbone** reads the source
-stream and performs memory extraction, summary/consolidation, OpenIE, relation
-construction, and any memory-update reasoning. The **evaluation backbone**
-receives a method's retrieved evidence or memory output and produces the final
-downstream answer. Hold each role's model, temperature, output caps, endpoint
-implementation, input chunk stream, and final evidence budget fixed across
-methods. An evaluation backbone is not an LLM judge.
+The runner evaluates each frozen retrieval artifact with three Evaluation
+Backbones: `Qwen/Qwen3.5-9B`, `Qwen/Qwen3.5-4B`, and `Qwen/Qwen3.5-2B`.
+Chat templates receive `enable_thinking=False`; evaluation never rebuilds
+method memories. The optional Llama checkpoint is gated on the
+Hugging Face Hub and therefore requires prior account approval and an
+`HF_TOKEN` on the compute node; the launcher includes it only when
+`INCLUDE_GATED_LLAMA=1` is set.
 
-Do not replace method-private operations. OpenIE remains in HippoRAG, and
-LightMem/Mem0 summary and update policy remain. Those modules receive the
-common generation model, but are not added to BM25 or Dense retrieval.
+Evaluation generation follows the released task settings. MemoryAgentBench
+uses 50 tokens for SH-Doc/MH-Doc, 40 for EventQA, and 10 for both
+FactConsolidation tasks, with temperature 0.7 from its released RAG configs.
+LoCoMo's released Hugging Face path uses 50 tokens, temperature 0.4, top-k 10,
+and top-p 0.9. HippoRAG 2 uses its released four-turn QA template, greedy
+decoding, and a 2,048-token ceiling; only text after `Answer:` is scored.
 
-### 2025--2026 backbone plan
+Shared experimental controls are:
 
-The project uses deterministic benchmark metrics, so an ``evaluation backbone``
-means the reader/answerer that consumes retrieved evidence or memory output,
-not an LLM judge. The four proposed models are sufficient for an evaluation-
-backbone robustness section:
+- Generator Backbone: local `Qwen/Qwen3-30B-A3B-Instruct-2507`, served in
+  BF16; this checkpoint is instruction-tuned and non-thinking only;
+- embedding: `Qwen/Qwen3-Embedding-0.6B`, 1,024 dimensions;
+- final retrieval budget: top 5 for every retained benchmark, providing one
+  controlled evidence budget across methods;
+- MemoryAgentBench task chunking: 512 tokens for SH/MH document QA and
+  FactConsolidation, and 4,096 tokens for EventQA;
+- answer generation: one non-thinking completion per question and Evaluation
+  Backbone.
 
-| Family | Dense | MoE | Role in paper |
-| --- | --- | --- | --- |
-| Qwen | `Qwen/Qwen3.5-27B` | `Qwen/Qwen3.5-35B-A3B` | same-family dense/MoE comparison |
-| Gemma | `google/gemma-4-12B-it` | `google/gemma-4-26B-A4B-it` | cross-family dense/MoE comparison |
+Algorithm-private prompts and operations are not replaced or added to other
+methods.
 
-This matrix spans two current model families, two scale bands, and dense/MoE
-architectures. Do not add a fifth model by default: it expands the full
-method-by-benchmark grid without providing a new controlled axis. If a third
-family is required for a robustness claim, add exactly one model (prefer a
-roughly 20--30B dense instruct model), not another scale sweep.
+Generator output limits retain method-specific official settings rather than a
+single cross-method cap: LightMem uses 16,000 tokens, Mem0 uses 2,000 tokens,
+and HippoRAG 2 uses 512 tokens for NER and 2,048 tokens for triple extraction.
+These limits apply to generated memory artifacts, not to the input context
+window and not to downstream QA answers.
 
-`deepseek-v4-flash` is a valid **generator backbone**, not a judge.
-The official model card identifies it as a 284B-total / 13B-active MoE model;
-therefore it is not comparable to a 12--35B local-weight deployment merely
-because its active parameter count is small. Use it only as the primary
-high-capability setting if the HPC allocation or a version-pinned API supports
-it. When using the API, record the dated deployment (`DeepSeek-V4-Flash-0731`)
-rather than relying only on the moving `deepseek-v4-flash` alias.
+The local vLLM server uses a 32,768-token context window. This is serving
+capacity; it does not change any method's completion budget.
 
-Recommended table layout:
+For document-only tasks, the Mem0 custom instruction asks for every supported
+fact exactly once in the shortest self-contained wording that retains names,
+numbers, dates, relations, and qualifications. This is the disclosed document
+input adapter: it leaves Mem0's released extraction and memory-management
+pipeline intact while preventing repeated elaboration from exhausting the
+official 2,000-token response budget.
 
-1. **Primary controlled table:** one declared generator backbone (DeepSeek V4
-   Flash only if its deployment is pinned and affordable), one declared
-   evaluation backbone, all five methods, and all deterministic metrics.
-2. **Evaluation-backbone robustness table:** the four Qwen/Gemma models above,
-   a fixed representative subset of methods and benchmarks. Each row replaces
-   the reader/answerer only; it does not rebuild memory and is not a judge.
-3. **No LLM judge in either table.** An optional appendix judge, if ever used,
-   is a separately named held-fixed model and never chooses answers.
+## HPC status
 
-Sources: [Qwen3.5-35B-A3B model card](https://huggingface.co/Qwen/Qwen3.5-35B-A3B),
-[Qwen3.5-27B model card](https://huggingface.co/Qwen/Qwen3.5-27B),
-[Gemma 4 official overview](https://deepmind.google/models/gemma/gemma-4/),
-and [DeepSeek V4 Flash model card](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash).
+The five isolated environments, official dataset conversion, deterministic
+metrics, non-thinking controls, retrieval/evaluation process split, and Slurm
+array launcher are implemented. The conversions and metrics were checked
+directly against the official source and released files.
 
-### Embedding backbone
+Before submission, set:
 
-Use one local dense embedding model for the controlled table. The recommended
-default is **`Qwen/Qwen3-Embedding-0.6B` at 1,024 dimensions**: it is local,
-instruction-aware, supports 32K input, 100+ languages, and has Matryoshka
-dimension support. Fix the output dimension at 1,024 for every method and do
-not tune it per method. It is a high-throughput choice, not the largest
-available embedding model.
+```bash
+export LOCOMO_PATH='<official locomo10.json>'
+bash experiments/run_experiments.sh
+```
 
-`BAAI/bge-m3` is the appropriate backup/robustness embedding setting: it is a
-widely adopted local 0.57B multilingual model with 1,024 dimensions and 8K
-context. If used, use its dense representation only; enabling its sparse or
-multi-vector modes would add retrieval mechanisms unavailable to every method.
+After a generated-memory task has completed, retrieval can be changed and run
+again without rebuilding memory:
 
-The official baselines use heterogeneous embeddings and therefore motivate,
-rather than replace, this control: LightMem reports `all-MiniLM-L6-v2` and
-`text-embedding-3-small`; HippoRAG defaults to `nvidia/NV-Embed-v2`; and Mem0 examples default to
-`text-embedding-3-small`. Their original choices remain only for an
-official-reproduction appendix.
+```bash
+python main.py \
+  --phase retrieve-existing \
+  --task 'SH-Doc QA' \
+  --baseline mem0 \
+  --memory-input-dir /path/to/completed/mem0/SH-Doc_QA \
+  --output-dir /path/to/new/retrieval-run/mem0/SH-Doc_QA \
+  --official-config experiments/configs/mem0.json \
+  --generator-model Qwen/Qwen3-30B-A3B-Instruct-2507 \
+  --generator-base-url http://127.0.0.1:1/v1 \
+  --generator-api-key-env VLLM_API_KEY \
+  --top-k 5 \
+  --seed 42
+```
 
-Strength comparison must be task- and protocol-specific. MiniLM is clearly a
-weaker legacy option: it has 384 dimensions and truncates beyond 256 word
-pieces. Qwen3-Embedding-0.6B reports an MTEB English retrieval score of 61.83;
-the 7.8B NV-Embed-v2 reports 62.84 on a different published MTEB release, so
-NV-Embed-v2 is plausibly stronger but substantially more expensive, English-
-oriented, and CC-BY-NC licensed. `text-embedding-3-small` is a strong 2024 API
-baseline, but no same-protocol public head-to-head number establishes it as
-strictly above or below Qwen3-Embedding-0.6B. Do not infer a universal ordering
-from model names or vector dimension alone.
+For Mem0 and LightMem, `VLLM_API_KEY` may be any nonempty local placeholder in
+this phase: opening and searching their completed stores does not call the
+Generator Backbone. HippoRAG 2 also skips indexing, but its released online
+retrieval procedure uses the configured LLM to filter candidate facts before
+graph search. Therefore a compatible Generator Backbone endpoint must still be
+available when rerunning HippoRAG 2 retrieval. The memory input and retrieval
+output directories must differ. BM25 and dense retrieval have no generated
+memory store, so this phase intentionally rejects them.
 
-If the primary goal is best local retrieval rather than maximum throughput,
-run a small embedding pilot before freezing the model: Qwen's own model card
-reports 68.46 retrieval for `Qwen3-Embedding-4B` and 69.44 for the 8B model,
-versus 61.83 for the 0.6B model. The 0.6B model is the recommended first
-controlled setting; the 4B variant is the natural quality-oriented upgrade.
+To rerun retrieval for every generated-memory baseline and task through Slurm,
+reuse the directory name of the completed generation experiment:
 
-Sources: [Qwen3-Embedding-0.6B model card](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B),
-[BGE-M3 model card](https://huggingface.co/BAAI/bge-m3),
-[LightMem LoCoMo configuration](https://github.com/zjunlp/LightMem/blob/8449d574df6bae1bdf3314a1564da65e2f37e046/experiments/locomo/readme.md),
-[HippoRAG configuration](https://github.com/OSU-NLP-Group/HippoRAG/blob/1438aba3fc44ff10573e5a5e1e7cc3c7f9794aff/src/hipporag/utils/config_utils.py),
-and [Mem0 configuration guide](https://github.com/mem0ai/mem0/blob/dae67f74f5cc7bf138c7d7d6f9cec5ce4b4373b3/LLM.md).
+```bash
+MEMORY_INPUT_EXPERIMENT_ID=qwen3_30b_a3b_instruct_2507_seed42_20260908T \
+EXPERIMENT_ID=retrieval_variant_seed42 \
+bash experiments/run_experiments.sh --retrieve-existing
+```
 
-For a local primary setting, choose one generator after a small structured
-output pilot; do not silently mix cloud answering with local extraction. The
-candidate set is intentionally not Qwen-only:
+This submits only LightMem, HippoRAG 2, and Mem0 retrieval workers. It does not
+rebuild their stored memory. LightMem and Mem0 do not launch a Generator
+Backbone in this mode; HippoRAG 2 launches one for its released online fact
+filtering step.
 
-| Candidate | Scale / deployment reason | Caution |
-| --- | --- | --- |
-| `Qwen2.5-14B-Instruct` | lowest-cost serious pilot; fits the requested ten-billion scale | use only if the pilot shows reliable multi-hop and JSON extraction |
-| `Qwen2.5-32B-Instruct` | conservative 32B instruction-following primary candidate | higher GPU memory and latency |
-| `mistralai/Mistral-Small-3.1-24B-Instruct-2503` | 24B, Apache-2.0, 128K context, and official vLLM/function-calling guidance | needs the same benchmark-specific JSON pilot |
-| `google/gemma-3-27b-it` | 27B with 128K context; a credible non-Qwen comparison | Gemma 3 is the current official Gemma family; no official Gemma 4 release was found |
-| `gpt-oss-20b` | 21B total / 3.6B active, Apache-2.0, local reasoning and structured-output support | reasoning must be disabled or held fixed to avoid variable hidden test-time compute |
-| `meta-llama/Llama-3.3-70B-Instruct` | strong 128K reference model | 70B is outside the intended low-cost tier and has a custom licence |
+## Per-question failure analysis
 
-For the first HPC pilot, compare `Qwen2.5-14B-Instruct`,
-`Mistral-Small-3.1-24B-Instruct-2503`, `Gemma-3-27B-IT`, and `gpt-oss-20b` on
-the same fixed 100-question development slice. Measure JSON validity, OpenIE
-parse validity, deterministic-metric score, GPU memory, latency, and token
-throughput. Select one winner before the full run, then freeze it for every
-method and benchmark. `Qwen3-30B-A3B-Instruct-2507` remains a candidate only
-after it passes the same pilot; its vLLM structured-output path has a reported
-non-termination issue.
+After all Evaluation Backbones finish, create the deterministic error report
+directly from `retrieval.jsonl` and `predictions.jsonl`:
 
-Primary sources for this shortlist: [Mistral Small 3.1 model
-card](https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503),
-[Gemma 3 model card](https://huggingface.co/google/gemma-3-27b-pt),
-[gpt-oss-20b documentation](https://developers.openai.com/api/docs/models/gpt-oss-20b),
-[Llama 3.3 model card](https://huggingface.co/meta-llama/Llama-3.3-70B-Instruct),
-and [Qwen3 vLLM deployment notes](https://github.com/QwenLM/Qwen3/blob/main/docs/source/deployment/vllm.md).
+```bash
+python experiments/analyze_failures.py \
+  --results-root /path/to/experiment \
+  --output /path/to/experiment/failure_analysis.json \
+  --expected-evaluators 3
+```
 
-## Required before the first HPC experiment
+For each evaluator, the report retains the questions with an official answer
+score of zero and separates zero, partial, and full scores. It also lists the
+intersection that scored zero for every evaluator. When the released data
+provides question categories, it reports per-category scores; LoCoMo category
+IDs are labelled with the released multi-hop, temporal, open-domain,
+single-hop, and adversarial types. Only 2WikiMultiHopQA is divided by none,
+partial, or complete gold passage recall because only that dataset provides the required gold passage
+annotations. For that dataset it also reports downstream answer scores
+inside the none, partial, and complete-recall groups, separating missing
+evidence from reader errors without introducing a new benchmark metric. The
+report does not infer retrieval causes for the other tasks.
 
-The repository is **not yet ready** for an end-to-end HPC run. The following
-are blocking implementation tasks, in order.
-
-1. **Complete the adapters.** Smoke-test each official algorithm with one
-   context and one query in its own environment. The document/conversation
-   ingestion paths need explicit benchmark adapters rather than treating all
-   data as interchangeable strings.
-2. **Disable evaluation leakage.** Generate exactly one temperature-0 answer
-   per question, then score it with the predetermined deterministic metric.
-3. **Lock environments per method.** The root `requirements.txt` contains only
-   loader dependencies. Add reproducible lock files or containers for LightMem,
-   HippoRAG, and Mem0. Do not force their incompatible official
-   dependency stacks into one environment; communicate through a JSONL
-   prediction contract.
-4. **Data manifest and fetch step.** Automate/record the exact HF revision for
-   MemoryAgentBench, the LoCoMo file revision, and the HippoRAG2 released
-   1,000-query files. Store paths, checksums, and dataset revision in each run
-   artifact; do not commit benchmark data.
-5. **Experiment config and provenance.** Add a checked-in config containing
-   model IDs, embedding dimension, chunk policy, top-k, temperature, token
-   caps, seed, and endpoint name. Each run must save that resolved config,
-   source commit, submodule commits, package versions, predictions, retrieved
-   evidence IDs, token/API-call counts, elapsed time, and failures.
-6. **HPC launch and recovery.** Add Slurm launchers with a per-run output
-   directory, environment activation, secret handling through environment
-   variables, rate/concurrency limits for API methods, retry policy, and
-   resume-by-completed-query semantics.
-7. **Pilot acceptance gate.** Before the full suite, run one context or one
-   conversation per benchmark-method pair; verify non-empty retrieval, one
-   prediction per question, deterministic scoring, resume behavior, and that
-   every output can be aggregated without manual edits.
-
-Only after items 1--7 are complete is cloning the repository on HPC expected
-to lead directly to experiment runs rather than integration debugging.
+No API key is required for the local Generator Backbone. Query-level resume,
+a separate provenance subsystem, generated lock files, data checksums, and
+artifact hashes are intentionally outside this research runner.
