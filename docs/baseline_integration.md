@@ -3,15 +3,17 @@
 The repository pins official source trees in `baseline_algorithms/` as Git submodules. Adapters call
 their public implementation entry points; algorithm-specific prompts,
 summarization, extraction, graph construction, and update rules remain in the
-official source.
+official source. Calling a public entry point does not establish that all
+stages in the corresponding paper were executed. The 2026-09-11 artifact audit
+found the LightMem stage omission and Mem0 version difference documented below.
 
 | Method | Pinned source | Algorithm preserved | Experiment controls applied in `main.py` |
 | --- | --- | --- | --- |
 | BM25 | local | Okapi BM25 | chunks, top-k |
 | Dense retrieval | local | cosine retrieval | embedding function, chunks, top-k |
-| LightMem | `zjunlp/LightMem@8449d574` | segmentation, extraction, summaries, offline update, retrieval | LLM, embedding, dimensions, generation budget |
+| LightMem | `zjunlp/LightMem@8449d574` | compression, segmentation, extraction, insertion, retrieval; offline consolidation was not called | LLM, embedding, dimensions, generation budget |
 | HippoRAG 2 | `OSU-NLP-Group/HippoRAG@1438aba3` | OpenIE, graph, fact linking, PPR and official prompts | LLM, embedding, retrieval/QA top-k, output budget |
-| Mem0 | `mem0ai/mem0@dae67f74` | fact extraction and ADD/UPDATE/DELETE policy with official prompts | LLM, embedding, generation budget |
+| Mem0 | `mem0ai/mem0@dae67f74` | official SDK V3 additive extraction; not the paper's ADD/UPDATE/DELETE pipeline | LLM, embedding, generation budget |
 
 Primary sources:
 
@@ -60,9 +62,21 @@ are method-private. Keep each official implementation's choice and report it.
 | HippoRAG 2 | request the JSON object already demonstrated by its OpenIE prompt | local structured-output adapter |
 | Measurement | build time, per-query retrieval time, and returned generation-token counts | efficiency reporting only |
 
-LightMem retains official pre-compression, topic segmentation, summarization,
-offline updating, and its 16,000-token generation allowance. Mem0 retains its
-official memory extraction/update pipeline with a 2,000-token allowance.
+LightMem uses official pre-compression, topic segmentation, extraction, and
+its 16,000-token generation allowance. The adapter does not call the official
+LoCoMo workflow's final offline update stage: all six tasks record zero update
+calls. These artifacts must be labeled pre-offline-consolidation, not a full
+LightMem reproduction. The optional additional summary stage also was not run.
+
+Mem0 uses the pinned official SDK's ADD-only extraction pipeline with a
+2,000-token allowance; all six history stores contain only ADD operations.
+This differs from the two-stage extraction/update method in the 2025 paper.
+Its prompt builder also defaults the observation date to execution time when
+no timestamp is passed. The historical date in LoCoMo message text does not
+override that field, and saved memories include wrongly anchored 2026 events.
+No artifact was changed to conceal these findings. See the
+[read-only audit and case evidence](memory_research_iterations.md).
+
 HippoRAG 2 retains its graph pipeline with 512-token NER and 2,048-token triple
 extraction allowances. The repository has no DeepSeek or Google SDK execution
 path and no unused experimental memory algorithm in the final grid.

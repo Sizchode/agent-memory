@@ -1,6 +1,6 @@
 # Agent Memory 基线结果与失败分析
 
-更新时间：2026-09-11 00:38 EDT
+更新时间：2026-09-11；已加入 memory 产物核查的更正。
 
 ## 如何阅读这份文档
 
@@ -9,6 +9,8 @@
 表格中每个数字都是官方确定性指标，没有使用 LLM judge。每个 cell 按顺序报告 Qwen3.5-9B、Qwen3.5-4B 和 Qwen3.5-2B 三个 Evaluation Backbone。MemoryAgentBench 任务报告 Substring Exact Match，LoCoMo 报告官方 F1，2WikiMultiHopQA 报告 answer F1。这三类指标的含义不同，因此不构造一个新的总分。
 
 ## 当前完整性
+
+**文件完整不等于论文算法完整复现。** 2026-09-11 的只读核查确认：LightMem 六任务均未执行最终离线合并；Mem0 使用的官方 SDK 版本是 ADD-only 流程，且 LoCoMo 存在历史日期被运行日期错误锚定的实例。下表保留真实旧分数，但 LightMem 应理解为离线合并前运行，Mem0 应理解为指定 SDK 版本运行，而不是原论文的更新流程。不能把这些差异解释为新方法的创新动机。详见 [三轮核查与真实错例](memory_research_iterations.md)。
 
 - 五个方法在六个保留任务上的 30 个 retrieval cell 和 90 个 QA cell 已全部完成。
 - 全量 validator 已检查每个预期文件、JSON 结构、官方问题数、唯一 case ID、固定 top-5、三个 Evaluation Backbone 的预测数和 summary，结果为通过。
@@ -58,7 +60,7 @@ LightMem 和 Mem0 返回的是生成式 memory，而不是原文 passage。它�
 | HippoRAG 2 | 8,212.09 秒 | 1,733.38 秒 | 28,724 | 20,617,866 |
 | Mem0 | 97,783.49 秒 | 3,209.77 秒 | 14,362 | 139,416,826 |
 
-表中的 Generator 调用和 tokens 只计算 memory/index 构建阶段。HippoRAG 2 的图结构确实改善了多跳证据覆盖，而不只是让答题模型更会猜；但它为这个改善付出了大量全语料 OpenIE 生成成本，query-time fact filtering 还额外使用 3,374 次调用和 10,120,992 tokens。Mem0 不在 retrieval 阶段调用 Generator，但顺序更新造成约 27.2 小时的累计构建时间，并消费 1.394 亿 tokens，是五个方法中构建成本最高的。
+表中的 Generator 调用和 tokens 只计算 memory/index 构建阶段。HippoRAG 2 的结果显示更好的多跳证据覆盖；其全语料 OpenIE 有较大成本，query-time fact filtering 还额外使用 3,374 次调用和 10,120,992 tokens。Mem0 不在 retrieval 阶段调用 Generator，当前 SDK 的顺序摄取累计约 27.2 小时并消费 1.394 亿 tokens，是这批运行中构建成本最高的。该版本只有 ADD，不能将这些成本解释为反复 UPDATE；LightMem 计时不包含未执行的离线合并。各方法运行硬件不同，表中时间不能作为同硬件加速比。
 
 ## 已观察到的失败现象与待验证解释
 
@@ -70,9 +72,9 @@ HippoRAG 2 在 2Wiki 上同时提高 Recall@5 和三个 evaluator 的 answer F1�
 
 Dense 在 LoCoMo 和 2Wiki 上胜过 BM25，但在 SH-Doc QA 和 FactConsolidation-SH 上明显落后。这些任务的答案常依赖精确名称、数值或关系。因此新方法不应把稀疏检索整体替换掉，而应保留词面与语义两种寻址视图。
 
-### 3. 有损生成式 memory 会丢失未来问题需要的细节
+### 3. 生成式 memory 分数较低，不等于已经证实了信息丢失
 
-LightMem 在 FactConsolidation-SH 上有竞争力，但在 2Wiki 和 LoCoMo 上落后 BM25、Dense 和 HippoRAG 2。最终 Mem0 的 2Wiki answer F1 为 0.436 / 0.407 / 0.348，也在三个 evaluator 上都低于 Dense 和 HippoRAG 2；其中 423/1,000 题在三个 evaluator 上同时得到 0，另外四种方法对应数量为 BM25 403、Dense 379、LightMem 453、HippoRAG 2 335。生成的事实 memory 适合直接问答和持续更新，但一旦抽取或压缩删掉关系链中的细节，后续检索无法恢复原文。Mem0 在 LoCoMo 上领先却在 2Wiki 多跳上落后，说明“可更新的事实记忆”与“保留跨文档证据链”是两个不同能力，不能用一个替代另一个。
+当前 LightMem 运行在 FactConsolidation-SH 上有竞争力，但在 2Wiki 和 LoCoMo 上落后 BM25、Dense 和 HippoRAG 2。Mem0 SDK 的 2Wiki answer F1 为 0.436 / 0.407 / 0.348，也在三个 evaluator 上都低于 Dense 和 HippoRAG 2；其中 423/1,000 题在三个 evaluator 上同时得到 0，另外四种方法对应数量为 BM25 403、Dense 379、LightMem 453、HippoRAG 2 335。这些差距本身不能证明关系链在构建时丢失，也不能证明更新无效。最新逐题检查发现了答题模型忽略已保留时间条件、错误历史日期锚点、已有事实未被取出以及官方标注不一致等不同原因，详见研究迭代记录。它们不能被合并成“生成式 memory 压缩有害”的单一结论。
 
 Mem0 2Wiki 构建的 6,119 次 extraction 中有 1 次返回了无法解析的 JSON。Mem0 官方代码路径将该次视为没有抽取出 memory 并继续运行；本轮没有增加 retry、修补 JSON 或重跑来掩盖该失败。最终 1,000 个 top-5 中有 3 题各包含一条完全重复的 memory 文本。这个重复比例很小，不足以解释整体分数差距，但它与单次解析失败一起说明生成式 memory 还存在可测量的抽取可靠性问题。
 

@@ -98,15 +98,17 @@ HippoRAG 的贡献并不只是“使用知识图谱”。它指出相互孤立�
 
 ## 受控 baseline 的分类映射
 
+2026-09-11 更正：论文机制与本地执行路径必须区分。只读审计确认 LightMem 尚未执行最终离线合并，当前 Mem0 官方 SDK 使用 ADD-only 流程。下表描述实际产物；前文对论文的介绍不表示对应流程在本项目中都已执行。[证据和三轮研究记录](memory_research_iterations.md)
+
 | 方法 | 单元与表示 | 主要操作 | 访问方式 | 更新时机 |
 |---|---|---|---|---|
 | BM25 | 原始 chunk/turn/passage | 索引、检索 | 稀疏词法 | 建立索引后静态不变 |
 | Dense retrieval | 原始 chunk/turn/passage | 索引、检索 | 稠密向量 | 建立索引后静态不变 |
 | HippoRAG 2 | 原始 passage，加上图中的抽取实体/关系 | 图构建、索引、检索 | 稠密种子加图传播 | 在本 benchmark 中批量构建 |
-| Mem0 | 生成的显著事实；基础版本使用向量库 | 抽取、整合、更新、删除、检索 | 稠密向量 | 增量摄取 |
-| LightMem | 压缩后的主题片段，以及分层的感知/短期/长期存储 | 压缩、分段、整合、索引、检索 | 对整合后 memory 做稠密检索 | 缓冲式摄取加离线更新 |
+| Mem0 SDK `dae67f74` | 生成事实及上下文；使用向量库 | 抽取、追加、去重、检索；本轮无 UPDATE/DELETE | 官方 SDK search | 顺序增量摄取 |
+| LightMem，离线合并前 | 预压缩、主题分段后抽取的事实 | 压缩、分段、抽取、插入、检索；本轮无最终离线合并 | 对已插入 memory 做稠密检索 | 缓冲式摄取 |
 
-这张表说明，图、向量和流式不能作为同一个分类体系的并列类别。HippoRAG 同时使用图结构和向量种子；Mem0 基于事实、使用向量索引并做增量更新；LightMem 使用层级结构、向量索引和缓冲/离线更新。
+这张表说明，图、向量和流式不能作为同一个分类体系的并列类别。HippoRAG 同时使用图结构和向量种子；Mem0 SDK 基于事实、使用向量索引并做增量追加；LightMem 本轮执行了缓冲式摄取，但不能称为已完成官方离线更新。
 
 ## 高水平论文如何组织 related work
 
@@ -177,6 +179,8 @@ HippoRAG 的贡献并不只是“使用知识图谱”。它指出相互孤立�
 
 候选主张只能是：同一个 memory 整合原理改善了条件保留与后续修订，并在固定下游流程中带来效果和效率收益。这需要官方实现对比、真实错例和机制消融，不能由组件组合或论文措辞成立。
 
+最新讨论优先考察由完整陈述、适用条件和支持组合约束的建图，而不是相似度连边。但最近邻已经很接近：[StructMem](https://aclanthology.org/2026.acl-short.12/) 做事件绑定，[MemForest](https://arxiv.org/abs/2605.23986) 做局部更新，[ContextWeaver](https://arxiv.org/abs/2604.23069) 做依赖图，[Dependency-Guided Rollback Repair](https://arxiv.org/abs/2608.10502) 做局部恢复。它们收窄而不是自动证明本项目的创新空间。完整比较、实际错例与尚未解决的问题见研究迭代记录。
+
 ## Evaluation Backbone 推理的研究边界
 
 固定 Generator 在记忆写入时判断陈述关系和修订语义，属于 training-free memory 操作。Evaluation Backbone 消费记忆并产生答案；证据充分但答题模型仍推理错误的情况，不是本项目优先优化对象。
@@ -199,8 +203,8 @@ HippoRAG 的贡献并不只是“使用知识图谱”。它指出相互孤立�
 对于 ACL/ICLR 水平的投稿，当前实验设置可以支持如下清晰对比：
 
 - 原始稀疏和稠密检索提供保留来源、低复杂度的对照；
-- Mem0 测试带更新的生成式原子 memory；
-- LightMem 测试经过压缩、分段的层级 memory；
+- 当前 Mem0 SDK 测试追加式生成 memory，不能代表原论文的增删改操作；
+- 当前 LightMem 测试压缩、分段和抽取后的 memory，不能代表已完成最终离线合并；
 - HippoRAG 测试关系图检索；
 - 新方法必须使用相同 Generator Backbone、三个固定且关闭 thinking 的 Evaluation Backbone、seed 42、top-5 证据预算、官方 split 和确定性 metric。
 
