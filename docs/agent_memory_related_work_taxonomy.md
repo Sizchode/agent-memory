@@ -1,6 +1,6 @@
 # Agent Memory 相关工作分类与论文定位
 
-更新日期：2026-09-09
+更新日期：2026-09-11
 
 ## 核心结论
 
@@ -158,109 +158,41 @@ HippoRAG 的贡献并不只是“使用知识图谱”。它指出相互孤立�
 
 ## 我们当前设计方向的定位
 
-当前“事实增强 key（fact-augmented key）”原型把原始来源作为 value，生成去上下文化事实作为增强检索 key，并在稠密检索后返回原始来源。该设计有原则依据，因为它把面向检索的表示与可回答的 payload 分离；但**仅凭这一点不足以构成 novelty**。它与命题级检索和 LongMemEval 的事实增强 key 设计有显著重合 [11, 16]。
+本项目明确研究 **training-free agent memory**。Generator Backbone 可以执行推理来形成、整合、压缩、关联与更新记忆；所有模型权重保持固定。学习型 memory control 是 related work 的一类，不是本项目采用的路线。
 
-已经完成的 baseline 结果指出两个更具体的开放问题：
+方法贡献必须在持久化 memory 中体现。BM25、Dense 与既有检索流程提供配套索引及对照，Retrieval 和 QA 检验记忆质量。训练 retriever、训练 reranker，或仅改变查询时证据排序，均偏离本项目目标。
 
-- **跨 memory 证据覆盖（cross-memory evidence coverage）：**HippoRAG 提高了 2Wiki 的 Recall@5，但图抽取和遍历仍会漏掉 supporting passage；
-- **演化事实选择（evolving-fact selection）：**所有方法在多跳事实整合上都较弱，因为语义相似度无法表达哪个取值当前有效。
+当前候选方向是保留事实条件与依赖的记忆整合。核心问题是：压缩和更新之后，陈述的主体、关系、时间、角色与限定条件是否仍然成立；某条陈述被修订时，依赖它的既有记忆能否一起更新，并复用未受影响的内容。
 
-一个可辩护的新方法必须明确加入事实增强 key 尚未提供的操作。这里可以先定义问题，例如：在不损失原始来源忠实度的情况下保留跨来源单元的联系，或依据 benchmark 已发布的顺序显式表示并选择事实间的取代关系；这些是**问题定义，不是在没有错误分析证据前预设的算法**。只有在错误分析确认主要失败来源后才能确定具体机制，之后还必须与 HippoRAG/A-MEM 的关联机制和 APEX-MEM/Mem0 的更新机制对比。
+完整提案见 [Training-free memory 提案](training_free_memory_proposal.md)。该机制尚未实现，不能把它写成已有原型或声称取得效果。
 
-最强的主张形式应当是：
+## 与主要 memory 算法的区别应怎样论证
 
-> 在固定 Generator Backbone 和 Evaluation Backbone 的条件下，所提出的 memory 操作改善了一个明确的 memory 层失败（例如证据覆盖或正确版本选择），并且该改善在不增加证据预算的情况下传递到了使用确定性 metric 的端到端 QA。
+主要对标 Mem0、LightMem 和 HippoRAG 2，并将 A-MEM 作为动态关联及记忆演化的重要近邻。
 
-这种表述使贡献明确落在 memory mechanism 上，而不是语言模型能力上。
+- Mem0 已有事实整合和更新，因此“让模型决定更新”本身不构成创新。
+- LightMem 已有主题组织和离线整合，因此批处理、压缩或减少在线调用本身不构成创新。
+- HippoRAG 已有跨来源关系结构，因此建图和保留关联本身不构成创新。
+- A-MEM 已有链接生成与记忆演化，因此需要具体核对新提案的条件表示、整合依赖和更新范围是否产生额外价值。
 
-## Memory 是否应当负责“推理”？
+候选主张只能是：同一个 memory 整合原理改善了条件保留与后续修订，并在固定下游流程中带来效果和效率收益。这需要官方实现对比、真实错例和机制消融，不能由组件组合或论文措辞成立。
 
-应当，但必须把两类推理严格分开。
+## Evaluation Backbone 推理的研究边界
 
-- **Memory-side reasoning** 是 memory mechanism 的组成部分：系统在写入、整合、更新、建立关联和检索时，判断哪些信息应被保存、哪些事实互相支持或冲突、哪个版本有效，以及回答当前 query 需要联合返回哪些证据。
-- **Answer-side reasoning** 属于 Evaluation Backbone：模型读取给定证据，完成关系组合、计算、答案类型转换和最终文本生成。
+固定 Generator 在记忆写入时判断陈述关系和修订语义，属于 training-free memory 操作。Evaluation Backbone 消费记忆并产生答案；证据充分但答题模型仍推理错误的情况，不是本项目优先优化对象。
 
-二者的分界不由“是否调用 LLM”决定，而由操作的输入和输出决定。如果一个操作读取历史并输出持久化 memory、版本关系、结构链接或被选中的 evidence set，它属于 memory；如果操作输出最终答案，它属于 Evaluation Backbone。因此，图传播、冲突消解、多跳 evidence selection 都可以是 agent memory 的一部分，而不是只能留给最终答案模型。
+答案字符串已经出现不能作为“证据充分”的判据。只有官方证据标注或逐题检查支持时，才将失败归因于 memory、取用或回答阶段。不通过增加查询时推理模块，把 reader 改进重新命名为 memory 改进。
 
-这个边界对本文尤其重要。观察到“gold evidence 已完整但三个 Evaluation Backbone 都答错”时，不能直接声称 storage 或 retrieval 失败，也不应通过更换更强 evaluator 来制造 memory 提升。我们有两种合法处理：
+## 方法实验应当证明什么
 
-1. 将其标为 reader-limited failure，不让它驱动 memory 算法；
-2. 如果错误来自证据呈现仍然碎片化、版本关系未解析或必要链条未组织，则设计一个与具体 evaluator 无关的 memory read operation，把相同证据预算编排成更明确的 evidence bundle。
+1. 在相同 Generator 与输入下，记忆构建是否保留此前丢失的条件或关系。
+2. 在官方支持更新评测的任务上，新事实到来后，既有记忆是否仍存在错误覆盖或过时内容。
+3. 固定检索与答题流程后，官方确定性 QA 是否改善。
+4. 新增依赖维护的成本计入之后，是否减少总构建或更新开销。
 
-第二种仍然是 memory 改进，因为它改变的是 memory 的选择、消歧和组织，而不是 Evaluation Backbone 的参数或推理能力。但它必须改善可直接测量的 memory 中间量，不能只用端到端 QA 倒推其有效。
+只在官方标注可直接支持时报告中间指标，不发明近似 evidence 标签或“严谨性”总分。静态最终状态的 QA 结果不足以证明完整的在线持续更新能力。
 
-## 面向本文的原则化框架
-
-### 核心问题
-
-现有方法通常只优化 memory 生命周期中的一个局部目标，因此产生相互不同但可以统一解释的失败：
-
-| 现有方法 | 主要优势 | 暴露的结构性缺点 | 本文需要的原则 |
-|---|---|---|---|
-| BM25 | 保留原文，精确词面匹配强 | 无法稳定处理改写和隐式关系 | 检索表示应支持语义匹配 |
-| Dense retrieval | 语义匹配强，原文仍可返回 | passage 相互独立，相似度不能表达证据组合或版本有效性 | 检索必须显式覆盖关系链和状态约束 |
-| HippoRAG 2 | 图传播提升多跳 evidence coverage | OpenIE 漏掉的事实或边无法由图遍历恢复 | 结构化表示不能替代原始来源，链接必须能回到 source evidence |
-| Mem0 | 原子事实和增量更新适合单跳个性化信息 | 抽取会丢上下文；相似新旧事实仍可能同时被召回 | 更新必须显式表示版本、顺序和有效性 |
-| LightMem | 分段、压缩和离线整合降低长期构建成本 | 压缩或结构化生成会不可逆地丢失未来问题所需细节 | 压缩应服务于寻址，而不应成为唯一 answerable payload |
-
-这些缺点指向的不是“再换一种 embedding”，而是一个统一矛盾：**memory 为了可检索性而进行抽取、压缩和结构化，但这些变换又可能破坏回答所需的来源忠实度、跨单元联系和时间有效性。**
-
-### 工作中的算法框架：source-grounded、multi-view、state-aware memory
-
-本文可以围绕四个相互约束的 memory 层展开。这里先固定原则和可验证接口，不在错误分析完成前臆造评分公式或数据规则。
-
-1. **不可变来源层（immutable source layer）。** 每个原始 turn、chunk 或 passage 始终作为最终可回答的 payload 保留。任何 summary、fact 或 graph node 都必须能够回链到该来源，生成式变换不能覆盖或替代原文。
-2. **多视图寻址层（multi-view addressing layer）。** 从同一来源建立词法、语义事实和关系三种互补访问视图。原子事实用于去上下文化和语义匹配，结构链接用于跨单元关联，但两者只充当 key/index，不充当唯一证据。
-3. **显式状态层（explicit state layer）。** 对 benchmark 已提供的 timestamp、serial order、speaker/entity identity 建立可审查的关系，例如 `supports`、`same_entity`、`supersedes` 和 `valid_at`。状态关系只能来自发布数据中的明确字段或可验证抽取，不能由答案或临时 heuristic 倒推。
-4. **受预算约束的 evidence composition。** 检索不再独立选择五个最高相似度单元，而是在相同 top-5 预算内选择能够共同覆盖 query 所需实体、关系和有效版本的 source evidence bundle。返回给 Evaluation Backbone 的仍是原始证据，并附带必要的来源顺序或关系，而不是提前生成最终答案。
-
-这个框架将多跳关联、冲突消解和 evidence organization 放在 memory read operation 中，因此可以减少小型 Evaluation Backbone 必须自行完成的隐含推理；同时，不触碰 evaluator 权重、thinking 设置或官方答案 metric。
-
-### 从问题到论文主张的因果链
-
-论文故事不应写成“我们结合了事实、图和向量”，而应写成以下可检验的因果链：
-
-> 现有 memory 在把历史转换成可检索表示时，无法同时保证来源忠实度、跨单元证据完整性和演化事实有效性。我们将 answerable source 与 retrieval-oriented views 分离，并在检索时显式组合关系链和有效版本。该设计应先提高 gold evidence coverage 与正确版本选择，再在相同 Generator Backbone、Evaluation Backbone 和 top-5 预算下提高确定性端到端 QA。
-
-这里真正需要推销的 novelty 不是“混合检索”，而是三个约束的共同满足：
-
-- **source-grounded：**所有生成式索引都有可逆 source link，最终答案上下文不依赖有损 summary；
-- **state-aware：**冲突不是交给余弦相似度或答案模型猜测，而是在 memory 层显式保留并解析有效性；
-- **coverage-oriented composition：**优化对象从单条相关性变为固定预算内的完整 evidence set。
-
-这三个部分仍分别邻近 Dense X Retrieval/LongMemEval、APEX-MEM/TReMu 和 HippoRAG/A-MEM。最终 novelty 必须落在它们之间尚未解决的具体接口或联合约束上，并通过消融证明，而不能声称这些组成部分本身首次出现。
-
-### 实验必须形成的证据链
-
-为避免把弱 evaluator 的失败错归因给 memory，实验应依次回答四个问题：
-
-1. **写入忠实度：**gold fact/source 是否在构建后仍然存在？仅在 benchmark 提供直接映射时测量，不发明近似匹配规则。
-2. **状态正确性：**对于有官方 serial/timestamp 的冲突样本，memory 是否保留并选择正确的最新版本？
-3. **检索完整性：**在 top-5 内是否召回全部 gold supporting passages，或 benchmark 明确定义的必要证据？
-4. **答案可用性：**在前三项成立时，三个固定 Evaluation Backbone 的确定性 QA 是否同步改善？
-
-若前三项失败，这是本文算法应优先解决的 memory failure。若前三项均通过而答案仍错，应报告为 reader-limited failure；除非能够证明固定、与 evaluator 无关的 evidence composition 操作改善了它，否则不把该题用于支撑 memory novelty。
-
-### 建议的核心消融
-
-所有消融应复用同一批生成 memory，仅移除一个操作：
-
-- 仅返回 raw source 的 dense retrieval；
-- 加入 fact key，但仍返回 raw source；
-- 再加入跨来源 structural expansion；
-- 再加入显式 version/validity resolution；
-- 完整方法在相同 top-5 下进行 evidence composition。
-
-这条消融顺序分别检验语义寻址、关系覆盖和状态消解的边际贡献。不能把更大的 context、更多 retrieved items、更强 Generator 或更强 Evaluation Backbone 混进同一项消融。
-
-### 本文不应主张解决的范围
-
-- gold evidence 已完整且顺序清晰，但小模型仍不会做常识推断或复杂计算；
-- 官方确定性 metric 不接受语义等价 alias；
-- 依赖参数化世界知识、而非外部 memory 的 open-domain 问题；
-- procedural skill learning 或跨任务策略改进。
-
-明确这些边界不会削弱论文，反而能证明贡献针对的是可隔离、可测量的 agent-memory 问题。
+消融应改变记忆构建或维护操作，例如条件保留、依赖保存和更新范围。涉及构建的消融必须生成对应记忆；已有 baseline memory 继续复用。不能在完整记忆上只换一种检索方式，就声称验证了构建模块。
 
 ## 所需对比与消融结构
 

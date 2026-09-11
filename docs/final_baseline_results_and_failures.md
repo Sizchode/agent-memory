@@ -60,7 +60,7 @@ LightMem 和 Mem0 返回的是生成式 memory，而不是原文 passage。它�
 
 表中的 Generator 调用和 tokens 只计算 memory/index 构建阶段。HippoRAG 2 的图结构确实改善了多跳证据覆盖，而不只是让答题模型更会猜；但它为这个改善付出了大量全语料 OpenIE 生成成本，query-time fact filtering 还额外使用 3,374 次调用和 10,120,992 tokens。Mem0 不在 retrieval 阶段调用 Generator，但顺序更新造成约 27.2 小时的累计构建时间，并消费 1.394 亿 tokens，是五个方法中构建成本最高的。
 
-## 已经可确定的失败模式
+## 已观察到的失败现象与待验证解释
 
 ### 1. 多跳证据不能只靠独立相似度
 
@@ -90,7 +90,7 @@ Mem0 2Wiki 构建的 6,119 次 extraction 中有 1 次返回了无法解析的 J
 | HippoRAG 2 | 23/100 | 95/100 | 18 | 77 |
 | Mem0 | 10/100 | 91/100 | 2 | 89 |
 
-这个分解表明，首要问题确实属于 memory/retrieval：对大多数错题，固定 top-5 里根本没有可直接支持官方答案的文字。但 BM25、Dense 和 HippoRAG 2 也分别有 15、19 和 18 题在答案已明确出现时三个 evaluator 仍然全错，因此还有第二个、规模更小但可复现的 evidence organization/reader 问题。新方法应优先提高必要事实覆盖，然后在相同 top-5 中检验关系组织是否减少“证据已有但三者全错”。
+这个分解显示，多数共同错题缺少答案的字面表达。但“答案字符串出现”不等于关系链和有效版本已经完整，“未出现”也不排除语义等价表达。因此这些计数不能直接区分构建、检索与 reader 失败。需要继续对照原始输入和已生成 memory，确认哪些错误来自记忆形成或维护。
 
 这一模式不只存在于 FactConsolidation-MH。下表将同一个确定性诊断扩展到四个 MemoryAgentBench 任务；每格为“答案在 top-5 中且三个 evaluator 全错 / 答案不在 top-5 中且三个 evaluator 全错”。每个任务均有 100 题。
 
@@ -120,23 +120,16 @@ SH-Doc QA 中 HippoRAG 2 和 Mem0 的答案文字分别出现在 94/100 和 90/1
 | HippoRAG 2 | **0.328** | 0.412 | 0.153 | 0.492 | 0.780 |
 | Mem0 | 0.327 | **0.419** | **0.164** | **0.514** | 0.879 |
 
-Single-hop 明显容易于 multi-hop 和 open-domain，进一步支持“必要事实覆盖与跨证据关系组织是主要瓶颈”的结论。Temporal 上 LightMem 的降幅尤其明显，表明生成式压缩不仅会丢失事实，还可能弱化事件与时间的绑定。
+Single-hop 明显容易于 multi-hop 和 open-domain，进一步支持“必要事实覆盖与跨证据关系组织是主要瓶颈”的结论。Temporal 上 LightMem 的降幅尤其明显，提示需要检查时间条件是否在记忆变换中保留；仅凭类别分数不能证明压缩是原因。
 
 Adversarial 类别的官方规则不是将预测与题目中的诱饵事实做普通 token F1，而是检查模型是否回答 `No information available` 或 `not mentioned`。因此该列更多反映 Evaluation Backbone 能否在证据不充分时拒答，不能与前四类一样直接解读为 memory 召回越高越好。这也解释了为什么某些预测与诱饵答案字面完全相同却依然得 0：这是官方协议，不是 metric 或 adapter 故障。
 
 ## 新方法的直接优化目标
 
-当前最值得保留的效果机制来自 HippoRAG 2，最值得保留的效率特性来自 BM25/Dense。因此不应简单对 Generator 或 Evaluation Backbone 做微调，而应将研究问题定义为：
+研究目标明确为 **training-free agent memory**。Generator、embedding、retriever 和 Evaluation Backbone 的权重均固定；创新集中于记忆形成、整合、压缩、关联和更新。
 
-> 如何在不对全语料进行高成本 LLM OpenIE 的情况下，保留 HippoRAG 的跨来源关联和多跳证据覆盖，同时保留 BM25/Dense 的原文忠实性和低成本。
+主要对标 LightMem、HippoRAG 2 和 Mem0。当前结果提示应检查：事实在整合后是否保留时间、角色和其他适用条件；不同记忆之间的关系是否仍可解释；新事实是否误覆盖旧事实；已有记忆是否被反复处理而产生较高成本。这些是待核对的机制假设，不能仅由总分差距推断成立。
 
-当前有证据支持的框架是：
+具体方向是“保留事实条件与依赖的记忆整合”：固定 Generator 在写入阶段组织有条件的陈述，记录整合依赖，并在修订发生时更新受影响的记忆。Retrieval 与 QA 用于检验构建和维护的效果，不训练检索器，也不把改进排序作为主要贡献。
 
-1. 始终保留原始 chunk/turn 作为可回答内容，避免 LightMem 式不可逆信息损失。
-2. 同时保留词面和语义寻址，因为现有结果证明两者在不同任务上互补。
-3. 将关系学习限制在候选 memory 的联合选择中，而不是先对整个 corpus 生成所有 triples。具体学习目标必须来自官方 training split 或已发布的 supervision，不用测试答案或临时启发式规则。
-4. 最终仍在相同 top-5 预算内返回原始证据，用官方 retrieval/QA metric 和实测构建时间、检索延迟、LLM 调用及 tokens 同时验证效果与效率。
-
-这一方向的关键不是“把 BM25、Dense 和 graph 拼起来”，而是将 HippoRAG 的多跳优势改造成一个只在查询需要的局部 memory 上运作的、可学习的 evidence-set selection 问题。最终配对分析已经表明 HippoRAG 在 2Wiki 的主要增益来自找齐必要 evidence set；下一步算法应在不破坏原文证据和持续更新能力的前提下，降低全语料 OpenIE 与顺序 LLM 更新的成本。
-
-具体算法、训练目标、精确推断、先行工作边界、消融和否证标准见 [Joint Evidence Memory 提案](joint_evidence_memory_proposal.md)。该文档明确区分已经验证的 failure analysis 与尚未实现的方法假设。
+详细边界、候选机制、先行工作对比与消融见 [Training-free memory 提案](training_free_memory_proposal.md)。原 Joint Evidence Memory 的监督训练、集合打分和 ILP 方案已撤回。新提案尚未实现；现有 baseline 数字保持不变。
