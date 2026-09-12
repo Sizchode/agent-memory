@@ -10,6 +10,8 @@
 
 ## 当前完整性
 
+实验决策：下列建立后直接评测的 LightMem、以及指定版本的 Mem0 官方 SDK 结果均保留。版本或阶段与其他论文设置不同不自动意味着结果无效。另行执行的 [LightMem 离线整合对照](lightmem_offline_run.md) 复用了 memory 副本，没有覆盖本表或重跑原始抽取。2026-09-12 UTC 已停止所有后续实验，当前先做 [Generator 与 memory 产物分析](generator_memory_quality_review.md)。
+
 **文件完整不等于论文算法完整复现。** 2026-09-11 的只读核查确认：LightMem 六任务均未执行最终离线合并；Mem0 使用的官方 SDK 版本是 ADD-only 流程，且 LoCoMo 存在历史日期被运行日期错误锚定的实例。下表保留真实旧分数，但 LightMem 应理解为离线合并前运行，Mem0 应理解为指定 SDK 版本运行，而不是原论文的更新流程。不能把这些差异解释为新方法的创新动机。详见 [三轮核查与真实错例](memory_research_iterations.md)。
 
 - 五个方法在六个保留任务上的 30 个 retrieval cell 和 90 个 QA cell 已全部完成。
