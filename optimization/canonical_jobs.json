@@ -1,0 +1,66 @@
+{
+  "experiment": "optimization_canonical_graph_seed42_20260913",
+  "schema_experiment": "optimization_canonical_schema_seed42_20260913",
+  "schema_job": "6322180",
+  "retrieval": [
+    {
+      "task": "SH-Doc QA",
+      "job": "6322944",
+      "replaces": "6322182",
+      "reason": "Original job never started: user environment retrieval failed; resubmitted with --export=NIL."
+    },
+    {
+      "task": "MH-Doc QA",
+      "job": "6322184"
+    },
+    {
+      "task": "FactConsolidation-SH",
+      "job": "6322186"
+    },
+    {
+      "task": "FactConsolidation-MH",
+      "job": "6322189"
+    },
+    {
+      "task": "LoCoMo",
+      "job": "6322191"
+    },
+    {
+      "task": "2WikiMultiHopQA",
+      "job": "6322193"
+    }
+  ],
+  "evaluation": [
+    {
+      "task": "SH-Doc QA",
+      "job": "6322950",
+      "replaces": "6322183",
+      "retrieval": "6322944"
+    },
+    {
+      "task": "MH-Doc QA",
+      "job": "6322185",
+      "retrieval": "6322184"
+    },
+    {
+      "task": "FactConsolidation-SH",
+      "job": "6322187",
+      "retrieval": "6322186"
+    },
+    {
+      "task": "FactConsolidation-MH",
+      "job": "6322190",
+      "retrieval": "6322189"
+    },
+    {
+      "task": "LoCoMo",
+      "job": "6322192",
+      "retrieval": "6322191"
+    },
+    {
+      "task": "2WikiMultiHopQA",
+      "job": "6322195",
+      "retrieval": "6322193"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "experiment": "optimization_adaptive_synonyms_seed42_20260913",
+  "variants": [
+    "adaptive_syn020",
+    "adaptive_syn020_balanced",
+    "adaptive_provenance_syn020"
+  ],
+  "source_schema": "optimization_canonical_schema_seed42_20260913",
+  "jobs": [
+    {
+      "task": "FactConsolidation-SH",
+      "retrieval": "6324522",
+      "evaluation": "6324523"
+    },
+    {
+      "task": "FactConsolidation-MH",
+      "retrieval": "6324524",
+      "evaluation": "6324525"
+    },
+    {
+      "task": "SH-Doc QA",
+      "retrieval": "6324526",
+      "evaluation": "6324527"
+    },
+    {
+      "task": "MH-Doc QA",
+      "retrieval": "6324528",
+      "evaluation": "6324529"
+    },
+    {
+      "task": "LoCoMo",
+      "retrieval": "6324530",
+      "evaluation": "6324531"
+    },
+    {
+      "task": "2WikiMultiHopQA",
+      "retrieval": "6324533",
+      "evaluation": "6324534"
+    }
+  ]
+}

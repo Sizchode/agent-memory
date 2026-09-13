@@ -1,0 +1,41 @@
+{
+  "experiment": "optimization_source_context_seed42_20260913",
+  "variants": [
+    "canonical_graph_with_source",
+    "adaptive_graph_with_source"
+  ],
+  "context_representation": "Full original source with source metadata and retained triples; not an equal-token comparison",
+  "jobs": [
+    {
+      "task": "FactConsolidation-SH",
+      "construction": "6325239",
+      "evaluation": "6325240"
+    },
+    {
+      "task": "FactConsolidation-MH",
+      "construction": "6325241",
+      "evaluation": "6325242"
+    },
+    {
+      "task": "SH-Doc QA",
+      "construction": "6325243",
+      "evaluation": "6325244"
+    },
+    {
+      "task": "MH-Doc QA",
+      "construction": "6325245",
+      "evaluation": "6325246"
+    },
+    {
+      "task": "LoCoMo",
+      "construction": "6325247",
+      "evaluation": "6325248"
+    },
+    {
+      "task": "2WikiMultiHopQA",
+      "construction": "6325250",
+      "evaluation": "6325252"
+    }
+  ],
+  "verification_job": "6325253"
+}

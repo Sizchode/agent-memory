@@ -1,0 +1,43 @@
+{
+  "experiment": "optimization_canonical_weight_grid_seed42_20260913",
+  "variants": [
+    "canonical_soft025",
+    "canonical_syn005",
+    "canonical_syn020",
+    "canonical_syn005_soft025",
+    "canonical_syn020_soft025"
+  ],
+  "source_schema": "optimization_canonical_schema_seed42_20260913",
+  "jobs": [
+    {
+      "task": "FactConsolidation-SH",
+      "retrieval": "6324377",
+      "evaluation": "6324378"
+    },
+    {
+      "task": "FactConsolidation-MH",
+      "retrieval": "6324379",
+      "evaluation": "6324380"
+    },
+    {
+      "task": "SH-Doc QA",
+      "retrieval": "6324381",
+      "evaluation": "6324382"
+    },
+    {
+      "task": "MH-Doc QA",
+      "retrieval": "6324383",
+      "evaluation": "6324384"
+    },
+    {
+      "task": "LoCoMo",
+      "retrieval": "6324385",
+      "evaluation": "6324386"
+    },
+    {
+      "task": "2WikiMultiHopQA",
+      "retrieval": "6324387",
+      "evaluation": "6324388"
+    }
+  ]
+}

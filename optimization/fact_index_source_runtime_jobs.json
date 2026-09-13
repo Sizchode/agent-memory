@@ -1,0 +1,45 @@
+{
+  "experiment": "optimization_fact_index_source_runtime_seed42_20260913",
+  "retrieval_jobs": [
+    {"job": "6324227", "completed": "All four 100-question tasks and first complete LoCoMo group (199 questions)", "stopped": "Embedding model reload OOM between groups"},
+    {"job": "6324316", "remaining": "Remaining LoCoMo groups and full 2Wiki", "fix": "Release old model references between groups; vLLM memory utilization 0.75"}
+  ],
+  "cancelled_qa_arrays": ["6324245", "6324246", "6324247", "6324248", "6324249", "6324250"],
+  "retrieval_environment": "Original HippoRAG environment, L40S; Qwen3-30B generator TP=2",
+  "variants": [
+    "index_latest",
+    "index_schema"
+  ],
+  "evaluation": [
+    {
+      "task": "FactConsolidation-SH",
+      "job": "6324321",
+      "dependency": null
+    },
+    {
+      "task": "FactConsolidation-MH",
+      "job": "6324322",
+      "dependency": null
+    },
+    {
+      "task": "SH-Doc QA",
+      "job": "6324323",
+      "dependency": null
+    },
+    {
+      "task": "MH-Doc QA",
+      "job": "6324327",
+      "dependency": null
+    },
+    {
+      "task": "LoCoMo",
+      "job": "6324328",
+      "dependency": "afterok:6324316"
+    },
+    {
+      "task": "2WikiMultiHopQA",
+      "job": "6324329",
+      "dependency": "afterok:6324316"
+    }
+  ]
+}

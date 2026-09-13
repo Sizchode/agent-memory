@@ -1,0 +1,28 @@
+{
+  "experiment": "optimization_fact_index_authenticated_seed42_20260913",
+  "invalid_first_run": {
+    "experiment": "optimization_fact_index_seed42_20260913",
+    "job": "6322999",
+    "reason": "401 provider errors swallowed by upstream; cancelled, excluded from evaluation",
+    "cancelled_qa_arrays": ["6323019", "6323020", "6323021", "6323022", "6323023", "6323024"]
+  },
+  "schema_experiment": "optimization_canonical_schema_seed42_20260913",
+  "variants": ["index_latest", "index_schema"],
+  "retrieval_jobs": [
+    {"job": "6323081", "completed_tasks": ["FactConsolidation-SH", "FactConsolidation-MH", "SH-Doc QA"], "stopped_at": "MH source passage check: NLTK dependency mismatch"},
+    {"job": "6324061", "tasks": ["MH-Doc QA", "LoCoMo", "2WikiMultiHopQA"], "source_loader": "Original HippoRAG Python environment", "status": "Failed original retrieval equality check on MH; no further complete tasks"}
+  ],
+  "cancelled_qa_after_loader_failure": ["6323082", "6323083", "6323084", "6323085", "6323086", "6323087"],
+  "cancelled_qa_after_retrieval_mismatch": ["6324075", "6324076", "6324077"],
+  "full_matrix_replacement": "optimization_fact_index_source_runtime_seed42_20260913",
+  "retrieval_resources": "gpu-he, one H100 or Blackwell GPU, 4 hours",
+  "evaluation": [
+    {"task": "FactConsolidation-SH", "job": "6324062", "partition": "gpu-debug", "dependency": null},
+    {"task": "FactConsolidation-MH", "job": "6324063", "partition": "gpu-debug", "dependency": null},
+    {"task": "SH-Doc QA", "job": "6324064", "partition": "gpu-debug", "dependency": null},
+    {"task": "MH-Doc QA", "job": "6324075", "dependency": "afterok:6324061"},
+    {"task": "LoCoMo", "job": "6324076", "dependency": "afterok:6324061"},
+    {"task": "2WikiMultiHopQA", "job": "6324077", "dependency": "afterok:6324061"}
+  ],
+  "evaluation_resources": "gpu-he H100/Blackwell/L40S/A6000 or gpu-debug L40S; array 0=9B 1=4B 2=2B"
+}
