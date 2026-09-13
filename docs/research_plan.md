@@ -22,7 +22,7 @@ LLM 调用。不开发 agentic retrieval/RAG、查询规划或多轮搜索，不
 候选拼成 Ours；保留原有 benchmark 各自的输入和 QA 协议。
 
 比较组：BM25、Dense、HippoRAG 2、Mem0 ADD-only、LightMem 整理前后、AnchorMem
-两种设置及 CatRAG。HyperMem 未完成不填分；旧多来源 ensemble 探索结果单列。
+两种设置及 CatRAG。旧多来源 ensemble 探索结果单列。
 以下目标已从保存的 `summary.json` 核对，百分制，非全领域 SOTA 排名：
 
 | 完整任务 | 题数 | Qwen3.5-9B | Qwen3.5-4B | Qwen3.5-2B |
@@ -118,12 +118,7 @@ Self-adaptive 在这里指由输入语料的语义决定实体/关系如何组�
 和阈值不得未经检查直接采用。这些工作的原始数据、指标及成绩不替换本项目协议，
 引用它们也不自动证明我们的新颖性或效果。
 
-## 历史执行范围与调研：CatRAG + HyperMem
-
-状态补记：本次续接已用 Slurm accounting 核对，最近六项 HyperMem streaming
-构建及依赖 QA 均于 2026-09-12 17:41:57 被取消，包括 2Wiki 并发作业
-6312204/6312205；当时无运行中的用户作业。下文“运行中/等待依赖”保留为历史
-观察，不代表当前状态。本计划不恢复这些已取消作业。
+## 上下文图记忆调研与已完成对照
 
 ### 上下文图记忆：定向 survey（2026-09-12）
 
@@ -134,7 +129,7 @@ Self-adaptive 在这里指由输入语料的语义决定实体/关系如何组�
 
 | 2026 工作及发表依据 | 已有机制 | 对我们意味着什么 |
 |---|---|---|
-| [HyperMem，ACL](https://aclanthology.org/2026.acl-long.1627/) | 主题—事件片段—事实三级；同主题片段和同片段事实由超边组织，保留原始对话与时间线索 | 已是上下文中的事实抽取，不能说它完全没有上下文。需检查上下文在合并和传播时是否真正被利用 |
+| [HyperMem，ACL](https://aclanthology.org/2026.acl-long.1627/) | 主题—事件片段—事实三级；同主题片段和同片段事实由超边组织，保留原始对话与时间线索 | 已是上下文中的事实抽取，不能说它完全没有上下文。仅保留为相关工作，不再安排复现或后续实验 |
 | [APEX-MEM，ACL，§3–6](https://aclanthology.org/2026.acl-long.749.pdf) | 事实绑定有时间的事件；只追加历史，查询时通过工具解决冲突 | “事件化事实＋保留版本＋读取时消歧”已有直接先例；其多工具 QA 不能不加说明压成固定 top5 后宣称原版 |
 | [MemORAI，Findings ACL，§3–4](https://aclanthology.org/2026.findings-acl.1408.pdf) | 实体—话轮—片段异构图，实体上下文描述与话轮来源；按查询调节图传播 | 与“上下文增强图”非常接近。明确 inference-only；但只保留用户相关信息的入口不一定适合文档任务，不能擅自改掉后称官方默认 |
 | [GAM，ACL，§3–4](https://aclanthology.org/2026.acl-long.1600.pdf) | 局部事件推进图与全局主题网络分开，在语义边界整理；检索结合时间、角色、置信度 | “缓冲隔离、完整事件再合并”及系统式命名已有先例；不能单凭借用系统概念主张新颖性 |
@@ -180,285 +175,37 @@ training-free，使用现成指令模型，原设定检索 k=10、MiniLM embeddi
 代码仓库；同名 MemorAI 应用不可冒认。故先作 related work/机制参照，不能
 承诺立即按官方代码接入；若以后运行，统一 top5 等与其原设置的差异须单列。
 
-### 2Wiki 并发调度（2026-09-12 16:53 EDT）
-
-用户批准并发后，仅替换尚无完整图落盘的 2Wiki streaming 构建：
-旧构建 6307478 及依赖 QA 6307479 已发出取消；新构建 6312204
-在旧任务退出后启动，gpu-he 单 B200、48 小时上限（不是完成时间估计），
-QA 6312205 等构建成功后运行三个既定模型。其他五任务不重启，旧结果不删除。
-新目录 `hypermem_streaming_concurrent10_seed42_20260912`，读取目录加 `_read`。
-复用原始 2960 个 episodes；未落盘的部分图需要重新构建。
-
-topic 更新保持顺序，冻结每一步的 topic/episode 输入后，最多并发 10 条
-事实抽取流程，结果按原 episode 顺序合并。prompt、模型、预算与检索/QA
-参数不变；这只是既有 streaming 变体的调度调整，不是恢复原版算法。
-内存 fixture 已通过串行/并发输入一致性、输入快照隔离、合并顺序、并发上限
-及异常取消检查；尚未测得真实加速倍数，也不承诺动态批处理输出逐字相同。
-效率报告须注明并发数；取消尝试的成本单列，不能混入成功构建耗时或抹除。
-
-16:55 实机确认：6312204 已运行，construction 记录 episodes 为 reused，
-settings 中 fact_concurrency=10；服务日志出现 2–5 条同时运行请求，
-短窗口聚合生成吞吐约 549–857 token/s，首个 episode 已按序合并。
-这证明并发路径已执行，不代表全任务加速倍数或完成时间估计。
-
-### HyperMem 后续引用检索补充（2026-09-12）
-
-Google Scholar 的 cited-by 页面本次仍无法访问，不能确认引用数量或声称
-没有后续工作。可核实的一篇后发引用是
-[T-Mem: Memory That Anticipates, Not Archives](https://arxiv.org/html/2606.15405v1)：
-2026-06-13 的预印本，相关工作明确引用 HyperMem；它在写入时为事实和场景
-生成面向未来查询的触发线索，并将这些索引线索与回答证据分开。
-这不是已核实的“直接改进 HyperMem 代码”的论文，也未在此次查证中确认正式
-录用；v1 声明录用后开源。因此只作为相关研究线索，不计入严格的 2026
-已发表 baseline 清单，不新增实验，也不能将“写入时生成检索线索”直接声称
-为我们未被研究过的创新。其效果数字不与我们的确定性评分直接混比。
-
-### Streaming 当前状态：角色接口修复（2026-09-12 15:55 EDT）
-
-原文/官方并发核对：论文 §3.2.3 与 Algorithm 1 的 Stage 3 在主题聚合后，
-按主题及其关联 episodes 抽取事实。主题输入确定后，可并发独立抽取工作是
-依赖分析结论，不是论文报告了某个并发加速倍数。官方
-`hypermem/main/stage2_hypergraph_extraction.py` 的主入口明确设置
-`max_concurrent_tasks=10`，通过 semaphore 与 `asyncio.gather` 并发不同
-conversation；但 `extract_facts_for_topics` 内仍逐主题 await。
-我们的 `build_hypermem.py` 按 conversation 串行，未利用官方这层并发；
-不能把由此造成的全部等待归为算法必然成本。2Wiki 在当前数据入口中是一个
-整体语料组，因此不能为了套用 conversation 并发而私自拆成互不通信的图。
-保留当前 streaming 的事实输入副本再并发，与恢复原版“最终完整主题联合抽取”
-不是同一改动，必须区分。此处记录并发实施前的依赖核查；2Wiki 后续切换
-见上方 16:53 条目，原版最终主题联合抽取未恢复。
-来源：[原文](https://arxiv.org/html/2604.08256v2#S3.SS2.SSS3)、
-[官方实现](https://github.com/EverMind-AI/HyperMem/blob/main/hypermem/main/stage2_hypergraph_extraction.py)。
-
-并发可行性代码检查（尚未实施）：`build_streaming_graph` 的下一次主题更新
-只读取已有 topics 和 episodes，不读取已抽取 facts；`FactExtractor` 实例
-只保存 provider 与调用参数，抽取结果通过返回值交给最终建图。因此可候选地
-将“某次主题更新的独立副本 + 当前 episode”的事实抽取/角色分配作为后台
-任务，主题更新保持串行，最终仍按原输入顺序收集结果。必须保留当时的主题
-副本，不能让任务读到后来更新的摘要，也不能按异步完成顺序合并。
-这只是源码依赖检查，不证明实际加速或逐字结果一致；服务端动态批处理和
-原生随机 UUID/墙钟字段也不能被当作完全确定的输出。核查当时未修改运行
-代码；随后用户批准的 2Wiki 并发版本及测试见上方 16:53 条目。
-
-2Wiki 性能诊断补充：约完成 75 个 episode 时，graph 阶段已有 514 次
-provider 调用，输入 2,238,469、输出 643,064 token，累计调用时间
-2,249.69 秒。模型生成本身约数百 token/s，不能归因为 GPU 算得慢。
-原生主题匹配每 10 个主题一批、逐批 await；但进一步用原生日志的
-“Starting topic extraction”到“LLM matched”时间戳核对，前 79 个完成的
-匹配区间合计仅 127 秒（秒级分辨率，约占当时运行时间 5%）。因此
-仅并发主题匹配不是充分的提速方案。主要问题是串行执行的大量事实抽取、
-角色/权重解释输出及重试。这是旧串行运行的诊断；后续 2Wiki 并发仍保持
-topic 更新顺序、prompt 和预算，并单独保存结果。
-
-16:34 调度风险：2Wiki 作业 6307478 约运行 37 分钟，完成 68/2960；
-最近 20 个完成项之间的日志时间差为 874 秒，若这一速度持续，剩余约
-35.1 小时（工程外推，不是完成承诺）。现有时限为 24 小时。gpu-he 分区
-MaxTime=UNLIMITED，但直接延长现有作业到 48 小时被 Slurm 拒绝：
-`Access/permission denied`，当时原作业时限未改变。此待决项后来已解决：
-用户批准并发后取消 6307478，以 48 小时上限提交 6312204，复用原始
-episodes；未落盘图重做。旧速率估算不可用作新并发作业的完成承诺。
-
-16:31 左右的新观察：LoCoMo 第 0 段对话的第 41 个 episode 在事实抽取
-阶段连续 4 次将 topic ID 填入 `episode_ids`，原生校验均拒绝；随后第 5 次
-成功，完成计数到 41/65。没有自动替换 ID、放宽校验或修改 prompt。这表明
-重试开销不只来自 token 上限，也来自生成的来源标识错误；不应再概括为
-“所有重试均第二次成功”。第 42 个 episode 又出现首次失败，需继续观察。
-
-16:02 运行观察：FC-SH 的第 3 个 episode、FC-MH 的第 1 个 episode
-首次事实抽取均生成满 16384 token，随后分别因非对象事实项、缺少
-`episode_ids` 被原生校验拒绝；两者均在第 2 次抽取通过，角色分配
-第 1 次通过，进度分别到 3/99 与 1/99。没有增大预算、跳过 episode、
-接受格式不完整的输出或重启。JSONL 保留两次 API 调用的真实成本；
-HTTP 成功不等于抽取校验成功，不能用 API 错误数代替抽取失败数。
-
-15:57 更新：6307405 的首个 episode 完整成功，119 条事实，事实抽取和角色
-校验均一次通过；第二个 episode 的主题更新也一次通过。这仅证明真实路径
-有进展，不代表全量结果。其余任务已提交，各 QA 作业仅在对应构建成功后启动：
-
-| 完整任务 | Streaming 构建 | Retrieval + 三模型 QA |
-|---|---:|---:|
-| FactConsolidation-SH | 6307405 | 6307469 |
-| FactConsolidation-MH | 6307470 | 6307471 |
-| SH-Doc QA | 6307494 | 6307495 |
-| MH-Doc QA | 6307496 | 6307497 |
-| LoCoMo | 6307476 | 6307477 |
-| 2WikiMultiHopQA | 6307478 | 6307479 |
-
-六项使用同一修复代码和输出根 `hypermem_streaming_roles_seed42_20260912`；
-检索/QA 输出根加 `_read`。生成申请 gpu-he B200，QA 申请 gpu-he L40S。
-所有旧尝试保持取消状态，不与这轮并跑。
-
-SH/MH 的首次提交 6307472–6307475 使用了目录形式的下划线任务名，
-而命令行枚举要求空格；已取消并替换为表中作业。仅修正提交参数，
-没有改数据加载器、任务范围或算法参数。
-
-旧版 HyperMem 未完成的构建及 QA 已按要求全部取消，已有文件保留。
-第一轮 streaming 作业 6306898–6306918 已取消：单 episode 输入的角色
-prompt 标题仍带历史 episode ID，现已与原生正文的 `episode_1` 编号对齐。
-修复后的 FC-SH 作业 6307323 已完成 2/99 个 episode，但发现另一处原生
-代码矛盾：事实角色 prompt 明确允许 `spatial`，`FactRole` 却不包含它，
-导致拒绝并重新生成。新增 `hypermem_fact_role.patch` 仅补齐该枚举，
-六个 prompt 角色与 schema 的一致性检查通过；未调整 prompt、16384 输出
-预算、权重或检索参数。此前运行还出现过输出不完整的重试，不能声称此补丁
-解决所有抽取失败。
-
-取消 6307323 后，新 FC-SH 完整任务试跑为 **6307405**，输出根为
-`hypermem_streaming_roles_seed42_20260912`，复用已有原始 episodes。
-当前先验证真实抽取，再提交其余五个完整任务与三个 QA 模型；没有缩减最终
-六任务 × 三模型范围。旧尝试不混入修复后的结果或效率统计；失败尝试成本
-需单独列示。CatRAG 已完成结果不受影响。
-
-### 已批准的 HyperMem streaming 变体（2026-09-12）
-
-用户随后要求停止原版以释放 GPU：已取消 6298175/6298176/6298177/6298182/6298183/6298184/6298185，确认 CANCELLED；原版 SH 已完成 memory，但其 QA 未完成，不补填分数，所有产物保留。现在仅继续 streaming 六任务×三模型。已解除 streaming SH/MH/LoCoMo/2Wiki 构建的人工串行依赖，最多六个构建并行；各自检索/QA 的 afterok 构建依赖保留。下文原版“继续运行”及 streaming“两条队列”均为历史状态。
-
-启动核对（15:38 EDT）：streaming 两个 FC 作业均在 B200 实际生成，复用各自已完成的 99 个 episodes，未重抽原文。原版 SH-Doc 构建 6298138 同时已 COMPLETED/exit 0，其检索与 QA 作业 6298175 已启动；仍须逐题核对后才能记入完整结果。
-
-用户批准试 streaming；单独命名 `hypermem_streaming_reranker06_top5`，不覆盖原版。保留原生主题匹配（每批 10 个主题）、摘要更新、生成模型、16384 输出预算、262144 服务上下文和全部检索/QA 设置。每次只为新 episode 分配主题成员角色/权重，合并旧成员字典但不重算旧权重；事实抽取与事实角色分配也只处理新 episode，保留先前事实。主题超边的 coherence 字段来自最新局部调用，不再代表全成员联合判断。没有另加冲突识别、合并或淘汰规则，也没有训练。
-
-这是移除全历史联合抽取的算法变体，不能称为等价修复；它避免成员列表随历史增长进入单个请求，但不能保证主题摘要永不膨胀，也不保证效果提高。所有 episodes 与最终图成员保留；可能损失联合抽取的跨 episode 整合能力，需要全任务结果检验。原版四个正常构建继续；原版 FC 超限记录保留。复用已经完成或之前复用的 episode 阶段，保留其原始时间和 token 成本。内联固定响应检查通过：两次增量更新保留两个成员及旧权重，每次提示只有一个 episode 正文；没有保留测试文件，尚需实际运行验证。
-
-| 任务 | streaming 构建 | 检索及三模型 QA |
-| --- | --- | --- |
-| FC-SH | 6306898 | 6306899 |
-| FC-MH | 6306900 | 6306901 |
-| SH-Doc | 6306902 | 6306912 |
-| MH-Doc | 6306913 | 6306914 |
-| LoCoMo | 6306915 | 6306916 |
-| 2Wiki | 6306917 | 6306918 |
-
-两条 afterok 队列依次 FC-SH→SH→LoCoMo、FC-MH→MH→2Wiki，每项包含构建及完整三模型 QA。B200 构建、L40S 检索/QA；原版四项加 streaming 两项最多六个并行作业。产物根目录 `hypermem_streaming_seed42_20260912`（memory）及其 `_read`（检索/QA），均位于既有 scratch outputs；memory 与读取入口新增显式变体选择，原版默认入口不变。
-
-2026-09-12 14:54 EDT 检索预检查：对已完成的 LoCoMo conversation 0 图，使用正式 embedding 与 reranker，原生索引→分层检索→最终 top5 已在 L40S 跑通（6305168，exit 0）。此前默认索引 batch 256（编码器内部另有分批）及显式 batch 8 均 OOM；仅将索引计算 batch_size 改为 1 后通过，未截短文本、未改精度、模型、传播参数或 top-k。临时索引自动清理，memory 原件未改。该诊断只运行一个问题、不评分，不计入六任务完整结果；建图仍继续，尚未证明所有长文本都能完成检索。
-
-2026-09-12 14:44 EDT：四个正常构建继续 RUNNING。额外 L40S 接口检查 6304894 已 COMPLETED/exit 0，使用正式 launcher 相同的 vLLM 参数，走现有 HyperMem reranker provider 与 final top5 入口，六条诊断文本返回五项，得分有效且非全相同，usage 完整（672 输入/6 输出 tokens）。只验证 0.6B reranker 服务和适配接口，不是 benchmark 结果，也未验证全量图检索；未创建测试文件或改变算法。
-
-2026-09-12 14:40 EDT：HyperMem FC-MH（6298180）与 FC-SH（6298178）均已实际触及模型原生上下文上限。服务报输入至少 245761 + 固定输出预算 16384 > 262144，原生代码反复重试 HTTP 400。已取消这两个无效构建及依赖 QA（6298181、6298179），所有 episodes、usage、日志保留，未截断、未换模型、未改输出预算。SH/MH/LoCoMo/2Wiki 四任务继续运行。两项 FC 仍是未完成，不计零分；其恢复需要新的方法/配置决策，不能再把问题说成单纯恢复原生模型范围即可解决。
-
-2026-09-12 13:48 EDT 检查：六个 HyperMem 构建仍 RUNNING，六个检索/QA 作业等待各自依赖。本次读取的调用记录均无失败；成功请求输入已达 SH 41,182、MH 39,538、LoCoMo 30,560、FC-SH 205,857、FC-MH 205,910 tokens，证实已越过旧服务限制，但尚无完整任务 memory。LoCoMo 前两段对话图已保存，并通过原生 Hypergraph.from_dict 加载：分别含 480/222 facts、65/48 episodes、26/12 topics；这只是结构可加载证据，不代表信息完整或回答正确。2Wiki 已完成 episodes，进入 graph 阶段。FC 输入继续增长，需监测原生总上下文是否仍足够，不自动压缩、截断或改输出预算。
-
 ### 建图研究边界与新增对照候选
 
 补充实现核查：MemGraphRAG 的[官方索引入口](https://github.com/XMUDeepLIT/MemGraphRAG/blob/main/code/index.py)调用 `index_with_memory`；[该流程](https://github.com/XMUDeepLIT/MemGraphRAG/blob/main/code/src/MemGraphRAG.py)依次抽取三元组、归纳 schema、过滤、检测/解决冲突，再安装最终图。公开入口没有要求先训练新权重，但尚未本地运行验证全部依赖。它不是可以直接宣称为严格流式的入口：先读取整个 corpus；`conflict_streaming_only_previous` 只是冲突比较方向设置。因此可作为全局建图/冲突处理的对照，不能不加核实地说它已经实现我们讨论的局部增量更新。仍未接入或修改现有实验。
-
-运行中观察（FC-SH，尚非 QA 错因结论）：99 个已抽取 episodes 中，日志显示至少前 67 个被逐步并入同一“Comprehensive Compilation of Global Facts”主题。原生 topic_extractor.py 在更新后收集该主题的全部历史 episodes，调用 `_assign_episode_roles_and_weights`，因此每次更新重新发送不断增长的成员列表；不是适配器额外重复拼接。此现象解释了输入长度与构建开销增长。候选问题是主题粒度过粗，但是否损害检索需等全量检索/QA 和逐题证据核对，不能把当前观察当作已验证因果。没有据此改主题匹配、截断列表或增加其他启发式规则。
 
 检索成绩衡量的是图与检索器共同作用，不能单独等同图质量。先沿用有官方证据标注任务的 Recall@5/Precision@5；没有对应标注的任务不靠答案字符串命中或自造标签冒充 evidence recall。错题诊断分别核对原文证据、生成的事实/关系及实际返回内容，保留无法判定项，不使用 LLM judge。若实验只改变建图，应固定检索器、模型及评测设置；不同图格式需要适配时必须披露，不能把适配差异当建图收益。
 
 最相关的新候选是 [MemGraphRAG（作者代码标注 KDD 2026）](https://github.com/XMUDeepLIT/MemGraphRAG)。它维护 schema、fact、passage 三层记忆，通过抽取、冲突检测与解决协调建图；[论文表 3](https://arxiv.org/html/2606.00610v1) 已专门测试更换建图器并保留不同检索框架。因此“全局一致性建图”或“可插拔建图”本身不能作为未有人做过的新意。论文同时使用字符串指标和 LLM judge；我们若接入仍只沿用当前确定性评分，不搬用其 judge 成绩。当前仅调查，未下载新环境、未提交此方法任务；需继续检查实现是否完全无需训练及其默认配置。
 
-Google Scholar 原引用列表此次打开失败，不能声称已穷尽后续工作或确认引用数。HyperMem 的正式发表由 [ACL Anthology](https://aclanthology.org/2026.acl-long.1627/) 确认；不能把名字相同的其他项目当作后续工作，也没有证据把 MemGraphRAG 称为 HyperMem 的直接改进版。暂不扩充一批新 baseline，先完成当前六任务与三回答模型，再按实际建图错误决定是否增加这个最贴近的对照。
+### CatRAG 已完成结果与接入记录
 
-2026-09-12 11:56 EDT：用户批准上下文恢复后，HyperMem 已重新提交六任务。仅其生成服务 max-model-len 从 32768 改为模型原生 262144，输出预算仍为 16384；CatRAG 设置、模型、seed、prompt、数据及 QA 指标不变。B200 已通过 KV cache 容量检查并正常生成，尚未验证此前超长请求位置。SH/MH/LoCoMo 首段分别复用 199/420/65 个已完成 episodes，原生加载器检查通过；复用阶段保留原时间/token，不重复当作新调用。旧结果与失败尝试均保留。
+CatRAG 六任务 × 三个回答模型全部完成（18/18）。LoCoMo 9B/4B/2B 全类别
+汇总为 51.56%/48.53%/44.80%，各 1,986 题；唯一题号、缓存检索、分类均值及
+usage 已核对。2Wiki 三个模型的 Answer F1 为 51.52%/48.04%/36.56%，各
+1,000 题；检索 Recall@5/Precision@5 为 72.33%/33.94%。完整分数见
+`results.md`，不再保留已被最终结果覆盖的排队和中间完成数快照。
 
-| 任务 | B200 构建作业 | 构建成功后 L40S 检索及三模型 QA |
-| --- | --- | --- |
-| SH-Doc QA | 6298138 | 6298175 |
-| MH-Doc QA | 6298176 | 6298177 |
-| FactConsolidation-SH | 6298178 | 6298179 |
-| FactConsolidation-MH | 6298180 | 6298181 |
-| LoCoMo | 6298182 | 6298183 |
-| 2WikiMultiHopQA | 6298184 | 6298185 |
+CatRAG 使用原生动态边权、锚点、事实增强及图传播，最终返回 top5；没有替换
+为 dense 检索。原文字符串列表作为输入，LoCoMo 保留真实说话者和时间。
+查询边权评分显式传入的输出预算为 9192，不能统一改成 2048。
+`experiments/run_catrag.py` 提供 build-retrieve、retrieve-existing、evaluate，
+复用既有六任务加载器、seed 42 和确定性评分器。
 
-六个构建已 RUNNING，后续 QA 使用 afterok 依赖，每任务依次运行 9B/4B/2B，因此最多六个 GPU 作业同时运行。新 memory 根目录 `/oscar/scratch/zliu328/agent-memory-outputs/hypermem_ctx262144_seed42_20260912`，检索/QA 根目录加 `_read`；日志在 home 的 `hypermem_build_<jobid>.out` 和 `hypermem_retrieve_qa_<jobid>.out`。下文“等待上下文确认”均为历史状态。
+既有实现记录保留以下成本边界：同步与异步调用均需等待真实响应后记录 usage；
+CatRAG SH 的早期计量有 328 条 access 调用缺失 usage，不能补零或当作完整成本。
+缓存复用与本次调用分开，构建、检索、回答的 token 和耗时分别报告。
+B200 与旧 Torch 的兼容性失败、H100 embedding OOM 等历史失败产物仍保留；
+最终 embedding batch 为 8。节点摘要使用各任务独立的 cache_dir，不跨任务共享。
+本次仅整理文档，未修改这些实现、配置或产物。
 
-最终 CatRAG 状态：六任务 × 三个回答模型全部完成（18/18），本轮合计 18/36。LoCoMo 9B/4B/2B 全类别汇总为 51.56%/48.53%/44.80%；各 1,986 题，唯一题号、缓存检索、分类均值及 usage 均核对，三个作业 COMPLETED/exit 0。完整分数见 results.md。以下运行记录是历史快照，不代表当前仍有 CatRAG 作业。HyperMem 全部等待服务上下文配置确认；保留现有 episodes，未扩大预算、未截断输入、未重启。
-
-当前完成 16/36：CatRAG LoCoMo 2B 已完成全部 1,986 题，全类别汇总 44.80%，题号、检索复用、分类均值和 usage 已核对，作业正常退出。9B、4B 继续运行。HyperMem 仍待服务上下文范围确认，没有改算法参数或重启。
-
-CatRAG 六任务 memory 与检索全部完成：LoCoMo `6283529` 正常退出（02:32:23），1986 题、10 对话及五类全覆盖，原文归属、题号、gold 与每题 top5 已核对。LoCoMo 构建阶段实测 1977.01 秒、输入 5,951,753 / 输出 1,007,531 tokens，13,216 次调用 usage 均完整，无已记录失败。只剩 LoCoMo 三个 QA；本轮完整 QA 暂为 15/36，HyperMem 仍待配置确认。
-
-最新完成数 15/36：CatRAG 2Wiki 三个 QA 均完成 1000 题并核对，9B/4B/2B Answer F1 为 51.52%/48.04%/36.56%，各有 1000 条 QA usage，检索 Recall@5/Precision@5 为 72.33%/33.94%。CatRAG 只剩 LoCoMo 流程；HyperMem 仍等待上下文配置确认，不能宣称本轮全部完成。
-
-2Wiki 检索完整完成：`6283524` 正常退出（02:17:23），1000 个唯一题号、gold 对应关系、原文及每题 top5 均已核对；Recall@5 72.33%、Precision@5 33.94%。QA `6283525_0/1/2` 已在 gpu2709 三张 L40S 并行运行。LoCoMo 继续构建/检索，HyperMem 仍等待配置确认。完整 QA 数暂为 12/36。
-
-末段 QA 调度：2Wiki 已完成 8881 个节点摘要并进入全任务检索。当前仅剩两个活跃 CatRAG 流程，HyperMem 未获配置确认不启动；因此将 2Wiki `6283525`、LoCoMo `6283530` QA 数组并发从 1 调为 3，各自仍等完整检索成功后启动。两组最多六张独立 GPU，总并发不超过六；模型、seed、prompt、预算、题数、指标不变。
-
-HyperMem 当前全部等待配置确认：MH `6283534` 也在约 58 分钟时出现相同的 32K 总上下文超限和重复 HTTP 400，已取消，保留 episodes 等所有产物。三个尚未启动的构建 `6283531`（FC-MH）、`6283536`（FC-SH）、`6283539`（2Wiki）已请求 hold，避免继续以已知不匹配的服务配置构建；后续须核实队列是否已因失败依赖被 Slurm 清理。LoCoMo/SH/MH 都不能报告完整 HyperMem 成绩。CatRAG LoCoMo/2Wiki 继续运行。没有擅改 32K 服务上限或算法 16K 输出预算；本地模型配置 `max_position_embeddings=262144`，是否恢复原生范围仍待用户确认。
-
-最新完成数 12/36：CatRAG 的四个 MemoryAgentBench 任务已完成全部三个 QA；新增 FC-MH 的 9B/4B/2B 为 2%/4%/2%，各 100 题，已核对题号、均值及 QA usage。LoCoMo、2Wiki 的 CatRAG 与 HyperMem MH 继续构建；两个已停止的 HyperMem 任务仍等待上下文设置确认。
-
-最新完整成绩：CatRAG MH-Doc 三个 QA 均完成并逐题核对，9B/4B/2B 为 54%/48%/40%，各 100 题；本轮累计完成 9/36 格。CatRAG FC-MH、LoCoMo、2Wiki 及 HyperMem MH 仍构建中。HyperMem LoCoMo/SH 因上述服务上下文限制停止，恢复仍待用户确认，不能将本轮称作全部完成。
-
-第二个同类阻塞：HyperMem SH-Doc `6283278` 运行约 42 分钟后也出现输入超过 16K + 固定输出预算 16K > 服务总上下文 32K 的 HTTP 400，并重复请求。已取消此无效作业，保留已保存 episodes、usage 和日志；没有改上限或截断输入。LoCoMo、SH 两任务恢复均等待用户对上下文设置的确认。HyperMem MH 尚未出现同类错误，继续运行；CatRAG 不受此次取消影响。
-
-完成更新：CatRAG FC-SH 的 9B/4B/2B 均完成 100 题，分数 28%/28%/27%，已核对并写入 results.md；加上 SH-Doc，本轮完成 6/36 格。利用 FC-SH 流程结束释放的名额，解除 CatRAG FC-MH `6283522` 的前置依赖，提前等待 GPU；其 QA 依赖仍保留。其他参数不变，至多六条并行单 GPU 流程。
-
-构建进度：CatRAG FC-SH 已完成 100/100 检索，题号唯一且每题五条；`6283527_0` 开始 9B QA。该任务新计量记录 2960 次成功调用均有 usage，另 3 次失败调用单独记录（不当作成功或零成本）。CatRAG 2Wiki `6283524`、LoCoMo `6283529` 已开始运行，当前达到六个并行 GPU 作业。尚未完成 QA 的任务不填分数。
-
-调度更新：CatRAG SH 全部完成、HyperMem LoCoMo 停止后，释放两条并行流程名额。已解除 CatRAG 2Wiki `6283524` 与 CatRAG LoCoMo `6283529` 的前置任务依赖，让它们提前等待 GPU；各自 QA 仍依赖其构建成功。原有数据、参数、任务数量不变，最多六条单 GPU 流程。下表原串行顺序以此更新为准。
-
-当前完成 3/36 格：CatRAG SH-Doc 的 9B/4B/2B QA 分别为 76%/77%/68%，各 100 题，已核对并更新 results.md。异步计量 bug 也影响修复前启动的 HyperMem LoCoMo/SH：旧记录甚至在 HTTP 请求完成前标记 completed，不能用于判断请求成功或精确成本。修复后启动的 HyperMem MH 已实测 43 次调用全部有 usage。旧运行内容和原生阶段统计保留，不将无效逐调用计量冒充完整成本；不为修计量而擅自重建 memory。
-
-阻塞更新：HyperMem LoCoMo `6282811` 在原生 topic 更新时输入超过 16384 tokens，叠加固定输出预算 16384，超出启动器设置的 32768 总上下文。服务返回确定性 HTTP 400，原生 `topic_extractor.py` 的 `while True` 仍无限重试，已观察超过 1392 次。已取消此无效作业，所有已有 episodes 等产物保留，其他作业不取消。没有缩短 prompt、削减输出预算或扩大上下文；上下文设置需用户确认后处理。其 QA 依赖暂不能满足。此问题不能称作 GPU 慢，也不能宣称 HyperMem 已跑通。
-
-首批实测更新：CatRAG SH-Doc QA 已完成 memory 与 100/100 题检索，100 个唯一题号，每题最终五条；QA 数组首个模型作业 `6282925_0` 已启动，尚非完成成绩。六任务加载器实测题数依次为 SH 100、MH 100、FactConsolidation-SH 100、FactConsolidation-MH 100、LoCoMo 1986、2Wiki 1000。
-
-计量修复：当前 OpenAI SDK 的异步 create 被装饰器包装，`inspect.iscoroutinefunction` 返回 False，旧记录器在 await 前取 usage。CatRAG SH 最终有 328 条 access 调用因此缺失 usage；不能报作零 token 或完整逐调用耗时。记录器现改为检测返回值是否 awaitable，等真实响应完成后记录，已验证 SDK 行为及成功/异常传递。只改计量，不改模型请求、预算、图或结果，不重启运行中的构建；已启动的 CatRAG MH 也需按旧计量版本审计。后续作业使用修复版。
-
-剩余九个方法×任务组合已提交依赖队列（不是完成结果）。每条队列内下一任务等上一任务 QA 全部成功；CatRAG QA 数组限同时一张卡。加上原有 CatRAG SH、HyperMem LoCoMo/SH 三条流程，最多六条活跃单 GPU 流程。完整实验范围为两方法×六任务×三 QA 模型，共 36 格。新构建作业申请 24 小时上限，避免把未测耗时强行设为完成承诺；QA 仍 12 小时上限。
-
-| 队列 | 方法 | 完整任务 | 构建 | 检索/QA |
-|---|---|---|---|---|
-| 1 | catrag | MH-Doc QA | 6283509 | 6283510 |
-| 1 | catrag | FactConsolidation-MH | 6283522 | 6283523 |
-| 1 | catrag | 2WikiMultiHopQA | 6283524 | 6283525 |
-| 2 | catrag | FactConsolidation-SH | 6283526 | 6283527 |
-| 2 | catrag | LoCoMo | 6283529 | 6283530 |
-| 2 | hypermem | FactConsolidation-MH | 6283531 | 6283533 |
-| 3 | hypermem | MH-Doc QA | 6283534 | 6283535 |
-| 3 | hypermem | FactConsolidation-SH | 6283536 | 6283537 |
-| 3 | hypermem | 2WikiMultiHopQA | 6283539 | 6283540 |
-
-原有三条：CatRAG SH `6282898 → 6282925[0-2]%1`；HyperMem LoCoMo `6282811 → 6283242`；HyperMem SH `6283278 → 6283300`。失败时后续依赖不会被当成成功结果，仍需检查并修复。下方“尚未部署”是较早快照，以本表为准。
-
-用户最新决定：REMem 移出本轮，不启动其构建或查询；既有结果不删除。先完成 CatRAG 与 HyperMem 的六项完整任务及三个既定 QA 模型。HyperMem 开启 reranker，采用 `Qwen/Qwen3-Reranker-0.6B`，最终 QA 输入统一 top5。当前接入解释为保留内部主题/事件/事实候选搜索，再对返回的记忆条目重排取最终五条，而不是不加区分地把每层候选数都设成五。这个设置是用户指定的受控变体，不能称为论文原始 10/10/30 上下文配置。记忆条目的文本与类型必须保留，五条长短不同不等于 token 预算相同。
-
-`experiments/run_catrag.py` 已新增 build-retrieve、retrieve-existing、evaluate 三个入口，复用原有六任务加载器和评分器，固定 seed 42、final top5。已有结果目录拒绝覆盖，QA 从已写完的检索结果读取。现有 hipporag 环境 CLI 导入通过；真实 GPU 构建、检索及 QA 尚未验证，不能报告已跑通。HyperMem 尚未完成适配。下方 REMem 检查保留为历史记录，不再是执行计划。
-
-运行记录：CatRAG 完整 SH-Doc QA 构建与检索作业 `6282551` 已提交，并在 gpu-he 的 gpu4001 开始运行。启动脚本 `experiments/build_catrag.sbatch`，日志 `/oscar/home/zliu328/catrag_6282551.out`，新结果根目录 `/oscar/scratch/zliu328/agent-memory-outputs/catrag_hypermem_top5_seed42_20260912`。提交后检查时生成模型仍在启动，不表示任务完成；其他五项任务及 QA 尚未提交。
-
-首跑诊断：`6282551` 在文档 embedding 阶段失败（`CUDA error: no kernel image is available for execution on the device`）。hipporag 环境为 Torch 2.5.1+cu124，不支持此 B200；vLLM 独立环境正常。改用 H100，不改模型、prompt、预算、图参数。重试构建作业 `6282688` 使用独立结果根目录 `catrag_hypermem_top5_seed42_20260912_h100`，原失败文件保留。依赖失败首跑的 QA 数组 `6282632` 已取消；替代 QA 数组依赖重试构建成功后运行三个 backbone。runner/lightmem 环境为 Torch 2.8.0+cu128，暂不升级任何旧环境。
-
-H100 调试：`6282688` 因 embedding batch=64 与生成服务共卡 OOM 失败，生成服务约占 68.17 GiB、embedding 进程约 10.88 GiB。只将 CatRAG Transformers embedding 运行 batch 降至 8，未改文本长度、模型、dtype、prompt、预算或 top-k。作业 `6282898` 在新根目录 `catrag_hypermem_top5_seed42_20260912_h100_batch8` 重试；失败依赖 QA `6282703` 已取消并重新提交依赖新构建的三个 QA。失败目录均保留。
-
-HyperMem 接入进度：已在现有 lightmem 环境补充缺失的 rich、json-repair 及其小型依赖；未更换 Torch/Transformers。新增 `baseline/hypermem_provider.py` 使用本地异步 OpenAI-compatible 客户端，原生抽取器仍提供 prompt，输出上限显式传入，使用 seed 42/non-thinking，并记录原始响应 usage。尚未完成真实 provider 调用验证，原生检索导入检查进一步发现缺 python-dotenv，正在补齐；不能把依赖检查或 fixture 当作全流程成绩。
-
-HyperMem 构建入口 `experiments/build_hypermem.py` 已接原生 LoCoMo 的事件切分、主题/事实及超图持久化，python-dotenv 已补齐，原生构建和检索导入检查通过。原生 LoCoMo loader 给每轮附加 `session_time + 30 seconds * turn_index`，这是官方输入处理，不是真实逐轮时间，已写入运行设置。新入口拒绝覆盖目录，保留每组各阶段产物；目前仅 LoCoMo 建图路径，另外五项任务的 document adapter 和图检索/top5/QA 还未完成，不算全量接通。复用现有生成服务 launcher 的 MEMORY_METHOD 分支，没有另复制环境或模型。
-
-HyperMem 重排接口 `baseline/hypermem_reranking.py` 复用其原生 RerankerProvider 的 prompt 与 logprob 打分，更换模型名为 Qwen/Qwen3-Reranker-0.6B，并记录 HTTP 返回 usage。最终 top5 从同一种 memory 的已格式化候选中选取，不混合其他 baseline 的产物；排序、五条上限、metadata 保留和空候选用内存 fixture 验证通过。尚未执行真实 reranker 推理，尚未完成检索入口串接。
-
-HyperMem `baseline/hypermem_retrieval.py` 已串接读取已生成超图、原生 BM25/向量索引、0.5/sum 超边传播、原生分层检索及最终重排 top5；独立索引目录，不调用生成器重建记忆。当前仅通过 adapter 导入及原生返回格式核对，真实索引与查询未验证。不会使用官方按题循环入口，因为该入口跳过 LoCoMo category 5；后续必须调用现有 benchmark cases 循环以覆盖全部五类问题。
-
-`experiments/run_hypermem.py` 已添加 retrieve-existing/evaluate，复用完整 benchmark cases 和现有确定性评分器，三个 QA 模型均可选择。lightmem 和 runner 环境 CLI 检查通过。文档任务图尚未构建，真实 reranker 服务及完整检索/QA 尚未验证；CLI 接受六任务不等于六任务已跑通。CatRAG batch8 重试已完成 412 块 NER 并开始关系抽取，运行计量 JSONL 正在写入。
-
-文档适配实现：`baseline/hypermem_documents.py` 保留原生边界判断、buffer、smart-mask 重叠及 JSON 解析；原始 passages 以 content/source_id 输入，无虚构 speaker，episode timestamp 留 null。生成 prompt 前附简短输入说明：这是文档而非对话，不从排列顺序推断真实时间，保留原文明确给出的日期/人物。原生收尾 buffer 使用 now()，文档路径在 prompt 格式化前清除，避免将处理时间当作证据。`build_hypermem.py` 和 launcher 已支持六任务；这属于已授权 document prompt/input 适配，不是官方文档 benchmark 的既有结果，仍需真实多段输入与全流程验证。
-
-后续运行：HyperMem LoCoMo 建图 `6282811` 后接 `6283242`（0.6B reranker 检索及三个模型 QA）；完整 SH-Doc QA 建图 `6283278` 后接 `6283300`。检索/QA 新根目录 `hypermem_reranker06_top5_read_seed42_20260912`，与生成目录分离。多段文档 fixture 验证原生先缓存两条输入再判断边界、末尾收束、所有 source ID 保留且不造日期；第一次 fixture 误以为每条各成一组，核对原生循环后修正的是检查预期而非算法。其余四项 HyperMem 与五项 CatRAG 尚未部署，现有提交不代表 36 组全部覆盖。
-
-CatRAG 持久化修复：原生 `cache_dir=short_sum_cache` 不存在，导致已生成节点摘要保存失败。当前唯一 CatRAG 作业不重启，通过仓库下新建 `short_sum_cache` 符号链接指向该任务 `memory/mab-0/node_summaries`，让后续原生保存继续进行。后续 adapter 显式设置每组独立的绝对 cache_dir 并创建目录；不共享跨任务节点摘要，不改摘要生成内容、prompt 或预算。HyperMem 最终文本格式化补上从真实 dialogue_turns 得到的说话者名，文档任务仍为空。
-
-## 当前接入检查：HyperMem、CatRAG、REMem（2026-09-12）
-
-保留全部旧结果及 memory。三个源码已在 `baseline_algorithms/`，尚未完成适配或启动新实验。本节覆盖下方历史候选名单；新增实验仍覆盖既定六项完整任务，seed 42、non-thinking，沿用现有确定性评分器，不运行官方模型裁判。
-
-| 方法 | 数据与 prompt 接口 | 必须保留的检索机制 |
-|---|---|---|
-| CatRAG | 接受原文字符串列表；LoCoMo 保留真实说话者、时间。优先保留原生抽取和查询评分 prompt，接本地 OpenAI-compatible endpoint。 | 动态边权、锚点、事实增强及图传播；不能替换为 dense top5。 |
-| REMem | 使用 `episodic_gist`，不是配置默认的 `openie`；按原生文档/对话路径输入。生成与查询模型分别注入。 | 完整模式由 `GraphAgent` 多轮访问并回答，调用的是 `qa_llm`。固定一次检索再统一 QA 只能另标为受控变体，不能称完整 REMem。 |
-| HyperMem | 官方运行入口是 LoCoMo 对话。文档任务需要无虚构说话者/日期的输入适配及对应文本 prompt；不能把段落伪装成真实对话，也不能让缺失日期落到当前时间。 | 原生主题—事件—事实层级、超边传播及分层检索；不能把三层 top-k 偷换成最终 top5。 |
-
-已核实的参数分歧：HyperMem `scripts/run_eval.sh` 使用 topic/episode/fact = 10/10/30；`hypermem/config.py` 为 15/20/30；README 示例为 15/25/30。[会议版论文 §4.1](https://aclanthology.org/2026.acl-long.1627.pdf) 明确采用初始候选 100、10/10/30 和传播权重 0.5，因此数量按论文而非配置文件猜测。论文使用 Qwen3-Reranker-4B，但启动脚本默认关闭 reranker，论文配置需要显式启用并检查相关调用。脚本还默认从 stage 2 开始，不能直接用于全新 memory。其 OpenAI 配置生成上限为 16384，而 vLLM 配置为 20000；更换服务地址不能顺便改变预算。CatRAG 查询边权评分显式传入 9192，不能用统一 2048 覆盖所有调用；完整有效预算还需逐调用核对。
-
-计量：构建、图检索/访问、最终回答分别记录 wall time 和输入/输出 token，写 JSON/JSONL。已有 `GenerationUsageTracker` 仅包同步 OpenAI SDK，漏掉异步调用；CatRAG 同时有同步和异步客户端，HyperMem 使用 aiohttp 的原生 provider，REMem 还需计入查询工具循环。缓存命中与本次实际调用分开，不能把历史 token 当作本次消耗或把缓存命中称作免费构建。
-
-实现进度：新增独立 `baseline/graph_usage.py`，支持同步/异步调用的逐条 JSONL 记录，不修改请求和响应，缺失 usage 留 null。已在现有 hipporag Python 环境用内存 fixture 验证同步、并发异步、请求不变、响应不变、缺失 usage 和失败传播；没有创建 test 文件。这仅是记录器契约检查，尚未接入三个真实 provider，不代表端到端已通过。系统默认 Python 版本不兼容项目类型语法，后续沿用现有环境解释器。
-
-CatRAG 接入进度：`baseline/catrag_memory.py` 已封装原生 index/retrieve、同步/异步调用计量、独立 memory 目录及禁止 rebuild 的 load-existing 入口。原生包与 adapter 在现有 hipporag 环境导入成功，未安装新依赖；CatRAG 当前公开代码不需要 DSPy 包，不能仅凭类名 `DSPyFilter` 判断缺依赖。尚未用真实模型验证构建、持久化重载及检索，未启动 benchmark，缓存命中记录和完整资源释放仍待补齐。
-
-复用：保留现有模型下载缓存和环境；先复用 `hipporag` 环境的 Torch、Transformers、sentence-transformers、OpenAI、aiohttp、igraph。当前该环境缺 dspy、rank_bm25、json_repair、rich；尚未安装或验证完整依赖兼容性，不执行官方整套依赖降级。scratch 当前约 482/512 GB，home 约 85.5/100 GB（软配额）；避免复制模型与旧结果。已有 HippoRAG 图不能未经核对就视为 CatRAG 的同配置产物，HyperMem/REMem 也不能直接复用别的方法生成的记忆。
-
-接下来先完成有效配置核对、provider 计量和独立输出入口。HyperMem 文档适配，以及 REMem 原生多轮模式与统一单次 QA 的比较口径，需明确记录后才进入全量运行。当前没有性能提升结论。
+REMem 保留为相关工作，不启动构建或查询；其原生多轮工具访问不能冒充固定一次
+检索与统一 QA。不同方法的 memory 不直接互用，已有模型缓存和环境继续保留。
 
 ## 范围与结论
 
@@ -558,7 +305,7 @@ CatRAG 接入进度：`baseline/catrag_memory.py` 已封装原生 index/retrieve
 
 **评测。** LoCoMo 的主要成绩 92.73% 是模型裁判准确率，不是 token F1。论文分别列出离线构建与在线回答成本；在线检索不调用模型，并不代表前期构建便宜。
 
-**价值与边界。** 是做“高阶关联”时无法绕过的直接相关工作。需要检验的是超边是否保留并返回具体关系条件，而不只是把许多同主题事实放在一起。现有论文评测不能证明它对长文档或反事实更新任务有效。
+**价值与边界。** 仅作高阶关联的相关工作，不再安排复现、适配或后续实验。现有论文评测不能证明它对长文档或反事实更新任务有效。
 
 ### 10. APEX-MEM — ACL 2026 主会
 
@@ -743,7 +490,7 @@ CatRAG 接入进度：`baseline/catrag_memory.py` 已封装原生 index/retrieve
 
 ## 下一步应优先读什么，而不是立即再堆 baseline
 
-如果研究重点是 **training-free 的 memory generation / organization**，优先精读三组已有方案：AutoSchemaKG 与 MemGraphRAG 对应跨记录建图；GAM、REMem 与 HyperMem 对应事件和语境组织；LinearRAG、BrowseNet 与 ZoomRAG 提供不依赖完整关系生成的反面参照。ATOM 可以参考如何检验“原子化是否真的提高保留”，但不能因此新造本项目的 gold graph 或修改 benchmark。
+如果研究重点是 **training-free 的 memory generation / organization**，优先精读三组已有方案：AutoSchemaKG 与 MemGraphRAG 对应跨记录建图；GAM 与 REMem 对应事件和语境组织；LinearRAG、BrowseNet 与 ZoomRAG 提供不依赖完整关系生成的反面参照。ATOM 可以参考如何检验“原子化是否真的提高保留”，但不能因此新造本项目的 gold graph 或修改 benchmark。
 
 如果研究重点改成 **已有记忆的访问机制**，CatRAG、MRAgent、CompassMem 更直接。两条路线都能研究，但论文必须明确自己的贡献在哪一阶段。不能实际只改变查询循环，却把故事写成更好的生成记忆；也不能把多个 baseline 的独立产物合并后的增益说成对任意单一方法即插即用。
 
