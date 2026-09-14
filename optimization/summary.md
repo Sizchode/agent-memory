@@ -1,4 +1,10 @@
-# 本轮研究总结
+# 首轮研究总结（历史）
+
+2026-09-14：下文是首轮结果，不代表当前 reader 范围或实现。当前仅 4B/9B，
+精简配置 `canonical_latest_rrf_window` 为双 5/6，最新代码与消融结论见 [README.md](README.md) 和 [record.md](record.md)。
+
+此处汇总首次优化阶段的完成结果；用户随后已澄清允许统一、可解释的 heuristic，
+历史支持交叉对照已恢复执行，最新状态见 [progress.md](progress.md)。
 
 ## 目标与口径
 
@@ -62,5 +68,5 @@ test set 明确作为开发集；不硬编码题目、答案或结果，不按�
 `experiments/run_anchormem.py`、`experiments/run_gap_query_memory.py`、`baseline/graph_usage.py`
 和 `utils/models.py` 的 token usage 记录改动；不能将此次提交称为独立可复现的干净克隆版本。
 
-当前没有运行中的作业。新 heuristic 的授权与最新 AGENTS.md 禁令待澄清，goal 未完成。
+首次优化阶段的作业已全部完成；整体目标尚未完成，后续实验状态见进度记录。
 HyperMem 未恢复，也未扩展到 agentic 检索。

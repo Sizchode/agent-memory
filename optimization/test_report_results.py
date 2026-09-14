@@ -58,7 +58,11 @@ class ReportResultsTests(unittest.TestCase):
             with patch.multiple(report_results, SOURCE=source, MODELS=models,
                                 TASK_METRICS=tasks, BASELINES={"control": baseline}):
                 with redirect_stdout(io.StringIO()):
-                    report_results.report(output, ["full", "five", "partial", "mixed"])
+                    report_results.report(output, ["full"])
+                current = json.loads((output / "comparison.json").read_text())
+                self.assertEqual(set(current["variants"]["full"]), set(models[:2]))
+                with redirect_stdout(io.StringIO()):
+                    report_results.report(output, ["full", "five", "partial", "mixed"], models=models)
             result = json.loads((output / "comparison.json").read_text())
             self.assertEqual(result["target_wins"], 6)
             self.assertEqual(result["milestone_wins"], 5)

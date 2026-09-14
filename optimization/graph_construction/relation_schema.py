@@ -61,10 +61,12 @@ def validate_schema(payload, batch):
 
 
 async def build(args):
+    prompt = PROMPT
+    validate = validate_schema
     tokenizer = AutoTokenizer.from_pretrained(args.model)
     args.output_root.mkdir(parents=True, exist_ok=args.resume)
     settings = dict(
-        generator=args.model, prompt=PROMPT, seed=42, thinking=False,
+        generator=args.model, prompt=prompt, seed=42, thinking=False,
         batch_size=args.batch_size, concurrency=args.concurrency, max_tokens=8192,
         examples_per_relation=2, source_memory=str(SOURCE / "hipporag2"),
         graph_inputs="all source relation labels, first two distinct source triples per label",
@@ -94,7 +96,7 @@ async def build(args):
                     write_json(record_path, records)
                 if (directory / "complete.json").exists():
                     schema = json.loads((directory / "schema.json").read_text())
-                    validate_schema({"relations": list(schema.values())}, records)
+                    validate({"relations": list(schema.values())}, records)
                     print(json.dumps(dict(task=task, group=source.parent.name, resumed_complete=True)), flush=True)
                     continue
                 cache_path = directory / "batches.jsonl"
@@ -106,14 +108,14 @@ async def build(args):
                         try:
                             if saved["finish_reason"] != "stop":
                                 continue
-                            checked = validate_schema(json.loads(saved["response"]), [by_id[i] for i in saved["ids"]])
+                            checked = validate(json.loads(saved["response"]), [by_id[i] for i in saved["ids"]])
                         except (KeyError, TypeError, ValueError):
                             continue
                         cached.update({row["id"]: row for row in checked})
                 start = perf_counter()
                 with cache_path.open("a" if args.resume else "x") as stream:
                     async def infer(batch):
-                        messages = [{"role": "system", "content": PROMPT},
+                        messages = [{"role": "system", "content": prompt},
                                     {"role": "user", "content": json.dumps(batch, ensure_ascii=False)}]
                         tokens = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=True,
                                                                enable_thinking=False)
@@ -138,7 +140,7 @@ async def build(args):
                         try:
                             if response.choices[0].finish_reason != "stop":
                                 raise ValueError("Incomplete model output")
-                            return validate_schema(json.loads(text), batch)
+                            return validate(json.loads(text), batch)
                         except (KeyError, TypeError, ValueError):
                             if len(batch) == 1:
                                 raise
@@ -150,7 +152,7 @@ async def build(args):
                     batches = [pending[i:i + args.batch_size] for i in range(0, len(pending), args.batch_size)]
                     inferred = await asyncio.gather(*(infer(batch) for batch in batches))
                 merged = list(cached.values()) + [row for batch in inferred for row in batch]
-                validate_schema({"relations": merged}, records)
+                validate({"relations": merged}, records)
                 by_id = {row["id"]: row for row in merged}
                 schema = {row["label"]: by_id[row["id"]] for row in records}
                 write_json(directory / "schema.json", schema)

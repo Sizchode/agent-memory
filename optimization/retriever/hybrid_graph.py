@@ -4,8 +4,6 @@ from baseline.base import RetrievedItem
 from baseline.bm25 import BM25Baseline
 
 
-VARIANTS = ("original_graph_rrf", "canonical_graph_rrf",
-            "original_graph_rrf_window", "canonical_graph_rrf_window")
 RANK_CONSTANT = 60
 RANK_WINDOW = 5
 

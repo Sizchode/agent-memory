@@ -10,17 +10,21 @@
 #SBATCH --output=/oscar/home/zliu328/graph_schema_%j.out
 set -euo pipefail
 : "${EXPERIMENT_ID:?Set a fresh schema output directory}"
+if [[ -n "${UPDATE_POLICY_SCHEMA_EXPERIMENT:-}" ]]; then
+    echo "The experimental update-policy schema builder has been retired" >&2
+    exit 2
+fi
 cd /oscar/home/zliu328/agent-memory
 module load cuda/12.9.0-cinr
 export HF_HOME=/oscar/scratch/zliu328/hf_output HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1
 export PYTHONHASHSEED=42 TOKENIZERS_PARALLELISM=false
 export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
 export VLLM_API_KEY=local-qwen-generator
-VLLM=/oscar/scratch/zliu328/llm_tool_ckpt/venvs/vllm/bin/vllm
+VLLM=/oscar/scratch/zliu328/agent-memory-envs/vllm_cu129/bin/vllm
 export PATH="$(dirname "$VLLM"):$PATH"
 PORT=$((10000 + SLURM_JOB_ID % 50000))
 "$VLLM" serve Qwen/Qwen3-30B-A3B-Instruct-2507 --host 127.0.0.1 --port "$PORT" \
-    --dtype bfloat16 --tensor-parallel-size 1 --max-model-len 32768 \
+    --dtype bfloat16 --tensor-parallel-size "${SCHEMA_TENSOR_PARALLEL_SIZE:-1}" --max-model-len 32768 \
     --gpu-memory-utilization 0.85 --seed 42 --generation-config vllm --api-key "$VLLM_API_KEY" &
 SERVER=$!
 cleanup() {

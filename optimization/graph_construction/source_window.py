@@ -1,9 +1,6 @@
 """Freeze neighboring source context inside contiguous timestamp groups."""
 
 
-VARIANTS = ("canonical_graph_source_window", "adaptive_graph_source_window")
-
-
 def attach_source_windows(contents, ordered_keys, window_size=3):
     if window_size < 1:
         raise ValueError("Source window size must be positive")

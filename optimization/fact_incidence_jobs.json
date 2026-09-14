@@ -1,0 +1,55 @@
+{
+  "experiment": "optimization_fact_incidence_seed42_20260913",
+  "variant": "source_fact_incidence",
+  "report_job": 6340424,
+  "models": [
+    "Qwen/Qwen3.5-9B",
+    "Qwen/Qwen3.5-4B",
+    "Qwen/Qwen3.5-2B"
+  ],
+  "qa_dependency": "Full-task ordinary retrieval verification after CPU construction and replay",
+  "jobs": {
+    "FactConsolidation-SH": {
+      "replay": 6340293,
+      "verify": 6340323,
+      "qa_array": 6340330
+    },
+    "FactConsolidation-MH": {
+      "replay": 6340306,
+      "verify": 6340324,
+      "qa_array": 6340331
+    },
+    "SH-Doc_QA": {
+      "task": "SH-Doc QA",
+      "replay": 6340356,
+      "verify": 6340357,
+      "qa_array": 6340358,
+      "failed_submission": {
+        "replay": 6340307,
+        "verify": 6340325,
+        "qa_array": 6340332
+      }
+    },
+    "MH-Doc_QA": {
+      "task": "MH-Doc QA",
+      "replay": 6340359,
+      "verify": 6340360,
+      "qa_array": 6340361,
+      "failed_submission": {
+        "replay": 6340308,
+        "verify": 6340326,
+        "qa_array": 6340333
+      }
+    },
+    "LoCoMo": {
+      "replay": 6340309,
+      "verify": 6340327,
+      "qa_array": 6340334
+    },
+    "2WikiMultiHopQA": {
+      "replay": 6340310,
+      "verify": 6340328,
+      "qa_array": 6340335
+    }
+  }
+}

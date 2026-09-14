@@ -1,0 +1,300 @@
+{
+  "experiment": "optimization_ablation_case_serialization_seed42_20260913",
+  "control": "optimization_hybrid_graph_seed42_20260913/canonical_graph_rrf_window",
+  "build_job": 6354005,
+  "build_status": "COMPLETED 0:0, 00:01:25; exact old weights and readout fields on all 15 groups / 14362 sources",
+  "previous_attempt": {
+    "experiment": "optimization_ablation_seed42_20260913",
+    "build_job": 6353716,
+    "build_status": "COMPLETED 0:0, 00:01:29",
+    "retrieval_arrays": [6353757, 6353758],
+    "retrieval_status": "All six failed on tuple/list case comparison before writing any candidate row",
+    "qa_arrays": [6353759, 6353760, 6353761, 6353762, 6353763, 6353764],
+    "report_job": 6353765,
+    "dependent_status": "All QA and report jobs cancelled automatically; no new QA calls",
+    "artifacts_preserved": true,
+    "diagnosis": "All 3386 cases match both references exactly after ordinary JSON serialization; only tuple versus list representation differed"
+  },
+  "control_audit": {
+    "groups": 15,
+    "sources": 14362,
+    "weights_exact": true,
+    "legacy_readout_fields_exact": true
+  },
+  "retrieval_arrays": {
+    "short": 6354028,
+    "long": 6354029
+  },
+  "retrieval_status": "All six completed 0:0; LoCoMo 00:21:57 and 2Wiki 00:24:10. All 3386 control and no-RRF reference readouts match exactly.",
+  "qa": [
+    {
+      "task": "SH-Doc_QA",
+      "retrieval_array": 6354028,
+      "retrieval_array_index": 0,
+      "qa_array": 6354102
+    },
+    {
+      "task": "MH-Doc_QA",
+      "retrieval_array": 6354028,
+      "retrieval_array_index": 1,
+      "qa_array": 6354116
+    },
+    {
+      "task": "FactConsolidation-SH",
+      "retrieval_array": 6354028,
+      "retrieval_array_index": 2,
+      "qa_array": 6354117
+    },
+    {
+      "task": "FactConsolidation-MH",
+      "retrieval_array": 6354028,
+      "retrieval_array_index": 3,
+      "qa_array": 6354123
+    },
+    {
+      "task": "LoCoMo",
+      "retrieval_array": 6354029,
+      "retrieval_array_index": 4,
+      "qa_array": 6354124
+    },
+    {
+      "task": "2WikiMultiHopQA",
+      "retrieval_array": 6354029,
+      "retrieval_array_index": 5,
+      "qa_array": 6354125,
+      "partition": "gpu",
+      "qos": "norm-gpu",
+      "array_concurrency": 3,
+      "per_index_overrides": {
+        "2": {
+          "partition": "gpu-he",
+          "qos": "gpu-he",
+          "reason": "Moved while pending to use available quota; no restart or experimental configuration change"
+        }
+      }
+    }
+  ],
+  "report_job": 6355178,
+  "superseded_report_job": {
+    "job": 6354131,
+    "state": "CANCELLED while pending",
+    "reason": "User removed 2B from current scope; replacement report depends only on the remaining 4B/9B jobs and audits all six tasks"
+  },
+  "scope_change": {
+    "requested_by_user": true,
+    "active_models": ["Qwen/Qwen3.5-9B", "Qwen/Qwen3.5-4B"],
+    "retired_model": "Qwen/Qwen3.5-2B",
+    "cancelled_qa_job": "6354124_2",
+    "cancelled_qa_elapsed": "00:32:52",
+    "artifacts_preserved": true,
+    "retired_locomo_qa_rows": {"without_window": 1986, "without_fact_appendix": 1986, "without_canonicalization": 344},
+    "all_six_tasks_unchanged": true
+  },
+  "variants": [
+    "without_rrf",
+    "without_window",
+    "without_fact_appendix",
+    "without_canonicalization",
+    "without_latest",
+    "without_discourse_filter"
+  ],
+  "models": [
+    "Qwen/Qwen3.5-9B",
+    "Qwen/Qwen3.5-4B"
+  ],
+  "original_models": ["Qwen/Qwen3.5-9B", "Qwen/Qwen3.5-4B", "Qwen/Qwen3.5-2B"],
+  "questions_per_reader_per_variant": 3386,
+  "maximum_new_qa_calls": 33860,
+  "planned_new_qa_calls_after_exact_reuse_audit": 30460,
+  "planned_reused_qa_calls": 10172,
+  "original_maximum_new_qa_calls": 50790,
+  "original_planned_new_qa_calls_after_exact_reuse_audit": 45690,
+  "original_planned_reused_qa_calls": 15258,
+  "reuse_policy": "Predeclared no-RRF reference, or full control for an identical full-task readout; exact case fields and ordered text equality, never scores",
+  "pipeline_status": "COMPLETE: all six single ablations, six full tasks and both 4B/9B readers. Final LoCoMo 9B job 6354124_0 completed 0:0 in 03:56:50; report 6355178 completed 0:0 in 00:00:29 on batch. Whole-discourse removal is a separate ongoing experiment.",
+  "single_ablation_complete": {
+    "report_job": 6355178,
+    "report_status": "COMPLETED 0:0, 00:00:29; all predictions, nine baselines, original metrics, usage and context diagnostics audited",
+    "report_file": "/oscar/scratch/zliu328/agent-memory-outputs/optimization_ablation_case_serialization_seed42_20260913/ablation_results.json",
+    "fresh_qa_calls": 30460,
+    "reused_qa_calls": 10172,
+    "strict_baseline_wins": {
+      "Qwen/Qwen3.5-9B": {"control": 5, "without_rrf": 5, "without_window": 4, "without_fact_appendix": 5, "without_canonicalization": 4, "without_latest": 4, "without_discourse_filter": 5},
+      "Qwen/Qwen3.5-4B": {"control": 6, "without_rrf": 4, "without_window": 5, "without_fact_appendix": 5, "without_canonicalization": 6, "without_latest": 6, "without_discourse_filter": 6}
+    },
+    "selection": "Retain RRF, window, canonicalization and latest under the shared two-reader milestone. Appendix remains a documented cost/quality tradeoff. Graph-only discourse removal maintains task-win counts, but whole-rule deletion still requires the ongoing graph-and-readout experiment. No lossless-removal claim."
+  },
+  "cleanup_rebuild_job": 6355268,
+  "cleanup_rebuild_status": "COMPLETED 0:0, 00:01:44; original control reconstruction passed on all 15 groups and 14362 sources",
+  "constructor_cleanup_rebuild_job": 6355420,
+  "constructor_cleanup_rebuild_status": "COMPLETED 0:0, 00:01:24; 15 groups / 14362 sources control exact, all 90 variant-group weights, full contents, RRF and statistics equal to pre-cleanup artifacts",
+  "retired_historical_configurations": 14,
+  "joint_removal": {
+    "experiment": "optimization_ablation_joint_removal_seed42_20260913",
+    "variants": ["without_graph_selection", "without_selection_and_fact_appendix"],
+    "models": ["Qwen/Qwen3.5-9B", "Qwen/Qwen3.5-4B"],
+    "tasks_unchanged": true,
+    "maximum_new_qa_calls": 13544,
+    "build_job": 6355727,
+    "build_status": "COMPLETED 0:0, 00:01:24; full control exact, both candidate weights equal across 15 groups / 14362 sources; all source support retained, RRF and source windows unchanged",
+    "pilot_retrieval_job": "6355810_0",
+    "pilot_retrieval_status": "COMPLETED 0:0, 00:00:58; all 100 control readouts and ordered case fields match; candidate unchanged-context counts 95 and 0",
+    "remaining_retrieval_array": 6355843,
+    "remaining_retrieval_indices": [1, 2, 3, 4, 5],
+    "retrieval_status": "All six complete 0:0; LoCoMo 00:07:19 and 2Wiki 00:12:29. All 3386 case fields/order, control readouts and candidate context counts audited.",
+    "planned_new_qa_calls_after_exact_reuse_audit": 13544,
+    "planned_reused_qa_calls": 0,
+    "qa_arrays": {
+      "SH-Doc_QA": 6355844,
+      "MH-Doc_QA": 6355858,
+      "FactConsolidation-SH": 6355859,
+      "FactConsolidation-MH": 6355860,
+      "LoCoMo": 6355861,
+      "2WikiMultiHopQA": 6355862
+    },
+    "qa_array_models": {"0": "Qwen/Qwen3.5-9B", "1": "Qwen/Qwen3.5-4B"},
+    "qa_resource_override": {
+      "6355862_1": {"partition": "gpu-he", "qos": "gpu-he", "reason": "Moved while pending to use idle quota; Restarts=0, no experimental configuration change"}
+    },
+    "pilot_qa_status": "SH 9B/4B completed 0:0 in 00:03:26 / 00:03:02; both variants audited for all 100 predictions, usage and context diagnostics",
+    "qa_dependency_policy": "Remaining task QA requires both its complete retrieval and both SH pilot reader jobs to succeed",
+    "report_job": 6355868,
+    "status": "COMPLETED: all six tasks and both readers, 13544 fresh QA, no reuse. Final report 6355868 completed 0:0 in 00:00:17; complete scope, score and cost accounting verified.",
+    "long_qa_elapsed": {"6355861_0": "00:38:27", "6355861_1": "00:29:21", "6355862_0": "00:47:05", "6355862_1": "00:36:04"},
+    "strict_baseline_wins": {
+      "Qwen/Qwen3.5-9B": {"without_graph_selection": 3, "without_selection_and_fact_appendix": 5},
+      "Qwen/Qwen3.5-4B": {"without_graph_selection": 5, "without_selection_and_fact_appendix": 4}
+    },
+    "selection": "Fixed joint removals of existing operations, no new weighting rule; independent from the six single-component ablations"
+  },
+  "tests": "Before deleting the two temporary test scripts at user request: 109 tests, 106 passed and 3 xgrammar skips; this is historical verification, not the remaining suite count.",
+  "temporary_tests_removed": ["optimization/test_ablation.py", "optimization/test_ablation_reporting.py"],
+  "temporary_test_lines_removed": 276,
+  "legacy_cleanup": {
+    "archive": "/oscar/scratch/zliu328/agent-memory-outputs/optimization_code_before_legacy_cleanup_20260914.tar.gz",
+    "counted_extensions": [".py", ".sbatch", ".ebnf"],
+    "before": {"files": 61, "lines": 5751},
+    "after": {"files": 28, "lines": 2408},
+    "net_lines_removed": 3343,
+    "main_mechanisms_removed_as_globally_lossless": 0,
+    "ordinary_retrieval_jobs": {"SH-Doc_QA": 6358089, "MH-Doc_QA": 6358241, "FactConsolidation-SH": 6358242, "FactConsolidation-MH": 6358243, "LoCoMo": 6358244, "2WikiMultiHopQA": 6358245},
+    "ordinary_retrieval_status": "All six COMPLETED 0:0; 3386 ordered readouts equal to frozen main",
+    "failed_cli_attempt": {"job": 6358054, "state": "FAILED 2:0 in 00:00:02", "reason": "SH-Doc_QA is not the run_graph CLI task spelling; corrected to SH-Doc QA", "new_qa": 0},
+    "rebuild_job": 6358294,
+    "rebuild_experiment": "optimization_ablation_legacy_cleanup_seed42_20260914",
+    "rebuild_status": "COMPLETED 0:0 in 00:01:27; 15 groups / 14362 sources exact; all 90 variant-group weights, contents, lexical order, RRF and ablation statistics equal",
+    "new_qa_calls": 0,
+    "remaining_tests": "26 passed; no new temporary test files",
+    "remaining_work": "Builder consolidation continued in builder_cleanup below; finish LoCoMo single ablations"
+  },
+  "builder_cleanup": {
+    "experiment": "optimization_graph_build_cleanup_seed42_20260914",
+    "cpu_partition": "batch",
+    "build_jobs": {"pilot": "6358497_0", "remaining_tasks": "6358518_1..5"},
+    "build_status": "All six COMPLETED 0:0; 30 main/original graph groups exact, 15 corpora / 14362 source records",
+    "single_ablation_rebuild": {"job": 6358504, "experiment": "optimization_ablation_consolidated_builder_seed42_20260914", "status": "COMPLETED 0:0 in 00:01:17; all 90 variant-group weights, full contents, lexical order, RRF and statistics equal"},
+    "joint_ablation_rebuild": {"job": 6358593, "experiment": "optimization_joint_consolidated_builder_seed42_20260914", "status": "COMPLETED 0:0 in 00:01:12; all 30 variant-group weights, full contents, lexical order, RRF and statistics equal"},
+    "retrieval_jobs": {"SH-Doc_QA": 6358519, "MH-Doc_QA": 6358576, "FactConsolidation-SH": 6358577, "FactConsolidation-MH": 6358578, "LoCoMo": 6358579, "2WikiMultiHopQA": 6358580},
+    "retrieval_status": "All six complete and compared: 3386 ordered cases and readouts per graph match the frozen main and original controls. LoCoMo 6358579 completed in 00:03:59; 2Wiki 6358580 in 00:08:02. No saved query resets or QA reuse used to generate these retrieval rows.",
+    "after": {"files": 24, "lines": 1973},
+    "net_lines_removed_from_archive": 3778,
+    "remaining_tests": "22 passed; no new temporary test files",
+    "new_qa_calls": 0
+  },
+  "current_code": {"files": 19, "lines": 1447, "net_lines_removed_from_archive": 4304, "note": "Removed discourse use, completed ablation execution files, ablation-only switches and two retired tests; 549 fewer lines than the previous 1996-line snapshot"},
+  "whole_discourse_removal": {
+    "experiment": "optimization_ablation_without_discourse_seed42_20260914",
+    "variants": ["without_discourse_selection"],
+    "models": ["Qwen/Qwen3.5-9B", "Qwen/Qwen3.5-4B"],
+    "scope": "All six full tasks; remove discourse filtering from graph and appendix, retain canonicalization, latest-only, source projection, RRF, source windows and JSON representation",
+    "build_job": 6359366,
+    "build_status": "COMPLETED 0:0 in 00:01:14; full old control reconstruction passed",
+    "audit_job": 6359472,
+    "audit_status": "COMPLETED 0:0 in 00:00:44; 15 groups / 14362 sources, weights equal to graph-only removal; readout exact using canonical-only schema without role or cardinality",
+    "cpu_partition": "batch",
+    "pilot_retrieval": "6359473_0",
+    "pilot_retrieval_status": "COMPLETED 0:0 in 00:00:58; 100 control readouts match; full case fields/order and graph-only source ranking exact; 35 changed readouts as predicted",
+    "rejected_submissions": "Two submissions rejected before job creation because the completed pilot had left scontrol's live job table; sacct and complete artifact verification allowed direct submission without rerunning the pilot",
+    "remaining_retrieval_array": 6359528,
+    "remaining_retrieval_status": "All five COMPLETED 0:0; LoCoMo 00:04:15 and 2Wiki 00:05:59",
+    "pilot_qa_array": 6359529,
+    "pilot_qa_status": "Both COMPLETED 0:0; 9B 00:02:37, score 0.91; 4B 00:02:16, score 0.87. All 100 predictions, original metric, usage and reader contexts audited for each reader",
+    "retrieval_audit_job": 6359667,
+    "retrieval_audit_status": "COMPLETED 0:0 in 00:00:03 on batch; all 3386 ordered case fields, top5, graph-only source ranks/scores, context changes and whole-task references verified; both SH QA pilots passed",
+    "qa_arrays": {"SH-Doc_QA": 6359529, "MH-Doc_QA": 6359675, "FactConsolidation-SH": 6359680, "FactConsolidation-MH": 6359681, "LoCoMo": 6359676, "2WikiMultiHopQA": 6359679},
+    "qa_cpu_reuse_tasks": ["FactConsolidation-SH", "FactConsolidation-MH"],
+    "qa_cpu_reuse_status": "All four array tasks COMPLETED 0:0 in 1-2 seconds on batch; all four qa_complete artifacts verified, 400 whole-task QA references, zero new calls",
+    "qa_dependency_policy": "Remaining QA arrays depend on successful full retrieval and both SH reader pilot audit 6359667; CPU-only full-task reuse audits run on batch",
+    "report_job": 6359682,
+    "report_partition": "batch",
+    "qa_array_models": {"0": "Qwen/Qwen3.5-9B", "1": "Qwen/Qwen3.5-4B"},
+    "expected_new_qa_calls": 6372,
+    "expected_reused_qa_calls": 400,
+    "qa_expectation_status": "Confirmed by complete ordinary retrieval audit 6359667; planned calls, not all completed calls; never per-case reuse",
+    "status": "COMPLETE: report 6359682 completed 0:0 in 00:00:14 on batch; full six tasks, both readers, nine baselines, original metrics, usage and context diagnostics audited; 6372 fresh QA and 400 whole-task references",
+    "strict_baseline_wins": {"Qwen/Qwen3.5-9B": 5, "Qwen/Qwen3.5-4B": 5},
+    "long_qa_elapsed": {"6359676_0": "00:25:14", "6359676_1": "00:19:45", "6359679_0": "00:27:21", "6359679_1": "00:20:16"},
+    "selection": "Adopt as canonical_latest_rrf_window for the shared five-task simplification milestone; disclose 4B SH minus 3pp and LoCoMo minus 0.2045pp, not lossless or universally better"
+  },
+  "discourse_cleanup": {
+    "archive": "/oscar/scratch/zliu328/agent-memory-outputs/optimization_code_before_discourse_removal_20260914.tar.gz",
+    "experiment": "optimization_canonical_latest_cleanup_seed42_20260914",
+    "main_variant": "canonical_latest_rrf_window",
+    "removed_files": ["ablation.py", "prepare_ablation.py", "evaluate_ablation.py", "report_ablation.py", "run_ablation.sbatch"],
+    "mechanism_removed": "Discourse filtering from both graph support and fact appendix; no role/cardinality lookup in support selection. Original schema generation prompt preserved",
+    "other_retired_options": ["latest_only ablation switch", "facts_format=none branch"],
+    "test_job": 6360030,
+    "test_status": "COMPLETED 0:0 in 00:00:02 on batch; 20 existing tests passed, no new test file",
+    "build_jobs": {"pilot": "6360031_0", "remaining": "6360034_1..5"},
+    "build_status": "All six COMPLETED 0:0; pilot 00:00:26, remaining 25-44 seconds",
+    "build_audit_job": 6360107,
+    "build_audit_status": "COMPLETED 0:0 in 00:00:09 on batch; all 15 groups / 14362 sources, main weights and complete contents exactly match selected candidate, control weights equal original graphs, lexical order and fixed retrieval metadata match",
+    "retrieval_pilot_job": 6360126,
+    "retrieval_pilot_status": "COMPLETED 0:0 in 00:01:30; main and original graph ordinary SH retrieval",
+    "retrieval_pilot_audit_job": 6360166,
+    "retrieval_pilot_audit_status": "COMPLETED 0:0 in 00:00:01 on batch; all 100 case fields and source ranks/scores match respective references. Main readouts exact; original graph has 36 changed readouts and requires full SH QA",
+    "remaining_retrieval_jobs": {"MH-Doc_QA": 6360169, "FactConsolidation-SH": 6360170, "FactConsolidation-MH": 6360171, "LoCoMo": 6360172, "2WikiMultiHopQA": 6360173},
+    "remaining_retrieval_status": "All five COMPLETED 0:0; MH 00:02:18, FCSH 00:00:36, FCMH 00:00:38, LoCoMo 00:03:53, 2Wiki 00:07:02",
+    "original_graph_sh_qa_array": 6360175,
+    "original_graph_sh_qa_status": "Both COMPLETED 0:0; 9B 00:02:34, 4B 00:02:08. Audit 6360240 completed on batch in 00:00:02, scores 0.94/0.86, all 100 prediction IDs/order, original metric, usage and input contexts checked",
+    "original_graph_sh_qa_audit_job": 6360240,
+    "full_retrieval_audit_job": 6360181,
+    "full_retrieval_audit_status": "COMPLETED 0:0 in 00:00:07 on batch; all 3386 main readouts and ordered case fields/source ranks/scores match selected candidate. Original graph source ranks/scores match old original control. Source QA predictions, usage and metrics audited before 16 task-reader references were linked",
+    "original_graph_changed_readouts": {"SH-Doc_QA": 36, "MH-Doc_QA": 13, "FactConsolidation-SH": 0, "FactConsolidation-MH": 0, "LoCoMo": 780, "2WikiMultiHopQA": 38},
+    "qa_reuse": {"main_whole_task_calls": 6772, "original_graph_whole_task_calls": 400, "original_graph_total_fresh_calls": 6372, "per_case_stitching": false},
+    "original_graph_remaining_qa_arrays": {"MH-Doc_QA": 6360275, "LoCoMo": 6360276, "2WikiMultiHopQA": 6360277},
+    "original_graph_qa_status": "COMPLETE: MH 6360275_0/1 in 00:02:58 / 00:02:25; LoCoMo 6360276_0/1 in 00:25:11 / 00:19:37; 2Wiki 6360277_0/1 in 00:27:47 / 00:20:34; all exit 0:0",
+    "final_report_job": 6360278,
+    "final_report_status": "COMPLETED 0:0 in 00:00:10 on batch; both variants/readers, six full tasks and nine baselines",
+    "final_audit_job": 6360474,
+    "final_audit_status": "COMPLETED 0:0 in 00:00:08 on batch; all 24 task-reader-variant pairs, 13544 prediction IDs/order and actual contexts, original metrics, usage and reference paths checked; 6372 fresh plus 7172 whole-task reused QA",
+    "final_strict_baseline_wins": {"canonical_latest_rrf_window": {"Qwen/Qwen3.5-9B": 5, "Qwen/Qwen3.5-4B": 5}, "original_graph_rrf_window": {"Qwen/Qwen3.5-9B": 2, "Qwen/Qwen3.5-4B": 2}},
+    "main_minus_original_graph_pp": {
+      "Qwen/Qwen3.5-9B": {"SH-Doc_QA": -3, "MH-Doc_QA": 0, "FactConsolidation-SH": 3, "FactConsolidation-MH": 3, "LoCoMo": -0.7069953115938721, "2WikiMultiHopQA": 6.792484153100547},
+      "Qwen/Qwen3.5-4B": {"SH-Doc_QA": 1, "MH-Doc_QA": 6, "FactConsolidation-SH": 1, "FactConsolidation-MH": 5, "LoCoMo": -0.19763327907039718, "2WikiMultiHopQA": 7.706984886458567}
+    },
+    "remaining_work": "None for this thinning/ablation scope. Complete reports, archives and theory limits retained; this is not a full-field SOTA or global-minimality claim"
+  },
+  "discourse_readout_dependency_audit": {
+    "job": 6359164,
+    "partition": "batch",
+    "status": "COMPLETED 0:0 in 00:00:40; existing source/readout functions, no new artifact or QA variant",
+    "sources": 14362,
+    "changed_source_readouts": 667,
+    "changed_reader_contexts_if_filter_also_removed_from_appendix": {"SH-Doc_QA": 35, "MH-Doc_QA": 13, "FactConsolidation-SH": 0, "FactConsolidation-MH": 0, "LoCoMo": 849, "2WikiMultiHopQA": 33},
+    "new_qa_calls": 0,
+    "implication": "Graph-only removal is not whole-pipeline removal; four full tasks would need new QA, two whole tasks match existing graph-only inputs"
+  },
+  "four_b_complete_audit": {
+    "qa_job": "6354124_1",
+    "audit_job": 6359282,
+    "audit_partition": "batch",
+    "status": "COMPLETED 0:0 in 00:00:13; all six variants and tasks, nine baselines, usage and context diagnostics checked with existing reporter; final two-reader report files not overwritten",
+    "strict_baseline_wins": {"control": 6, "without_rrf": 4, "without_window": 5, "without_fact_appendix": 5, "without_canonicalization": 6, "without_latest": 6, "without_discourse_filter": 6}
+  },
+  "without_latest_complete": {
+    "scope": "Both 4B/9B, all six full tasks; scores, IDs, usage and nine baselines audited",
+    "strict_baseline_wins": {"Qwen/Qwen3.5-9B": 4, "Qwen/Qwen3.5-4B": 6},
+    "selection": "Not a unified replacement meeting both readers' five-task milestone"
+  }
+}

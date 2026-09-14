@@ -61,7 +61,10 @@ def qa_usage(directory, count):
     return dict(calls=count, **totals)
 
 
-def report(root, variants):
+def report(root, variants, models=None):
+    models = list(MODELS[:2] if models is None else models)
+    if not models or len(set(models)) != len(models) or not set(models).issubset(MODELS):
+        raise ValueError("Select unique supported readers")
     if (root / "INVALID.json").exists():
         raise ValueError(f"Experiment is explicitly invalid: {root}")
     expected = {}
@@ -72,7 +75,7 @@ def report(root, variants):
         if len(rows) != count or len(expected[task]) != count:
             raise ValueError(f"Reference is incomplete: {task}")
     baselines = {}
-    for model in MODELS:
+    for model in models:
         baselines[model] = {}
         for task in TASK_METRICS:
             scores = {name: audited_score(path / task / "evaluations" / model.replace("/", "_"),
@@ -84,12 +87,12 @@ def report(root, variants):
                   baselines=baselines, variants={}, variant_status={})
     lines = ["# 构图优化结果", "", "既有 test set 用作开发集；缺失成绩不补零。", "",
              "目标包括较大上下文预算的 AnchorMem 官方设置，不能统称等上下文比较。", "",
-             "最终目标：同一候选在三个 reader 上均严格胜出 6/6；5/6 仅为阶段里程碑。", ""]
+             "报告 reader：" + "、".join(models) + "。同一候选全部 6/6 为完整胜出，5/6 为阶段里程碑。", ""]
     for variant in variants:
         result["variants"][variant] = {}
         lines += [f"## {variant}", "", "| 模型 | " + " | ".join(TASK_METRICS) + " | 严格胜出 |",
                   "|---|" + "---:|" * (len(TASK_METRICS) + 1)]
-        for model in MODELS:
+        for model in models:
             scores, costs, wins, complete = {}, {}, 0, 0
             for task in TASK_METRICS:
                 directory = root / variant / task / "evaluations" / model.replace("/", "_")
@@ -112,7 +115,7 @@ def report(root, variants):
         lines += ["QA 成本仅汇总已完成且有 usage 的任务；不是建图/检索或总 wall time，跨 GPU 耗时不作等硬件比较。", "",
                   "| 模型 | 有 usage 的完整任务 | 调用数 | 输入 token | 输出 token | QA 调用秒数 |",
                   "|---|---:|---:|---:|---:|---:|"]
-        for model in MODELS:
+        for model in models:
             costs = [value for value in result["variants"][variant][model]["qa_usage"].values() if value is not None]
             if costs:
                 totals = {field: sum(value[field] for value in costs)
@@ -132,8 +135,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--variants", nargs="+", required=True)
+    parser.add_argument("--models", nargs="+", choices=MODELS)
     args = parser.parse_args()
-    report(args.output_root, args.variants)
+    report(args.output_root, args.variants, args.models)
 
 
 if __name__ == "__main__":

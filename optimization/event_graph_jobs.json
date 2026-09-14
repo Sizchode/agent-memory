@@ -1,0 +1,115 @@
+{
+  "experiment": "optimization_event_graph_seed42_20260913",
+  "schema_experiment": "optimization_update_policy_schema_structured_seed42_20260913",
+  "schema_job": "6337337",
+  "graph_experiment": "optimization_update_policy_graph_seed42_20260913",
+  "variants": [
+    "canonical_rrf_event_facts",
+    "event_graph_rrf_sentence_facts",
+    "event_graph_rrf_event_facts"
+  ],
+  "control_experiment": "optimization_context_packing_seed42_20260913",
+  "control_variant": "canonical_rrf_sentence_facts",
+  "jobs": [
+    {
+      "task": "FactConsolidation-SH",
+      "replay": "6337357",
+      "construction": "6337358",
+      "evaluation": "6337359"
+    },
+    {
+      "task": "FactConsolidation-MH",
+      "replay": "6337360",
+      "construction": "6337361",
+      "evaluation": "6337362"
+    },
+    {
+      "task": "SH-Doc QA",
+      "replay": "6337363",
+      "construction": "6337364",
+      "evaluation": "6337365"
+    },
+    {
+      "task": "MH-Doc QA",
+      "replay": "6337366",
+      "construction": "6337375",
+      "evaluation": "6337376"
+    },
+    {
+      "task": "LoCoMo",
+      "replay": "6337377",
+      "construction": "6337378",
+      "evaluation": "6337379"
+    },
+    {
+      "task": "2WikiMultiHopQA",
+      "replay": "6337380",
+      "construction": "6337381",
+      "evaluation": "6337382"
+    }
+  ],
+  "verification": [
+    {
+      "task": "FactConsolidation-SH",
+      "job": "6337384"
+    },
+    {
+      "task": "LoCoMo",
+      "job": "6337385"
+    }
+  ],
+  "failed_submission": {
+    "schema": "6337210",
+    "jobs": [
+      {
+        "task": "FactConsolidation-SH",
+        "replay": "6337227",
+        "construction": "6337228",
+        "evaluation": "6337229"
+      },
+      {
+        "task": "FactConsolidation-MH",
+        "replay": "6337230",
+        "construction": "6337231",
+        "evaluation": "6337232"
+      },
+      {
+        "task": "SH-Doc QA",
+        "replay": "6337233",
+        "construction": "6337234",
+        "evaluation": "6337235"
+      },
+      {
+        "task": "MH-Doc QA",
+        "replay": "6337236",
+        "construction": "6337237",
+        "evaluation": "6337238"
+      },
+      {
+        "task": "LoCoMo",
+        "replay": "6337243",
+        "construction": "6337244",
+        "evaluation": "6337245"
+      },
+      {
+        "task": "2WikiMultiHopQA",
+        "replay": "6337246",
+        "construction": "6337248",
+        "evaluation": "6337249"
+      }
+    ],
+    "verification": [
+      {
+        "task": "LoCoMo",
+        "job": "6337256"
+      },
+      {
+        "task": "FactConsolidation-SH",
+        "job": "6337257"
+      }
+    ],
+    "schema_experiment": "optimization_update_policy_schema_seed42_20260913",
+    "reason": "Single JSON record returned instead of relations list; no graph or QA completed.",
+    "failure_calls_preserved": true
+  }
+}

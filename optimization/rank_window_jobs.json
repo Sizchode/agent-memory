@@ -1,0 +1,69 @@
+{
+  "experiment": "optimization_rank_window_seed42_20260913",
+  "variants": [
+    "original_rrf20_sentence_facts",
+    "canonical_rrf20_sentence_facts"
+  ],
+  "candidate_window": 20,
+  "rank_constant": 60,
+  "returned_sources": 5,
+  "models": [
+    "Qwen/Qwen3.5-9B",
+    "Qwen/Qwen3.5-4B",
+    "Qwen/Qwen3.5-2B"
+  ],
+  "questions_per_reader_per_variant": 3386,
+  "qa_calls_total": 20316,
+  "jobs": [
+    {
+      "task": "SH-Doc QA",
+      "retrieve": 6342866,
+      "verify": 6342867,
+      "qa_array": 6342869,
+      "reused_existing_retrieval": false
+    },
+    {
+      "task": "MH-Doc QA",
+      "retrieve": 6342870,
+      "verify": 6342871,
+      "qa_array": 6342872,
+      "reused_existing_retrieval": false
+    },
+    {
+      "task": "FactConsolidation-SH",
+      "retrieve": 6339634,
+      "verify": 6342873,
+      "qa_array": 6342874,
+      "reused_existing_retrieval": true
+    },
+    {
+      "task": "FactConsolidation-MH",
+      "retrieve": 6342875,
+      "verify": 6342876,
+      "qa_array": 6342877,
+      "reused_existing_retrieval": false
+    },
+    {
+      "task": "LoCoMo",
+      "retrieve": 6342878,
+      "verify": 6342879,
+      "qa_array": 6342880,
+      "reused_existing_retrieval": false
+    },
+    {
+      "task": "2WikiMultiHopQA",
+      "retrieve": 6342881,
+      "verify": 6342882,
+      "qa_array": 6342883,
+      "reused_existing_retrieval": false
+    }
+  ],
+  "report_job": 6342884,
+  "status": "All retrieval, verification, QA and report jobs completed successfully",
+  "strict_task_wins_9b_4b_2b": {
+    "original_rrf20_sentence_facts": [2, 1, 2],
+    "canonical_rrf20_sentence_facts": [3, 6, 2]
+  },
+  "scope": "Complete the previously implemented two-candidate budget control; no additional parameter points",
+  "qa_dependency": "Full-task ordinary loader verification after retrieval; original top5 prefix checked for every question"
+}
