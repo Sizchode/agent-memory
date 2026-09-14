@@ -4,6 +4,11 @@
 本文按方法整理；逐次作业历史见 [progress.md](progress.md)，文献对照见
 [related_work_analysis.md](related_work_analysis.md)。不把事后机制解释当作已证明的理论。
 
+2026-09-14 仓库清理：24 个历史作业 JSON 和 3 个 sbatch 取消 Git 跟踪，本地副本保留；
+算法、评测结果与 scratch 产物不变。下文历史 JSON 文件名对应
+[清理前版本](https://github.com/Sizchode/agent-memory/tree/f2121c11cc6d0c36bf931674152db0ca07669573/optimization)，
+不再表示当前 Git 版本跟踪的文件。
+
 ## 口径与当前结论
 
 - 当前按用户新要求只推进 **4B、9B 的全六任务消融与代码删减**；2B 不再参与当前目标，旧结果保留。
@@ -203,7 +208,7 @@ identity 消融只取消映射的应用，分类 prompt 仍见过旧 canonical �
 当前限制：gist 的内容由 LLM 生成，格式合法不保证忠实；在原分块之外的指代无法凭空解决。
 更长的 gist 不自动构成压缩。索引表示有效也不等于新图结构有效。
 暂不写“有效/无效”结论，待完整结果后补充。新增组合共享同一份抽取和 embedding，不新增离线生成调用。
-78 项实现测试通过；真实 QA 完成情况以 [gist_index_jobs.json](gist_index_jobs.json) 和 scratch 报告为准。
+78 项实现测试通过；真实 QA 完成情况以 [gist_index_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/gist_index_jobs.json) 和 scratch 报告为准。
 
 17:50 EDT 对四个已完成任务的全部 7368 来源，使用原 Qwen3-Embedding-0.6B tokenizer
 测量原文与换行拼接 gist：FCSH/FCMH 的长度比为 0.708 / 0.707，LoCoMo 为 1.455，
@@ -222,7 +227,7 @@ SH 为 1.003；这些来源均无空 gist。详细总 token 和最长表示见�
 当前没有完整 QA 分数，不把上述动机写成实测结论。
 canonical 组的直接预算参照是旧 `canonical_rrf_sentence_facts`；本轮 original/canonical 则是同预算图对照。
 两组完整六任务三 reader 已提交，共 20316 次 QA，FCSH 两组普通接口验证均为 100/100。
-协议和执行见 [rank_window_experiment.md](rank_window_experiment.md)、[rank_window_jobs.json](rank_window_jobs.json)。
+协议和执行见 [rank_window_experiment.md](rank_window_experiment.md)、[rank_window_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/rank_window_jobs.json)。
 首个完整短任务 FCSH：original 20 为 58 / 56 / 61，canonical 20 为 55 / 63 / 62。
 直接参照 canonical 5 为 63 / 64 / 61；9B 明显退步、2B 略升，记录为混合结果，
 不把这一任务的 2B 提高写成全局改善。尚需其余五任务完成。
@@ -286,7 +291,7 @@ gist 作业 6341669 因两个 HTTP 连接错误失败，已保存 1072 条有效
 均已核对，190 个包通过依赖兼容性检查，CUDA 模块为 12.9.0-cinr。
 续跑作业为 6342535；完整索引 6342552、六任务检索数组 6342553、
 六个三 reader QA 数组 6342554 至 6342559、汇总 6342560。
-完整记录见 [gist_index_jobs.json](gist_index_jobs.json)；提交不等于已完成，暂无新 QA 分数。
+完整记录见 [gist_index_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/gist_index_jobs.json)；提交不等于已完成，暂无新 QA 分数。
 加入第四候选后，新增 QA 数组为 6342728 至 6342733；6342560 在 pending 时取消，
 统一汇总改为 6342734，等待全部四候选共 40632 次 QA。
 17:22 EDT 已核对新服务 health 与真实生成请求均返回 200；FCMH 两个缺失来源已补齐，

@@ -107,7 +107,7 @@ uv pip install --python /oscar/scratch/zliu328/agent-memory-envs/vllm_cu129/bin/
 ```
 
 续跑 6342535 已在 2 张 L40S 上启动；后续依赖链已经提交，见
-[gist_index_jobs.json](gist_index_jobs.json)。索引作业 6342552 等待全部抽取完成，
+[gist_index_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/gist_index_jobs.json)。索引作业 6342552 等待全部抽取完成，
 检索数组 6342553 等待全部索引冻结，QA 数组 6342554 至 6342559 分别等待对应完整任务检索。
 三组候选各 10158 次 QA，合计 30474 次；汇总作业 6342560 等待所有 QA 成功。
 这只是执行范围，不是完成数量或效果声明。
@@ -167,7 +167,7 @@ FCSH/FCMH 存在约 29% 的文本缩短，但 LoCoMo 增长约 46%，SH 基本�
 原下游作业被 Slurm 自动取消，均未实际执行，不能仅修改原索引作业的依赖。
 新链为索引 6343525、六任务检索数组 6343527、六个三 reader QA 数组 6343528 至 6343533、
 报告 6343534。每个 QA 数组现在一起执行四候选，比较范围及次数不变。
-完整新旧 ID、原因及依赖见 [gist_index_jobs.json](gist_index_jobs.json)。
+完整新旧 ID、原因及依赖见 [gist_index_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/gist_index_jobs.json)。
 
 6343507 在 18:01 EDT 再次 FAILED 1:0，用时 3:03。连接失败的来源已正常补齐，
 两条 length 输出再次达到 8192 token，均仍不是合法完整 JSON；MH 现为 873/875 有效来源。

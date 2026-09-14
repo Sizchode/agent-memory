@@ -36,6 +36,9 @@
 
 ## 实验入口
 
+Python 入口保留在仓库；以下三个 Oscar sbatch 启动器仅保留本地副本，不再跟踪，
+新 checkout 可在文末的清理前版本中查看，或直接调用对应 Python 模块。
+
 - `build_schema.sbatch`：来源 schema 与联合归一。提示、例子选择和生成协议保持原设置。
 - `build_graph.py` / `build_graph.sbatch`：从原索引、既有 loader 和 schema 直接物化主图与原图对照，CPU 走 batch 分区。
 - `run_graph.py --phase retrieve`：在已构建图上通过普通接口执行完整任务，默认不允许新增 recognition 调用。
@@ -88,7 +91,7 @@ test set 已用于开发与配置选择，不能报告成独立测试泛化。
 目前没有一项主机制已被完整消融证明可全局无损删除。
 discourse 的删除是已披露的效果/简化取舍。原 schema 提示仍输出 role/cardinality，
 为保持生成协议未删除这些字段；图与附录已不使用它们，不声称消除其历史生成成本。
-最新正负结果、成本与等待项见 [record.md](record.md) 和 [ablation_jobs.json](ablation_jobs.json)。
+最新正负结果、成本与等待项见 [record.md](record.md) 和 [ablation_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/ablation_jobs.json)。
 
 最终固定检索/读出规则的对照中，精简主图相对原图的 2Wiki 分差为 9B +6.79、4B +7.71 点，
 LoCoMo 则为 -0.71 / -0.20 点；不声称所有任务更好。原图对照对九项 baseline 为双 2/6，
@@ -98,6 +101,12 @@ LoCoMo 则为 -0.71 / -0.20 点；不声称所有任务更好。原图对照对�
 `/oscar/scratch/zliu328/agent-memory-outputs/optimization_canonical_latest_cleanup_seed42_20260914/`。
 
 ## 历史与产物
+
+24 个历史作业 JSON 和 3 个本地 sbatch 已取消 Git 跟踪，GitHub 当前版本不再包含它们；
+本地副本保留，代码不依赖这些 JSON 调度记录。需要核对时可从
+[清理前版本](https://github.com/Sizchode/agent-memory/tree/f2121c11cc6d0c36bf931674152db0ca07669573/optimization)
+查看。算法 Python 文件及构建、评测入口仍保留在仓库。
+本次清理不删除 scratch 中的完整预测、报告、索引或代码归档。
 
 已删除旧权重搜索、adaptive synonyms、gist、fact incidence/index、rank window、
 context packing、state/event 读出分支及其专用入口/测试。旧代码不搬到新的算法目录。

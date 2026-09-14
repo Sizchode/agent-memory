@@ -68,7 +68,7 @@ HyperGraphRAG 与已排除的 HyperMem 不是同一工作，本轮不恢复 Hype
 4. 只有第三步成功，才放行三个 reader 的 QA。
 
 脚本：[replay_fact_incidence.sbatch](replay_fact_incidence.sbatch)；
-作业记录：[fact_incidence_jobs.json](fact_incidence_jobs.json)。
+作业记录：[fact_incidence_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/fact_incidence_jobs.json)。
 SH/MH 首次提交错误地把目录 slug 当作 CLI task，参数校验失败，未产生图；
 已改用既有带空格 task 名，并修正输出目录 slug。旧失败与依赖取消记录保留。
 

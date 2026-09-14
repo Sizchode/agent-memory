@@ -40,7 +40,7 @@ RRF 常数仍为 60，来源窗口、去重与逐行事实读出都复用既有�
 只有验证成功才放行三个 reader 的 QA。验证不使用保存的 query resets。
 复用 recognition 缓存；任何生成器 cache miss 都报错，不接受错误被吞掉后的 dense fallback。
 
-作业清单：[rank_window_jobs.json](rank_window_jobs.json)。
+作业清单：[rank_window_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/rank_window_jobs.json)。
 输出目录：`/oscar/scratch/zliu328/agent-memory-outputs/optimization_rank_window_seed42_20260913`。
 完整结果最终由 6342884 汇总，两个候选必须一起传给报告程序。
 

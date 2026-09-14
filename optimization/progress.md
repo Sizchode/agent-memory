@@ -9,7 +9,7 @@
 17:19 EDT：已完成 gist passage 索引与现成 dense/PPR 接入，77 项测试通过。
 原抽取作业两次失败分别为连接错误和共享环境入口缺失；保留 1072 条有效输出。
 已恢复独立 CUDA 12.9 vLLM 环境并续跑 6342535；完整建索引、检索、QA 和汇总依赖链
-记录于 [gist_index_jobs.json](gist_index_jobs.json)，尚无新 QA 分数。
+记录于 [gist_index_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/gist_index_jobs.json)，尚无新 QA 分数。
 17:22 EDT：续跑已实际生成，FCMH 补齐到 537/537，FCSH 完整缓存复用，LoCoMo 抽取继续。
 17:28 EDT：增加单模块组合 `canonical_rrf_gist_index`，只替换旧强配置的 passage embedding，
 共享本轮 gist 抽取与索引；78 项测试通过，完整六任务三 reader QA 已接入同一依赖链。
