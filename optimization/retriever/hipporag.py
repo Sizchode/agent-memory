@@ -7,6 +7,16 @@ import shutil
 from baseline.official import HippoRAG2Baseline
 
 
+def restrict_fact_index(hippo, keys):
+    """Select original candidate rows and vectors, leaving provenance maps intact."""
+    positions = {key: i for i, key in enumerate(hippo.fact_node_keys)}
+    if len(set(keys)) != len(keys) or not set(keys).issubset(positions):
+        raise ValueError("Invalid retained fact IDs")
+    vectors = hippo.fact_embeddings[[positions[key] for key in keys]]
+    hippo.fact_node_keys = list(keys)
+    hippo.fact_embeddings = vectors
+
+
 def load_memory(config, source, runtime):
     memory = HippoRAG2Baseline(config, source)
     try:
@@ -43,12 +53,25 @@ def load_optimized_memory(config, artifact_directory, runtime):
     source_graph = Path(metadata["source_graph"])
     memory = load_memory(config, source_graph.parent.parent, Path(runtime))
     try:
+        if "constructed_graph_file" in metadata:
+            import igraph as ig
+            constructed = ig.Graph.Read_Pickle(metadata["constructed_graph_file"])
+            original_names = memory._memory.graph.vs["name"]
+            if constructed.vs["name"][:len(original_names)] != original_names:
+                raise ValueError("Constructed graph changed original node IDs or order")
+            names = constructed.vs["name"]
+            if len(names) != len(set(names)):
+                raise ValueError("Constructed graph contains duplicate node IDs")
+            memory._memory.graph = constructed
+            memory._memory.node_name_to_vertex_idx = {name: i for i, name in enumerate(names)}
         weights = np.load(artifact_directory / "edge_weights.npy", allow_pickle=False)
         if weights.shape != (memory._memory.graph.ecount(),):
             raise ValueError("Optimized weights do not match the source graph edge count")
         if not np.isfinite(weights).all() or np.any(weights < 0):
             raise ValueError("Optimized weights must be finite and nonnegative")
         memory._memory.graph.es["weight"] = weights.tolist()
+        if "retained_fact_keys_file" in metadata:
+            restrict_fact_index(memory._memory, json.loads(Path(metadata["retained_fact_keys_file"]).read_text()))
         if "rank_fusion" in metadata:
             from optimization.retriever.hybrid_graph import HybridGraphMemory
             fusion = metadata["rank_fusion"]

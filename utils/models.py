@@ -76,6 +76,8 @@ class HuggingFaceChatModel:
         with torch.inference_mode():
             output = self._model.generate(**inputs, **generation)
         generated = output[0, inputs["input_ids"].shape[1]:]
+        self.last_usage = {"input_tokens": int(inputs["input_ids"].shape[-1]),
+                           "output_tokens": int(generated.shape[-1])}
         text = self._tokenizer.decode(generated, skip_special_tokens=True).strip()
         if not text:
             raise RuntimeError(f"local evaluation model {self.model_id!r} returned an empty completion")

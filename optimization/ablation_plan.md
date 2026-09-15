@@ -1,5 +1,8 @@
 # 旧主配置的配对消融
 
+本文保存 refinement-only 阶段的历史协议与结果，不是当前默认算法的最新状态。
+无自环构图、同 H100 复现及后续删除消融见 [record.md](record.md)；当前默认入口见 [README.md](README.md)。
+
 2026-09-14 完成状态：六项单消融、两项联合消融和整项 discourse 删除均已完成。
 最终采用 `without_discourse_selection` 对应的精简配置 `canonical_latest_rrf_window`，
 9B/4B 均 5/6；4B SH 回退 3 点，不是无损删除。其余模块决定见下表。

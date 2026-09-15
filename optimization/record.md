@@ -1,7 +1,7 @@
 # 方法尝试记录
 
-更新：2026-09-13。记录 `optimization/` 图优化阶段实际做过的尝试，包括负结果、未完成及无效运行。
-本文按方法整理；逐次作业历史见 [progress.md](progress.md)，文献对照见
+更新：2026-09-14。记录 `optimization/` 图优化阶段实际做过的尝试，包括负结果、未完成及无效运行。
+本文按方法整理；逐次作业历史见 [progress.md](https://github.com/Sizchode/agent-memory/blob/c443de4790e619d43c5bd9dcce9ccea707da56bc/optimization/progress.md)，文献对照见
 [related_work_analysis.md](related_work_analysis.md)。不把事后机制解释当作已证明的理论。
 
 2026-09-14 仓库清理：24 个历史作业 JSON 和 3 个 sbatch 取消 Git 跟踪，本地副本保留；
@@ -10,6 +10,24 @@
 不再表示当前 Git 版本跟踪的文件。
 
 ## 口径与当前结论
+
+### 本次发布整理
+
+2026-09-14：提交当前无自环构图及 retained-fact-index 独立实验，默认仍为已完整验证的
+`statement_projection_loop_free_refined_rrf_window`，不根据部分结果提前切换。
+retained-index 的 2Wiki 已完成：9B answer F1 57.7539、4B 56.3973；LoCoMo 和
+最终报告 6387725 尚未完成。四项 MAB 数值与完整调用成本见下文该实验节。
+
+本次移除 Git 中九份已归档的退役 MD/TXT，共 1367 行；归档中保留原内容。
+raw-relation、删直连、显式事实节点及旧自环投影的独立实验开关已退役，原始图两格
+仍是必要对照，不作为 legacy 删除。当前候选、永久回归测试、全部缓存和结果保留。
+这次同时增加了新构图和必要运行代码，不将文档减少冒充算法代码压缩。
+
+解除主入口对未跟踪旧实验 run_anchormem / run_gap_query_memory 的依赖：沿用原六任务
+列表和原 QA 计量实现，不改变问题顺序、提示、生成或评分。提交所需的现有
+baseline/graph_usage.py 与 utils/models.py 两行真实 token 计量，不提交其余 baseline 改动。
+清理前完整源码位于 construction_experiments_20260914/implementation_before_publication_cleanup.tar，
+已逐文件 tar --compare 通过。batch 6389057 的 28 项回归测试通过；git diff --check 通过。
 
 - 当前按用户新要求只推进 **4B、9B 的全六任务消融与代码删减**；2B 不再参与当前目标，旧结果保留。
   以下三个 reader 的提分表及早期作业快照是历史记录，不代表仍继续优化 2B。
@@ -187,7 +205,7 @@ identity 消融只取消映射的应用，分类 prompt 仍见过旧 canonical �
 
 实验目录：`fact_incidence`，候选 `source_fact_incidence`，完整结果 **1 / 2 / 1**。
 每次三元组出现建独立节点，连接原主体、客体和来源；采用标准二部表示及原 PPR。
-不同时加 RRF、窗口、关系归一化或新摘要。详见 [实验说明](fact_incidence_experiment.md)。
+不同时加 RRF、窗口、关系归一化或新摘要。详见 [实验说明](https://github.com/Sizchode/agent-memory/blob/c443de4790e619d43c5bd9dcce9ccea707da56bc/optimization/fact_incidence_experiment.md)。
 
 有效处：来源事实出现及重复贡献可独立追踪；六任务 3386/3386 普通检索接口验证通过。
 相对 `relation_only`，9B FCSH 从 41 到 50。
@@ -199,7 +217,7 @@ identity 消融只取消映射的应用，分类 prompt 仍见过旧 canonical �
 
 原格式和紧凑格式都没有完成全语料，输出与成本保留；json_object 诊断也未全通过。
 当前抽取版本为 `contextual_gists_format_retry`，采用统一、有界的格式重试，并核对后复用原格式有效日志。
-没有 gist QA 分数，详情见第 13 节末尾和 [生成协议](gist_generation_protocol.md)。
+没有 gist QA 分数，详情见第 13 节末尾和 [生成协议](https://github.com/Sizchode/agent-memory/blob/c443de4790e619d43c5bd9dcce9ccea707da56bc/optimization/gist_generation_protocol.md)。
 四个候选为 `gist_hipporag`、`gist_dense`、`raw_dense_control`、`canonical_rrf_gist_index`。
 前三者区分现成向量匹配与原 HippoRAG；第四个只替换已有强组合 `canonical_rrf_sentence_facts`
 的 passage embedding，保留其图权重、RRF、BM25、窗口和事实读出，不把 gist 再附加给 reader。
@@ -227,7 +245,7 @@ SH 为 1.003；这些来源均无空 gist。详细总 token 和最长表示见�
 当前没有完整 QA 分数，不把上述动机写成实测结论。
 canonical 组的直接预算参照是旧 `canonical_rrf_sentence_facts`；本轮 original/canonical 则是同预算图对照。
 两组完整六任务三 reader 已提交，共 20316 次 QA，FCSH 两组普通接口验证均为 100/100。
-协议和执行见 [rank_window_experiment.md](rank_window_experiment.md)、[rank_window_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/rank_window_jobs.json)。
+协议和执行见 [rank_window_experiment.md](https://github.com/Sizchode/agent-memory/blob/c443de4790e619d43c5bd9dcce9ccea707da56bc/optimization/rank_window_experiment.md)、[rank_window_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/rank_window_jobs.json)。
 首个完整短任务 FCSH：original 20 为 58 / 56 / 61，canonical 20 为 55 / 63 / 62。
 直接参照 canonical 5 为 63 / 64 / 61；9B 明显退步、2B 略升，记录为混合结果，
 不把这一任务的 2B 提高写成全局改善。尚需其余五任务完成。
@@ -1240,6 +1258,789 @@ ID、顺序、实际 reader 上下文、原指标与 usage 对应一致；所有
 这是当前消融证据下完成的精简版，不是证明所有可能组合中全局最简，也不是全面 SOTA。
 
 ## 后续如何记录与选择
+
+### 2026-09-14：新增目标下的结构探索
+
+用户将目标扩展为可用 fancy concept/数学结构探索。当前完整索引消融继续，不在运行中叠加变量。
+重新核对 DBSP 的 Z-set/增量视图维护、Kivela 等的多层网络，以及当前引用的 Kumar 约简。
+research_novelty.md 新增具体操作、下一项实验与不能主张的能力：优先研究共同事实支持下的
+传播图/候选索引两个派生视图，以及事实投影/额外来源连接两种贡献的条件作用。
+若当前索引结果完整有效，下一项应固定新候选索引比较原/新图，避免把候选变化的收益全归给投影。
+增量维护仅作为后续可实现方向，目前仍是一次离线构建；不引入负 PPR 权重、混合系数扫描、
+新的冲突检测规则或未实现的 PL 正确性保证。文献引用及边界见 research_novelty.md。
+
+### 2026-09-14：单独筛选事实候选索引
+
+基于下节真实失败追踪，本轮候选为 `statement_projection_loop_free_retained_index_rrf_window`，
+输出 `optimization_retained_fact_index_seed42_20260914`。这是新的离线索引消融，重新开放
+此前四格冻结的事实候选集合；不把它混写成“识别输入完全不变”的构图实验。
+按现有 canonical/latest retained_statements 选择原事实行，保留其文字、ID、向量和相对行序。
+不修改实体到来源、三元组到来源映射，不重新 embedding、不改 recognition 提示/模型/解码、
+PPR 算子、图权重、RRF、五中心、读出或 QA。候选减少会影响原 get_fact_scores 的 min-max
+归一和实际查询种子；算子不变不等于输入分数不变，不宣称纯粹只删去若干过滤器输出。
+图与 reader 必须逐组等于主配置，实验构建仍不读问题或答案。
+
+旧 fact_index 完整负结果保留，其同时改变来源映射，不能直接替代本轮单变量对照。
+这里只复用已有支持选择删除候选，不新造评分公式、阈值、冲突分类或任务路由。
+现有 build_graph / run_graph / retriever/hipporag 增加临时入口，测试仍在既有文件内。
+本地可用 vLLM 为 agent-memory-envs/vllm_cu129，CUDA 12.9，原 Qwen3-30B-A3B-Instruct-2507
+权重已缓存；不使用已缺入口的 llm_tool_ckpt/venvs/vllm，不安装或重下载环境。
+候选变化可能触发新 recognition 调用，复用 GraphUsageRecorder 记录真实 provider token/耗时；
+原 OpenIE、schema 和 embedding 的既有成本不记成零，缓存命中不计成新调用。
+
+单测作业 6387166，六任务构建 6387180；构建成功后独立检查
+15 组事实行选择和主图/读出一致性，再启动同源服务，按每任务至少一个样本验证缓存/新调用
+及原图控制路径。全流程通过才进行六任务 3386 题的完整检索与双 reader 6772 次 QA。
+不根据 pilot 答案或单例表现选择任务、规则或输出；pilot 不进入正式分数。
+
+6387166 的 27 项测试通过，0:0（4 秒）。6387180_0-5 全部构建成功（26-54 秒）。
+独立全量索引核验为 batch 6387240，检查原事实行序/向量、支持选择、主图权重及冻结读出；
+GPU smoke 6387255 依赖它成功，使用现存 vllm_cu129/CUDA 12.9 和原 BF16 30B-A3B 模型。
+每任务按原顺序第一题检查默认控制读出、新索引行/向量及来源映射，记录新 provider 调用，
+不读取答案选择候选。新代码同时把 settings 的 additional_generator_calls 更新为实测新调用数，
+避免构建阶段的零调用字段被误当作整轮识别成本。pilot 的调用单独记录，不混入正式 QA。
+
+6387240 全量核验成功，0:0（1:37）：15 组、14362 来源，原事实候选总数 190345，
+保留 167074；主图节点/边序/权重、读出及选中向量逐项一致。原完整向量存储仍加载并保留，
+不由候选数量下降声称总索引磁盘或峰值内存压缩。
+6387255 六任务 pilot 成功，0:0（6:04）：SH/MH 首题 recognition 缓存命中，其余四任务
+各一次真实新调用，合计输入 11708、输出 135 token；这是 pilot 额外成本。
+控制读出均匹配，实体/事实来源映射不变。2Wiki pilot 的新 recognition 返回空列表，
+按原流程合法退回 dense；不是 provider 错误，也不据此提前宣称索引改进。
+
+完整检索 6387416 使用同一已验证的服务配置串行完成六任务，单次服务启动后分别运行
+现有 run_graph；不将整个实验改为 agentic retrieval，不重做抽取或向量。
+检索/调用成本核验 6387429 等待其完成，核对完整 case/来源与实际调用数、token。
+以下 QA 均同时依赖完整检索和该核验成功，先不基于短任务分数调整后续任务：
+
+| 任务 | 9B/4B QA 数组 |
+|---|---|
+| SH-Doc_QA | 6387417_0-1 |
+| MH-Doc_QA | 6387418_0-1 |
+| FactConsolidation-SH | 6387419_0-1 |
+| FactConsolidation-MH | 6387420_0-1 |
+| LoCoMo | 6387421_0-1 |
+| 2WikiMultiHopQA | 6387422_0-1 |
+
+最终报告 6387430 等待全部成功后，逐题核对 QA 的实际检索输入并使用原 report_results。
+原四格控制以整目录链接引用，旧分数不重采样、不逐题选择。本轮尚未产生完整 QA 结论。
+
+完整检索 6387416 在 LoCoMo 第五组模型加载时 CUDA OOM，1:0（10:53），不是观察超时。
+已完成四个短任务各 100 题和 LoCoMo 四个完整组共 757 题，2Wiki 尚未开始；依赖 QA/报告
+均被调度器取消，尚无 QA 发生。vLLM 占约 68.17 GiB，检索进程已占约 10.91 GiB。
+补上组间关闭后清除对象引用、gc.collect 和 CUDA 空闲缓存释放，沿用 pilot/旧 fact_index
+已经使用的释放方式；不改变模型、候选、图、检索规则或生成参数。
+从已归档 run_fact_index 复用完整组前缀续跑检查，只接受原问题顺序和完整组边界，
+拒绝从半组或不匹配问题继续；已有完整任务直接保留，未完成文件只追加剩余组。
+LoCoMo 原 757 题另保留在同实验根的 locomo_retrieval_before_resume.jsonl，后续按原字节核对。
+
+新增续跑边界测试作业 6387690；恢复检索 6387717 依赖测试成功。新成本/输入核验 6387718
+依赖恢复完成，汇总恢复前后全部调用并核对原 757 题字节未变。
+新 QA 数组按 SH/MH/FCSH/FCMH/LoCoMo/2Wiki 为
+6387719 / 6387720 / 6387721 / 6387722 / 6387723 / 6387724，均为 0=9B、1=4B，
+同时等待恢复检索与核验；新最终报告为 6387725。旧取消依赖不计为已运行 QA，
+也没有删除已完成检索或重新抽样已有问题。全部脚本仍通过 stdin 提交，不新增仓库执行文件。
+
+6387690 的 28 项测试通过，0:0（3 秒）。恢复检索 6387717 完成，0:0（13:56），
+组间释放后通过剩余全部来源组。6387718 完成，0:0（3 秒）：六任务原 case、五个中心、
+冻结读出与真实 provider 调用数均核验通过；LoCoMo 原 757 题前缀逐字节一致。
+原来源 2Wiki Recall@5 / Precision@5 为 0.87425 / 0.4252。
+正式检索新增 recognition 共 2168 次，输入 6323456、输出 102681 token；另有上述 pilot
+4 次输入 11708、输出 135 token，不混入 QA 成本。按任务的新调用数为 2/8/85/86/1911/76，
+主要成本在 LoCoMo；不能把“沿用既有向量”写成没有新增 LLM 成本。
+四个短任务 QA 已完整完成：SH/MH/FCSH/FCMH 的 9B 为 91/63/68/11，4B 为 90/62/61/12，
+均为各自短任务 4/4 严格胜出。LoCoMo 和 2Wiki 仍在执行，在完整矩阵收齐前不采用或报双 6/6。
+
+### 2026-09-14：先定位错误来源，不继续盲目删除组件
+
+连续两轮删减未改善覆盖率后，暂停新增构图候选，先检查同 H100 旧 refinement 与新主图
+的实际 reader 输入和既有失败预测。6386265 为 0:0（6 秒），复用 analyze_failures 的
+原评分与失败列表，不新增指标、数据划分或自动失败归因规则。
+6386834 为 0:0（46 秒），进一步调用现有 _read_retrieval_records / _answer_prompt /
+_official_generation 重建全部 prompt，包含 LoCoMo 的既有选项随机顺序；逐项核对保存的
+QA usage generation_settings。以下相同指完整 messages、答案选项映射和解码设置一致：
+
+| 任务 | 完全相同输入题数 | 这些题中答案分数变化数 9B / 4B |
+|---|---:|---:|
+| SH-Doc_QA | 81/100 | 0 / 3 |
+| MH-Doc_QA | 72/100 | 5 / 5 |
+| FactConsolidation-SH | 73/100 | 9 / 6 |
+| FactConsolidation-MH | 83/100 | 2 / 2 |
+| LoCoMo | 1120/1986 | 242 / 246 |
+| 2WikiMultiHopQA | 604/1000 | 0 / 0 |
+
+MAB 使用原温度 0.7，LoCoMo 为 0.4，2Wiki 为 0。当前 seed 在一次完整评测起点设置，
+不是每题独立复位；前面生成长度不同可能改变后续采样状态。这是一个可能来源，不将所有
+变化唯一归因于它或 GPU。相同输入仍存在分数变化，足以否定“全部 QA 分差都是图效应”。
+保留单轮 5/6、6/6 的已发生结果，但不解释为稳定胜率、显著提高或纯图因果效应。
+不为消除波动而改成 greedy、逐题 seed、重新抽取或择优重跑；这些会改变冻结协议。
+
+6386327 为 0:0（1 秒），对 FCSH 的三个既有失败例手工追踪原文与结构化 OpenIE。
+这里只用文字查找辅助阅读，不生成 gold passage 标签，不将三个例子当作总体错误比例，
+题号/实体不进入算法或数据 loader：
+
+- no14：Bart Simpson 的新事实 Ray Bradbury 位于来源 520、编号 17816，已在 OpenIE
+  和保留事实附录中，且是第一条检索证据；旧值 Matt Groening 所在来源 270 也进入 reader。
+  两 reader 都答旧值。它不是目标事实未被抽取或完全未被检索到的例子。
+- no17：Queen Victoria I speaks language Dutch 位于来源 379、编号 12988，OpenIE 已抽出，
+  但该来源不在当前五个中心里；不能先判为抽取失败。继续核对保留支持及原 recognition。
+- no91：目标长人名已在首条证据和保留附录中，两 reader 都输出到 Alb 后停止。
+  6386834 用各自现有 tokenizer 核对参考文本需要 12 token，实际 usage 为 10 token，
+  原协议 max_tokens=10。该案例的截断不是缺图边；不修改原输出上限或 SubEM 来消除错误。
+
+目前只能分别定位到候选访问和 reader/输出约束，不能把 FCSH 的全部缺口归结为新构图不够强。
+单例追踪作业 6386852 只调用现有缓存 recognition 和普通检索，不新增生成或 QA；
+继续核对 no17 的具体入口，再决定是否有在冻结范围内值得实施的结构变化。
+
+6386852 读取清理快照 settings 时因缺少 config 退出（1:0，15 秒），在加载检索模型前失败，
+没有新 recognition 或 QA。改读获选方案原始完整运行 settings，未改变其配置，
+重试 6387084 为 0:0（30 秒）；两个例子的普通接口读出均与保存结果一致，缓存守卫无 miss。
+该诊断只重放已有识别和检索，不重新生成答案；临时脚本经 sbatch stdin 执行，未进入仓库。
+
+- no17 的 Dutch 三元组已被 canonical/latest 保留。原事实索引候选第一、二名分别是
+  English、Dutch，但 recognition 只输出 English；图前五和 BM25 前五都不包含 Dutch 来源。
+  因而已定位到候选识别与后续证据访问，不能归因于 OpenIE 漏抽或来源选择删错。
+- no14 的候选第一名是 Ray Bradbury，但 recognition 输出旧 Bart/Matt 及重复的 Homer/Matt。
+  即便如此，新图与 BM25 都把新事实来源排第一；旧值来源是 BM25 第二名，仍进入合并上下文。
+  它同时说明 recognition 不等于更新判断，以及正确首条证据不保证 reader 遵循更新指令。
+
+下一步优先检查离线事实候选索引与图支持的一致性，而不是追加边权规则。
+已读归档 fact_index.py / run_fact_index.py 及完整旧结果：index_latest 为 9B/4B 3/6、4/6，
+index_schema 为 3/6、3/6，不能隐去这些负结果。旧实现同时修改事实候选、entity-to-source
+和 triple-to-source 映射，使用旧图和原文读出，不是当前新构图下单独事实候选索引的对照。
+若实施新轮，只复用现有 retained_statements 选择既有事实行/向量，不发明筛选规则；
+保持 graph、实体来源映射、PPR、RRF、reader 不变，显式记录这是重新开放离线候选索引的
+单独消融，不再声称“识别候选完全冻结”。候选变化可能触发新 recognition，须先检查同源
+Qwen3-30B-A3B 服务、缓存命中及成本，再做每任务 smoke 和完整六任务双 reader QA。
+目前尚未修改事实候选索引，也未提交该轮生成或 QA，不能预称解决了这些案例。
+
+### 2026-09-14：无自环投影下删除额外来源直连
+
+raw relation 消融清理后 6385219 的 26 项测试通过，0:0（5 秒）。
+下一轮只删除获选无自环 refined 图中额外保留的原 passage-entity 直连贡献；
+来源仍是事实成员，投影产生的来源连接完整保留，不是删除 provenance 或原文。
+候选 `statement_projection_loop_free_no_direct_refined_rrf_window`，入口 `--no-direct-source`，
+输出根目录 `optimization_loop_free_no_direct_seed42_20260914`。
+保留 canonical/latest、去 synonym、事实成员、Kumar 无自环算子、原节点/向量、
+识别/PPR、BM25/RRF、五中心与冻结来源读出，loader、指标、QA prompt 和解码不变。
+只扩展现有入口与一项既有测试，不创建新算法、公式、阈值或仓库执行脚本。
+
+过去 no-direct 负结果使用含自环投影，不能代替本轮。这里检验额外直连对当前主图的
+条件作用，不把消融差值称为来源信息的整体贡献。六任务 3386 题、双 reader 6772 次新 QA，
+固定原四格整项参照，不按短任务分数筛选是否完成长任务，不用跨候选拼接成绩。
+先单测，再完整构图与原文核验：新图必须等于当前主图减去已有选中来源直连矩阵，
+同时保留原节点、事实来源和冻结 reader 内容。核验成功才进行 GPU 检索与 QA。
+
+6385284 的 26 项测试通过，0:0（4 秒）；构图数组 6385301_0-5 全部成功（20-49 秒）。
+全图核验 6385304 为 0:0（1:36）：15 张新图符合纯事实无自环投影，恰好等于主图减去
+已有选中来源直连；30 张默认对照图重算一致，14362 条来源读出冻结不变。
+该核验成功后提交下列完整检索与双 reader QA，QA 依赖对应任务完整检索成功。
+
+| 任务 | 检索 | 9B/4B QA 数组 |
+|---|---|---|
+| SH-Doc_QA | 6385389 | 6385397_0-1 |
+| MH-Doc_QA | 6385390 | 6385398_0-1 |
+| FactConsolidation-SH | 6385391 | 6385407_0-1 |
+| FactConsolidation-MH | 6385392 | 6385408_0-1 |
+| LoCoMo | 6385393 | 6385409_0-1 |
+| 2WikiMultiHopQA | 6385394 | 6385410_0-1 |
+
+batch 检索核验 6385437 依赖全部六任务，核对完整原 case、五个来源中心与冻结 reader 文本，
+使用原有 2Wiki 来源 Recall@5 / Precision@5。最终报告 6385438 依赖全部 QA 与该核验，
+再逐题检查真实 QA 输入和完整预测，用现有 report_results 生成五配置全量对照。
+四个既有原图/新图参照仅整目录链接，既有 QA 不重新采样，也不作为本轮新增调用。
+
+完整检索及核验均成功，6385437 为 0:0（3 秒），沿用原来源指标的 2Wiki
+Recall@5 / Precision@5 为 0.8755 / 0.4272，高于主图 0.8730 / 0.4248。
+LoCoMo 6385409_0/1 为 0:0（28:11 / 26:28），2Wiki 6385410_0/1 为 0:0（9:08 / 7:32）。
+6385438 为 0:0（17 秒），完整核对六任务双 reader 共 6772 条新 QA 及其实际来源输入。
+
+| 无额外直连的 refined 无自环投影 | SH | MH | FCSH | FCMH | LoCoMo | 2Wiki | 严格胜出 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 9B | 92 | 59 | 63 | 10 | 57.8210 | 57.8522 | 4/6 |
+| 4B | 89 | 59 | 60 | 9 | 51.1541 | 56.7158 | 5/6 |
+
+相对主图，MH 从 63/62 降至 59/59，FCSH 从 65/61 降至 63/60；
+LoCoMo 两 reader 都提高，但未维持共同阶段目标，不采用。每 reader 输入 11183065 token，
+比主图少 92667，仍是不同检索文本而非等 token 比较；调用秒数不当作建图收益。
+这支持在当前配置下保留额外来源连接，不证明该连接在所有任务上都有益或理论必需。
+尤其不能把这组负结果描述成“没有 provenance”，因为来源仍完整参与事实成员及投影。
+
+完整代码归档 `implementation_before_loop_free_no_direct_removal.tar`，tar --compare 通过，
+位于 `/oscar/home/zliu328/agent-memory-archives/construction_experiments_20260914/`。
+随后删除此轮构图/运行开关及专用测试断言，主图、原四格与全部实验数据保持不变。
+这次减少的是实验分支，主机制未被证明可以再删一项，不把入口行数删减冒充算法简化。
+清理核验 6386152 为 0:0（2:12）：26 项测试通过，30 张默认对照图按当前算子重算一致，
+15 张完整消融图仍符合纯事实投影，14362 条来源读出不变；两轮临时开关均已移除。
+该核验没有新增 QA，也不冒充新一轮普通查询全量复验。
+
+### 2026-09-14：更新主线与相关工作边界
+
+根据最新讨论，把 update/consolidation 作为问题起点，核心 refinement 定位为来源支持整合；
+超图投影是表示机制，系统的基础记录/派生索引分离用于解释设计，不作为独立新理论。
+重新核对 MemoryAgentBench 论文、本地 loader 和 reader prompt：两项 FactConsolidation
+来自 Conflict_Resolution，保留官方新编号优先指令与原 SubEM；其余四项不改成更新任务。
+当前按来源段落取最后支持，同段多个值仍保留，不具备事实编号级冲突消歧或在线增量更新保证。
+补读 TEPA、StateFuse 与 Reliable Post-Retrieval Assembly 的原方法节，差异记录在
+related_work_analysis.md；这些工作尚未成为本地实测 baseline，不把其论文成绩并入九 baseline 池。
+不增加数据切分、冲突检测打分或新的后处理规则，raw-relation 消融保持提交时协议。
+
+### 2026-09-14：仅删除图侧 canonical relation 键
+
+主配置清理后的全部普通检索复验已通过，再进行比“全部支持”更小的删除消融。
+保持 latest 来源选择，但分槽使用规范化的原 OpenIE 关系标签，不应用 LLM canonical 映射。
+复用 retained_statements / latest_relation_weights 已有 schema=None 行为，不新增规范化规则、
+投影公式、阈值或 source-order 策略；只是删除一层关系别名合并。
+
+候选 `statement_projection_loop_free_raw_relations_rrf_window`，入口 `build_graph --raw-relations`，
+输出 `optimization_statement_projection_raw_relations_seed42_20260914`。
+主方案及全部支持失败消融作为整项参照。保持去 synonym、来源直连政策、事实单位权重、
+无自环投影、原节点/向量、识别/PPR、BM25/RRF 和来源读出规则。
+reader 的事实附录仍使用冻结 canonical/latest，因此本轮不代表完整 canonical-free 流水线。
+不重做 OpenIE/schema，不改变 loader、六任务数据或 QA 协议；4B/9B 各 3386 题，共 6772 次新 QA。
+完整原图四格是上一轮已完成的固定参照，不为本消融重新采样。
+
+先在已有关系别名单测中核对不合并时两个 raw slot 都保留，再进行六任务构图和全图核验。
+核验默认图未变、raw slot 仍只取最后来源、投影使用既有算子、全部 reader 文本仍等于冻结版本。
+之后运行完整检索与 QA；无论短任务是否达标，长任务和完整报告都保留。
+
+6383190 的 26 项测试通过，0:0（4 秒）；构图 6383196_0-5 均 0:0（28-39 秒）。
+全图核验 6383223 检查 15 张新图、30 张默认对照图及全部来源读出；GPU 作业依赖该核验成功。
+该核验已完成，0:0（1:59）：15 张 raw 图符合原关系分槽的最后来源支持与既有投影，
+30 张默认图节点/边序/权重完全不变，14362 条来源读出与冻结版本一致。
+
+| 任务 | 检索 | 9B/4B QA 数组 |
+|---|---|---|
+| SH-Doc_QA | 6383232 | 6383233_0-1 |
+| MH-Doc_QA | 6383234 | 6383235_0-1 |
+| FactConsolidation-SH | 6383236 | 6383237_0-1 |
+| FactConsolidation-MH | 6383238 | 6383239_0-1 |
+| LoCoMo | 6383240 | 6383241_0-1 |
+| 2WikiMultiHopQA | 6383242 | 6383243_0-1 |
+
+6383269 对完整检索核对原 case、五个中心来源和冻结文本，沿用 2Wiki 原来源证据指标。
+6383286 等待全部 QA 与检索核验后，检查实际 reader 输入并生成六配置报告。
+最初报告提交因引用已完成的旧报告 6382421 出现 dependency problem，没有产生新作业；
+sacct 再确认旧报告为 COMPLETED 0:0 后，仅移除该已满足依赖再提交，未重启任何实验。
+旧四格与全部支持失败消融以整目录链接引用，不覆盖或重新采样。
+
+该轮已全部完成：LoCoMo 6383241_0/1 为 0:0（27:49 / 15:38），
+2Wiki 6383243_0/1 为 0:0（9:16 / 7:33）；最终报告 6383286 为 0:0（20 秒）。
+报告逐题核对六任务两 reader 的实际输入与完整检索一致，6772 条新 QA 均完整落盘。
+
+| 原关系键 + latest | SH | MH | FCSH | FCMH | LoCoMo | 2Wiki | 严格胜出 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 9B | 91 | 63 | 65 | 9 | 57.5809 | 57.9112 | 5/6 |
+| 4B | 90 | 62 | 62 | 6 | 50.6439 | 56.5773 | 6/6 |
+
+相对当前 canonical 无自环主图，9B FCMH -2、LoCoMo +0.5274，4B FCSH +1、
+FCMH -3、LoCoMo -0.1628；2Wiki 两 reader 分别 -0.0040 / -0.0267 点。
+胜出任务数不变，不能声称图侧 canonical 是达到 5/6、6/6 的必要条件。
+这不是未达标的失败候选，但没有解决 9B FCSH 缺口，且当前更新任务 FCMH 回退，
+故暂不替换默认。单次解码结果不证明小分差显著，不能将 FCMH 的全部差值当成纯图效应。
+每 reader 输入 token 11272253，比主图少 3479；reader 仍依赖原 canonical/schema，
+没有删除生成阶段或实测其成本收益。检索核验 6383269 为 0:0，原来源 2Wiki
+Recall@5 / Precision@5 为 0.8730 / 0.4248，与主图聚合指标相同，不代表逐题排名相同。
+
+归档 `implementation_before_raw_relation_removal.tar` 后 tar --compare 通过，
+路径为 `/oscar/home/zliu328/agent-memory-archives/construction_experiments_20260914/`。
+删除已用完的 raw-relations 构图/运行入口和该轮专用断言，保留全部图、缓存、预测和报告。
+原四格与主算子保持不变；归档是依赖既有环境的源码覆盖层，不是独立运行镜像。
+
+### 2026-09-14：采用无自环联合方案并精简构图入口
+
+同 H100 四格对照与全部支持删除消融完整收齐后，默认采用
+`statement_projection_loop_free_refined_rrf_window`（9B 5/6、4B 6/6）。
+旧 refinement 同 H100 为 4/6、6/6；新方案满足双 reader 阶段目标，但仍非逐任务支配，
+9B FCSH 65 未超过最佳 baseline 66，不能宣布双 reader 全面胜出。
+
+保留原图/新图各有无 refinement 的四个执行入口。退役显式事实节点的独立在线候选、
+含自环投影选项及失败的全部支持开关；内部事实 incidence 仍用于构建无自环投影。
+主方案的来源支持筛选并未删除；减少的是未采用的实验分支，不虚报主机制数量下降。
+新构图成为 build_graph Python/Oscar 入口默认，run_graph 默认选无自环 refined；
+原图两格可用 `--construction projected` 显式构建。
+
+清理前整个 optimization 目录保存到
+`/oscar/home/zliu328/agent-memory-archives/construction_experiments_20260914/implementation_before_projection_selection.tar`，
+tar --compare 通过。它是依赖既有基础实现/环境的源码覆盖层；全部图、缓存、QA 与报告均未删除。
+build_graph.py、run_graph.py、statement_incidence.py、test_graph_construction.py、本地 build_graph.sbatch
+五文件从归档时 678 行减到 644 行，净删 34 行；不将文档变化计入算法压缩。
+
+6382311 的 26 项既有构图/报告测试通过，0:0（4 秒）。
+默认新构图重建 6382335_0-5 全部 0:0（26-61 秒），旧构图重建 6382336_0-5 全部 0:0（39-48 秒）。
+6382366 全图核验为 0:0（38 秒）：四格共 60 张图的原节点、边顺序、权重、来源顺序与完整读出
+逐项等于获选结果及同 H100 原图对照，清理没有改变实际图算子。
+
+新构图输出 `optimization_graph_selection_cleanup_seed42_20260914`，
+旧构图输出 `optimization_original_graph_selection_cleanup_seed42_20260914`。
+前者整目录链接后者两格，组成完整四格报告；读取已完成的检索和 QA，不重新采样答案。
+普通接口全量 verify 作业按 SH/MH/FCSH/FCMH/LoCoMo/2Wiki 为
+6382412 / 6382415 / 6382417 / 6382418 / 6382419 / 6382420，均包含四格。
+共核对 13544 次检索，禁止新增 recognition 调用；6382421 依赖六项全部成功再生成四格报告。
+此轮新增 QA 为零，不能将引用的历史 QA 成本当作本轮重新发生的调用。
+
+普通检索复验全部完成：SH/MH/FCSH/FCMH 为 0:0（1:09 / 2:05 / 1:14 / 1:12），
+LoCoMo 6382419 为 0:0（9:58），2Wiki 6382420 为 0:0（20:35）。
+四格六任务共 13544 次普通查询的中心来源、读出和分数均匹配保存结果。
+最终报告 6382421 为 0:0（11 秒），四格完整预测/原指标仍为 9B 3/4/4/5、4B 2/6/4/6 个胜出任务；
+主配置确认为无自环 refined 的 5/6、6/6。至此该轮默认切换与清理已完成验证。
+
+### 2026-09-14：无自环构图的全部来源支持消融
+
+无自环联合方案全量完成后，补一个图侧删除实验，而非新增投影、阈值或权重。
+既有 unrefined 对照同时恢复全部支持和 synonym 边，不能把该对照的退步全部归因于缺少
+canonical/latest。新增 `statement_projection_loop_free_all_support_rrf_window`：
+取消图侧的 canonical/latest 支持筛选，保留全部抽取事实及原 passage-entity 连接，
+仍删除 synonym 贡献；事实单位权重和已有无自环投影不变。
+直接参照为同轮已完成的无自环 refined/unrefined 两格，不按模型或任务选择不同方案。
+这是现有组件的删除消融，没有新算法公式或专门的数据筛选。
+
+入口 `build_graph --construction statement_projection_loop_free --all-support`，
+只构建一个新候选，不重复构建/评估已完成的 unrefined 对照。
+输出目录 `optimization_statement_projection_all_support_seed42_20260914`。
+冻结 OpenIE、向量、识别/PPR、BM25/RRF、读出/窗口/事实附录及原 QA 协议；
+六任务完整 3386 题、4B/9B 共 6772 次新 QA，不取消阴性任务。
+事实附录仍依赖既有 canonical/latest，故成功也只能支持删除图侧依赖，不能宣称整条流水线
+不需要 schema 或 latest。实际 reader token 数仍可能随检索中心变化。
+
+复用既有测试中的共享事实场景，核对全部来源成员和直连不丢失、仅去 synonym 贡献，
+并在完整构图上独立核对其相对 unrefined 图的矩阵差只包含原 synonym 权重。
+全部来源读出逐条核对冻结版本；测试、六任务构图和核验成功后才启动 GPU 检索与 QA。
+旧图同 H100 复现继续独立运行，不覆盖历史结果，不作为启动新候选的成绩筛选门槛。
+
+测试 6379666 为 0:0（3 秒），24 项 graph_construction 测试通过；
+本次未修改 report_results，也未把未运行的两项报告测试计入该数字。
+构图 6379670_0-5 均 0:0（35-49 秒）；全图核验 6379696 为 0:0（23 秒），
+15 张新图均等于已有 unrefined 无自环投影减去原 synonym 贡献，
+14362 条来源读出及原节点身份保持不变。
+
+| 任务 | 检索 | 9B/4B QA 数组 |
+|---|---|---|
+| SH-Doc_QA | 6379723 | 6379729_0-1 |
+| MH-Doc_QA | 6379724 | 6379730_0-1 |
+| FactConsolidation-SH | 6379725 | 6379731_0-1 |
+| FactConsolidation-MH | 6379726 | 6379732_0-1 |
+| LoCoMo | 6379727 | 6379733_0-1 |
+| 2WikiMultiHopQA | 6379728 | 6379734_0-1 |
+
+检索依赖完整图核验，QA 依赖对应完整检索。6379761 核对完整 case、中心来源映射与读出，
+沿用原来源 2Wiki Recall@5/Precision@5。6379777 等待该核验、六任务双 reader QA 和
+同 H100 旧图报告 6378444，核对实际 QA 输入后生成五配置报告。
+旧两格引用本次 H100 固定复现，另外两格引用已有无自环完整结果；不重评这些对照。
+
+完整 QA 和报告现已完成：LoCoMo 6379733_0/1 为 0:0（17:33 / 26:00），
+2Wiki 6379734_0/1 为 0:0（14:40 / 12:25），报告 6379777 为 0:0（18 秒）。
+每 reader 3386 题，共 6772 次新 QA，完整预测逐条对应检索输入；九项 baseline 原指标核验通过。
+
+| reader | SH | MH | FCSH | FCMH | LoCoMo | 2Wiki | 严格胜出 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 9B | 91 | 63 | 66 | 8 | 57.53 | 57.49 | 5/6 |
+| 4B | 88 | 61 | 62 | 4 | 51.47 | 56.53 | 4/6 |
+
+不采用：相对无自环 refined，4B SH -2、MH -1、FCMH -5 点，不能满足双 reader 至少 5/6。
+但 FCSH 与 LoCoMo 提高，因此不能说支持筛选对所有任务都有益。
+9B FCSH 66 仅与最佳 baseline 持平，不计胜出。
+6379761 检索审计为 0:0（3 秒），全部 case 和读出映射通过；
+2Wiki 原来源 Recall@5 / Precision@5 为 0.87325 / 0.4250，refined 为 0.8730 / 0.4248。
+这再次说明证据指标相近不等于两个 reader 的六任务 QA 等价。
+每 reader 输入 11221170 tokens，略少于 refined 的 11275732，不据此推断图结构压缩。
+结果、图和缓存保留；归档代码后删除该开关，不按 reader 分别选择有无支持筛选。
+
+### 2026-09-14：旧图两格的同 H100 对照复现
+
+旧对照日志确认存在硬件差异：原图 SH 6360175_0 使用 L40S，2Wiki 6360277_0 使用 RTX A6000；
+本轮新构图使用 H100。新增的是旧两格的固定协议复现，不是新候选或选择较高分的重复运行。
+输出目录 `optimization_construction_h100_controls_seed42_20260914`，
+重新评估 original_graph_rrf_window / canonical_latest_rrf_window 的完整六任务、4B/9B。
+使用冻结检索记录与原 reader 文本，原 seed42、prompt、解码、指标和环境不变；
+不重新检索、抽取、构图或改向量。13544 次新 QA 单独计入研究成本。
+既有历史 QA 不覆盖；无论高低，两套旧图成绩均保留，同设备构图比较使用本次预先指定复现。
+九项 baseline 池仍是原始既定结果，不因本次复现而宣称整个 baseline 池同硬件。
+
+| 任务 | 9B/4B QA 数组 |
+|---|---|
+| SH-Doc_QA pilot | 6378374_0-1 |
+| MH-Doc_QA | 6378411_0-1 |
+| FactConsolidation-SH | 6378412_0-1 |
+| FactConsolidation-MH | 6378413_0-1 |
+| LoCoMo | 6378414_0-1 |
+| 2WikiMultiHopQA | 6378415_0-1 |
+
+后五项依赖 SH 双 reader pilot 完成。batch 6378444 等待全部复现与无自环轮完整报告，
+逐条核对实际 reader 文本、case 顺序及预测覆盖，再用现有 report_results 汇总十配置。
+其他八种新构图的 H100 结果整目录引用，不按题拼接，也不为换一张对照表重评新候选。
+
+4B 六任务复现已完成，独立核验 6380907 为 0:0（12 秒）：三种配置的完整预测覆盖、
+逐题原指标重算、实际 reader 输入及九项完整 baseline 均通过检查。
+以下为 4B 的同 H100 完整结果；9B LoCoMo 尚在运行，双 reader 总报告仍等待 6378444。
+
+| 配置 | SH | MH | FCSH | FCMH | LoCoMo | 2Wiki | 严格胜出 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 原图，H100 复现 | 87 | 54 | 62 | 3 | 51.5705 | 48.4706 | 2/6 |
+| 旧 refinement，H100 复现 | 91 | 59 | 60 | 9 | 50.7813 | 56.1370 | 6/6 |
+| 无自环新构图 + refinement | 90 | 62 | 61 | 9 | 50.8067 | 56.6039 | 6/6 |
+
+因此，历史参照中的“4B 从 5/6 到 6/6”不能作为新构图独有收益；统一硬件后旧 refinement
+也为 6/6。新构图对旧 refinement 的差为 SH -1、MH +3、FCSH +1、FCMH 0、
+LoCoMo +0.0254、2Wiki +0.4669 点，仍不是逐任务支配，也不把微小单次分差解释成稳定收益。
+原历史结果保留，不覆盖、不择高。相同 seed 不保证跨环境重跑逐题输出相同；
+本次对照变化本身也不能单独证明所有差异均由 GPU 型号造成。
+
+随后 9B LoCoMo 6378414_0 完成，0:0（55:14）；总核验/报告 6378444 完成，0:0（30 秒）。
+旧两格六任务、双 reader 的实际读出输入逐条保持冻结版本，完整预测和原指标重算通过。
+同 H100 的四格对照现已齐全；以下为后续构图比较的主参照，历史表不覆盖：
+
+| 构图 | refinement | 9B：SH / MH / FCSH / FCMH / LoCoMo / 2Wiki | 9B 胜出 | 4B 胜出 |
+|---|---|---|---:|---:|
+| 原图 | 无 | 93 / 61 / 62 / 5 / 57.2890 / 50.0232 | 3/6 | 2/6 |
+| 原图 | 有 | 94 / 58 / 63 / 9 / 57.1394 / 56.6652 | 4/6 | 6/6 |
+| 无自环事实投影 | 无 | 92 / 60 / 64 / 4 / 57.2492 / 52.4801 | 4/6 | 4/6 |
+| 无自环事实投影 | 有 | 91 / 63 / 65 / 11 / 57.0535 / 57.9152 | 5/6 | 6/6 |
+
+新联合方案相对同 H100 的旧 refinement：9B MH +5、FCSH +2、FCMH +2、2Wiki +1.2500 点，
+SH -3、LoCoMo -0.0859 点。因此之前相对历史分数的“9B FCSH 回退 2 点”不适用于同硬件参照，
+但该项仍未超过最佳 baseline 66。旧方案这次 9B 仅 4/6，新联合方案恢复双 reader 至少 5/6。
+不能把四格胜出数量视为统计交互检验，也不把 baseline 池说成全部同硬件或等上下文。
+完整输出目录中的 comparison.json / results.md 保留十配置，未对任何任务择高拼接。
+
+### 2026-09-14：已有无自环、度数保持投影对照
+
+删直连轮的 9B 四个短任务已完整完成，其中 MH 57、FCSH 61 未超过既定最佳 baseline 的
+59、66，因此即使两个长任务全部胜出，也最多 4/6，不能作为双 5/6 的替代配置。
+仍将该轮所有长任务与完整报告跑完，不取消、不删阴性结果，也不改变其中任何运行设置。
+下一对照只改变事实层的投影算子，保留原直连贡献，避免将两种删除混在一起。
+
+候选 statement_projection_loop_free_rrf_window / statement_projection_loop_free_refined_rrf_window，
+新目录 `optimization_statement_projection_loop_free_seed42_20260914`。
+采用 [Kumar 等 2020，式 3 及其随机游走解释](https://link.springer.com/article/10.1007/s41109-020-00300-3)：
+选择一个相邻事实后，均匀选择其中不同于当前位置的成员；分母为成员数减一，事实投影对角为零。
+这是已有的 H (D_e - I)^{-1} H^T 的无自环度数保持投影，不是只清零旧矩阵对角线，
+也不是我们的新公式。仅采用其图约简，不采用聚类、modularity 或迭代调权；不是完整 IRMM 复现。
+“不在当前事实内原地返回”不等于 non-backtracking walk，跨步返回原节点仍允许。
+
+每个活跃事实至少有实体与来源两个不同成员；空事实保持无贡献，单成员输入明确报错。
+单位事实权重、原 passage/synonym 残余贡献、来源筛选、原节点/向量、PPR/识别、
+RRF、读出、六任务与 4B/9B 的原 QA 协议均不变，不搜索新的权重或 damping。
+测试在已有文件增加混合成员数、度数/残余边保持和 singleton 前置条件检查；batch 6375942。
+通过后完整构图并核验旧默认投影未变、新算子与已有公式逐项一致，再运行检索与 QA。
+
+6375942 的 27 项测试通过，0:0（6 秒）；构图 6376005_0-5 全部 0:0（41-70 秒）。
+全量核验 6376048 为 0:0（1:02）：30 张旧默认投影重建后边序/权重完全一致，
+30 张无自环图符合引用算子，事实度数贡献与残余连接保持，14362 条来源读出不变。
+该作业也重新核对删直连轮 9B 四项完整预测及对应九项 baseline，确认其最多 4/6 的资格上限。
+“度数保持”指相对同一 incidence 的加权度数，不是恢复原 HippoRAG 的度数或保证排名不变。
+
+| 任务 | 普通检索 | 9B/4B QA 数组 |
+|---|---|---|
+| SH-Doc_QA | 6376072 | 6376096_0-1 |
+| MH-Doc_QA | 6376073 | 6376097_0-1 |
+| FactConsolidation-SH | 6376074 | 6376099_0-1 |
+| FactConsolidation-MH | 6376075 | 6376100_0-1 |
+| LoCoMo | 6376076 | 6376101_0-1 |
+| 2WikiMultiHopQA | 6376078 | 6376102_0-1 |
+
+检索依赖 6376048；每项 QA 依赖对应完整检索与构图核验。
+batch 6376134 核对十配置的完整 case/读出和已有 2Wiki 证据指标。
+6376135 等待本轮全量 QA、检索核验及删直连轮完整报告 6375025，才汇总十配置。
+历史参照整目录链接，本轮最多 13544 次新 QA；不把未完成成绩计为零或只保留胜出任务。
+
+本轮现已全量完成：LoCoMo 6376101_0/1 均 0:0（55:41 / 52:03），
+2Wiki 6376102_0/1 均 0:0（18:23 / 14:34）；完整报告 6376135 为 0:0（27 秒）。
+两种新配置各 reader 均为 3386 题，合计 13544 次新 QA。
+以下按 SH / MH / FCSH / FCMH / LoCoMo / 2Wiki 排列，严格胜出对照九项完整 baseline 的逐任务最佳值：
+
+| 无自环配置 | reader | SH | MH | FCSH | FCMH | LoCoMo | 2Wiki | 严格胜出 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 新构图，不加 refinement | 9B | 92 | 60 | 64 | 4 | 57.25 | 52.48 | 4/6 |
+| 新构图，不加 refinement | 4B | 86 | 56 | 62 | 2 | 51.02 | 51.87 | 4/6 |
+| 新构图 + refinement | 9B | 91 | 63 | 65 | 11 | 57.05 | 57.92 | 5/6 |
+| 新构图 + refinement | 4B | 90 | 62 | 61 | 9 | 50.81 | 56.60 | 6/6 |
+
+联合方案相对冻结 refinement 历史参照：9B MH +5、FCMH +2、2Wiki +1.4483 点，
+但 FCSH -2、LoCoMo -0.0212 点，SH 不变；4B SH +3、MH +3、FCSH +1、FCMH +1、
+2Wiki +0.6182 点，但 LoCoMo -0.4474 点。不能称为逐任务支配。
+相对含自环投影联合方案，9B FCMH +2、2Wiki 提高，而 4B FCMH、LoCoMo、2Wiki 回退；
+去自环并非在所有任务均有益。4B 对最佳 baseline 的 LoCoMo 优势仅 0.4704 点，
+9B FCSH 仍比最佳 baseline 低 1 点。单 seed 分差不作为显著性结论。
+
+6376134 检索审计为 0:0（12 秒），十配置六任务均为相同完整 case 集及原来源映射读出。
+2Wiki 无自环联合方案的原来源 Recall@5 / Precision@5 为 0.8730 / 0.4248，
+冻结 refinement 为 0.8580 / 0.4154，含自环联合方案为 0.86675 / 0.4216。
+这是五个中心来源的证据可达性，不是全图保真或整个扩展 reader 上下文的召回率。
+联合方案每 reader QA 输入 11275732 tokens，冻结参照为 11107895，约增加 1.51%；
+固定读出规则不等于实际 token 数相等，也不作压缩或等硬件加速主张。
+
+当前判断：保留无自环联合方案作为候选，默认仍为 canonical_latest_rrf_window。
+继续完成已预先提交的 H100 旧图复现后再判断同硬件构图收益，不按结果择高拼接。
+test set 用作开发集的边界不变；4B 6/6 是本地既定 baseline 池内的单次完整胜出，
+不是未见数据上的泛化结果，也不是全部文献方法的 SOTA 证明。
+
+### 2026-09-14：删减原 passage-entity 直连贡献
+
+前两轮均已完整完成后，启动单项结构消融，不添加第三套打分或阈值。
+直接对照为 statement_projection_rrf_window / statement_projection_refined_rrf_window；
+新候选为 statement_projection_no_direct_rrf_window / statement_projection_no_direct_refined_rrf_window，
+输出目录 `optimization_statement_projection_no_direct_seed42_20260914`。
+
+唯一变化：在事实 incidence 投影前，不再保留原 passage-entity 边的残余贡献。
+每个事实的主体、客体和实际来源成员不变；unrefined 组的原 synonym 贡献仍保留，
+refined 组仍按原 refinement 不保留 synonym。投影公式、对角项、事实单位权重不变。
+这不是删除来源信息，也不是无权图拓扑的等价变换；直连权重改变会改变 PPR。
+refined 组由此只保留既有标准事实 incidence 投影，不新增图论公式。
+
+完整六任务、4B/9B、原 OpenIE/向量/schema/QA 协议不变；逐来源读出与冻结参照完全相同。
+复用已有构图、检索、评测与报告入口，仅增加一个删除开关及相应两种配置名。
+25 项现有测试由 batch 6374888 执行；完整构图需依赖测试成功，随后全量检查旧默认构图
+未变、新图仅移除直连贡献，再进行普通检索和全任务 QA。不是依据单一任务选择配置。
+结果收齐前不删除默认连接或替换主方案，当前修改是可独立评估的删减开关。
+
+25 项测试通过，6374888 为 0:0（4 秒）。构图数组 6374917_0-5 全部 0:0（28-57 秒），
+全量核验 6374956 为 0:0（2:07）：重建的 30 张默认 incidence 图与上一轮节点、事实身份、
+边序和权重完全相同；30 张删减投影图等于原投影仅减去原直连贡献，保留自环计数约定。
+全部 14362 条来源读出与冻结参照一致，未改默认方案或抽取缓存。
+
+| 任务 | 普通检索 | 9B/4B QA 数组 |
+|---|---|---|
+| SH-Doc_QA | 6374964 | 6374991_0-1 |
+| MH-Doc_QA | 6374965 | 6374992_0-1 |
+| FactConsolidation-SH | 6374966 | 6374993_0-1 |
+| FactConsolidation-MH | 6374968 | 6374994_0-1 |
+| LoCoMo | 6374969 | 6374995_0-1 |
+| 2WikiMultiHopQA | 6374970 | 6374996_0-1 |
+
+所有检索依赖全量构图核验；每个 QA 数组依赖对应完整检索与构图核验，仍使用 H100。
+batch 6375024 等待六任务检索，核对八配置的完整 case、五中心来源及冻结读出文本，
+并使用已有指标报告 2Wiki Recall@5/Precision@5。6375025 等待完整 QA 和检索核验汇总八配置。
+六份历史参照只作整目录链接；本轮最多 13544 次新 QA，不逐题复用或选择较高分回答。
+
+6375024 完成，0:0（11 秒）：八配置全六任务 case、顺序、五中心原来源和对应冻结读出一致。
+2Wiki 的无 refinement Recall@5 / Precision@5 为 0.78500 / 0.3734，
+有 refinement 为 0.87075 / 0.4248；原投影分别为 0.78925 / 0.3756、0.86675 / 0.4216。
+该删除改善 refined 证据召回，但已完成的 9B MH/FCSH 明显回退，不能把召回增益当成 QA 增益。
+
+来源成员计数 batch 6375594 完成，0:0（8 秒）：refined 活跃事实 167074 个，
+其中 167072 个只有一个来源，2 个有两个来源；成员数 3 的 166899 个、成员数 2 的 173 个、
+成员数 4 的 2 个，另有 23271 个被保留为孤立节点的无活跃支持事实。
+因此该联合方法主要是来源支持的实体/来源小型事实投影，不以大量多来源超边作为机制解释。
+成员数 4 的例外只在 2Wiki；未据此截断成员、改 schema、改图或修改任何数据。
+
+删直连完整 QA 已完成：9B LoCoMo 6374995_0 为 0:0（56:09），全八配置报告 6375025
+为 0:0（23 秒），两个新候选共 13544 条预测及 usage 核验通过。
+
+| 删除直连 | Reader | SH | MH | FCSH | FCMH | LoCoMo | 2Wiki | 严格胜出 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 无 graph refinement | 9B | 90 | 61 | 57 | 4 | 57.55 | 51.11 | 3/6 |
+| 无 graph refinement | 4B | 87 | 61 | 54 | 3 | 51.08 | 49.46 | 2/6 |
+| 有 graph refinement | 9B | 92 | 57 | 61 | 8 | 57.70 | 56.73 | 4/6 |
+| 有 graph refinement | 4B | 89 | 57 | 60 | 9 | 50.91 | 56.12 | 5/6 |
+
+该删除未达到双 5/6，不采用；refined 相比保留直连的投影，9B MH/FCSH 分别 -6/-4 点，
+4B MH -5 点。refined 每 reader 输入 token 为 10967090，虽比保留直连少 210190，
+仍不足以支持用此取舍替代原投影。4B SH 与最佳 baseline 同为 89，不计严格胜出。
+实现将归档后退役删除开关及专用测试，图、完整预测、usage、原缓存和报告保留。
+
+源码归档完成，tar --compare 对照通过：
+`/oscar/home/zliu328/agent-memory-archives/construction_experiments_20260914/implementation_before_no_direct_removal.tar`。
+该归档为 optimization 覆盖层，依赖此前 refinement_only 基础实现归档；旁边 README 说明恢复范围。
+工作树已删除 direct_sources 参数/分支、两项 no_direct CLI 名称和专用测试；无新执行文件。
+首次补丁因测试行匹配失败而整体未应用，核对实际文件后修正，未发生部分清理或实验重跑。
+26 项余下测试 6378261 为 0:0（4 秒）；batch 6378276 为 0:0（2:51），重新检查全部默认
+incidence、投影及无自环算子与已保存图一致，全部来源读出不变。
+退役失败候选不计作主方法删掉一个 heuristic，原直连贡献保留。
+
+### 2026-09-14：已有随机游走投影的结构对照
+
+上一轮新事实节点图仍在完整 QA，四个短任务已完成且效果混合，未更换主方案。
+2Wiki 的原来源 Recall@5：原图 0.7465、旧 refinement 0.8580、事实节点 0.7660、
+事实节点 + refinement 0.8545；由 6371419 用已有指标和显式原来源映射核对。
+固定 PPR damping 时插入事实节点增加传播步数，因此不能把星形表示与投影表示的差值
+仅解释成信息是否保留。新增一个已有方法对照，不进行参数扫描。
+
+候选 statement_projection_rrf_window / statement_projection_refined_rrf_window，
+目录 `optimization_statement_projection_seed42_20260914`。采用
+[Zhou 等 NIPS 2006 第 4 节式 3](https://papers.nips.cc/paper_files/paper/2006/file/dff8e9c2ac33381546d96deea9922999-Paper.pdf)
+的 incidence 随机游走：先选择相邻事实，再在该事实成员中均匀转移。
+用既有标准 H D_e^{-1} H^T 投影物化事实层，保留当前设定的 passage/synonym 残余连接；
+将结果交给同一 PPR。事实超边权重为 1，不新增置信度、关系打分、阈值或温度。
+保留投影对角项，使用 igraph Weighted_Adjacency 的 loops="twice" 对应其无向边计数约定。
+这不是与显式事实节点 PPR 等价的压缩：两者在相同 damping 下的有效传播步不同。
+也不是我们的新图论公式；现阶段只是检验表示与传播步粒度的已有算子对照。
+
+CPU 预检 6371949 已读取全部 30 张事实图：最大事实成员数 192，逐任务投影项规模可处理，
+不因度数截断成员。复用同一事实身份/来源选择、OpenIE、embedding、读出和六任务协议。
+新增投影函数仍放在 statement_incidence.py，不新建执行文件；现有测试增加两项矩阵/自环语义检查，
+测试作业为 batch 6371973，构图与后续 GPU 任务依赖其成功。
+
+6371973 的整数权重测试触发 NumPy 除法输出类型错误，尚未进入构图；依赖数组
+6371997 被调度器取消，0 秒、无产物。将度数数组显式转为 float64 后，24 项测试
+在 6372014 全部通过（4 秒）。替换构图数组 6372016_0-5 全部 0:0（33-63 秒）。
+6372075 在 batch 全量核对 30 张图的矩阵、无向自环计数约定、原节点和读出，0:0（28 秒）。
+
+| 任务 | 普通检索 | 9B/4B QA 数组 |
+|---|---|---|
+| SH-Doc_QA | 6372041 | 6372095_0-1 |
+| MH-Doc_QA | 6372042 | 6372096_0-1 |
+| FactConsolidation-SH | 6372043 | 6372097_0-1 |
+| FactConsolidation-MH | 6372045 | 6372098_0-1 |
+| LoCoMo | 6372046 | 6372099_0-1 |
+| 2WikiMultiHopQA | 6372047 | 6372100_0-1 |
+
+四个短任务两候选普通检索已完成，各 100 题，0:0；两长任务及 QA 继续执行。
+batch 6372187 核对六种图的完整 case/顺序和 2Wiki 原来源 Recall@5；已完成的短任务由
+sacct 验证成功，仅将仍运行的两长任务设为依赖（把已退出调度器的旧 ID 加入依赖的首次提交被拒绝，
+没有重跑检索）。6372188 等待两轮完整 QA、检索核验和上一轮报告后汇总六种配置。
+归档与阴性结果不修改；当前两轮均未达到完整矩阵，不根据短任务成绩宣称改进或提前筛掉候选。
+
+6372187 已完成，0:0（6 秒）：六种配置均覆盖相同的 3386 个 case，题目与顺序不变，
+每题五个中心均有原来源映射。两轮全部普通检索均已完成。2Wiki 的 1000 题证据结果如下，
+调用原有指标函数，不使用扩展读出文本做 gold passage 精确匹配：
+
+| 构图 | 无 graph refinement Recall@5 | 有 graph refinement Recall@5 | 无 graph refinement Precision@5 | 有 graph refinement Precision@5 |
+|---|---:|---:|---:|---:|
+| 原实体对图 | 0.74650 | 0.85800 | 0.3528 | 0.4154 |
+| 显式事实节点 | 0.76600 | 0.85450 | 0.3636 | 0.4156 |
+| 标准事实投影 | 0.78925 | 0.86675 | 0.3756 | 0.4216 |
+
+本表只支持该任务上投影的证据可访问性更好，不证明全局图质量、QA 改进或独立测试集泛化。
+无 refinement 的显式事实节点也改善召回，但加 refinement 后比原实体对图略低；
+因此不能用“保留更多结构必然更好”解释结果。QA 继续按既定全六任务、双 reader 跑完，
+主配置不变，不按任务选择不同图。batch 6372366 另测实际节点、边、图文件和权重文件大小；
+该测量不计原始 embedding/cache，也不把节点数减少等同于端到端索引压缩。
+
+6372366 完成，0:0（13 秒）。下表累计六任务的 15 组图，字节数为实际文件大小：
+
+| 表示 | graph refinement | 节点数 | 边数 | graph.pickle 字节 | edge_weights.npy 字节 |
+|---|---|---:|---:|---:|---:|
+| 显式事实节点 | 无 | 350330 | 3320861 | 197961406 | 26568808 |
+| 显式事实节点 | 有 | 350330 | 708031 | 81978739 | 5666168 |
+| 标准事实投影 | 无 | 159985 | 3188398 | 140373296 | 25509104 |
+| 标准事实投影 | 有 | 159985 | 515702 | 52203169 | 4127536 |
+
+未 refinement 的 LoCoMo 边数从显式事实节点的 153076 增至投影的 231456，
+投影不保证每个任务的边数更少。显式图保留事实节点和原边属性，投影只保留原节点属性及权重，
+故 pickle 差值也包含属性差异，不是仅靠拓扑压缩的收益。运行仍先加载原始图与向量索引，
+这些新增产物不是独立替代索引；此表不是总磁盘、峰值内存或 PPR 加速测量。
+
+该轮完整 QA 与六配置总报告均已完成：9B LoCoMo 6372099_0 为 0:0（55:35），
+6372188 为 0:0（17 秒）。报告重新核对各配置六任务、双 reader 的主指标、预测覆盖及 usage。
+新投影两候选共 13544 次新 QA；前一轮和原图参照整目录复用，不逐题拼接。
+
+| 投影配置 | Reader | SH | MH | FCSH | FCMH | LoCoMo | 2Wiki | 严格胜出 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 无 graph refinement | 9B | 93 | 60 | 64 | 4 | 58.43 | 51.80 | 3/6 |
+| 无 graph refinement | 4B | 86 | 52 | 64 | 2 | 51.88 | 50.65 | 3/6 |
+| 有 graph refinement | 9B | 91 | 63 | 65 | 9 | 57.08 | 57.20 | 5/6 |
+| 有 graph refinement | 4B | 88 | 62 | 61 | 10 | 51.02 | 56.72 | 5/6 |
+
+投影 + refinement 相对旧 refinement 改善 MH（+5/+3 点）和 2Wiki，但 9B FCSH -2 点，
+4B LoCoMo 下降；没有达到全面胜出。refined 每 reader 输入 token 11177280，比旧方案
+11107895 多 69385，也高于显式节点的 10934922，不能用“更小上下文”解释此轮效果。
+两种新表示均维持双 5/6，但没有统一支配旧方案。下一步仅删减重复直连贡献，保留这些完整对照。
+
+
+### 2026-09-14：固定抽取，开始构图与 refinement 的 2x2 对照
+
+本轮仅两个新候选：statement_incidence_rrf_window 和 statement_incidence_refined_rrf_window。
+输出根目录：`optimization_statement_incidence_seed42_20260914`，不覆盖已冻结参照。
+沿用已有 OpenIE、实体/段落/事实 embedding、query recognition、原实体/段落种子、PPR、
+RRF、top5、来源读出、QA prompt/解码、loader/划分和评分；不新增生成、embedding、阈值或调参扫描。
+两组读出均逐来源比对已冻结 compiled_sources，完全一致后才允许写入新实验。
+
+构图依据是已有的事实 incidence 表示，参见
+[HyperGraphRAG 4.1 式 5](https://arxiv.org/html/2503.21322#S4.SS1)。本轮不是完整复现该方法，
+不使用其 n-ary 抽取、置信度、向量双路检索或生成策略，也不把已有表示称为新理论。
+每个不同的原始规范化 (subject, relation, object) 一个事实节点；完全相同三元组共享节点，
+关联其主客体及实际支持来源，所有成员连接为二值 incidence。不同谓词不合并。
+原 passage-entity 连接保留，实体对 fact 贡献改由事实节点表达；原同义连接在无 refinement
+组保留，在 refinement 组按当前 refinement 的既有行为移除。后者是既有模块的一部分，
+不能将 refinement 的差值单独归因为 latest。支持选择仍调用原 retained_statements。
+新节点 reset 为零，不新增 query-to-fact seeding，不重新解释谓词语义或声称方向推理。
+
+与已退役 source_fact_incidence 不同：旧试验按每次事实出现建节点，移除了直接 passage-entity
+和同义连接，且没有当前 RRF/window/附录。本轮使用共享事实身份并固定当前外围协议，
+因此旧负结果保留，但不能直接填本轮下排两格。新表示改变路径长度和度数，不声称无损 PPR。
+
+检查顺序：现有测试扩展两项结构检查（batch 6371267）→ 六任务构图与读出一致性
+→ 各任务两候选普通检索成功 → 4B/9B 完整 QA → 原指标完整对照。所有阶段未完成前不报收益。
+核心新增文件仅 graph_construction/statement_incidence.py，复用已有 build_graph/run_graph/report_results。
+
+22 项测试通过。构图数组 6371286_0-5 全部 0:0（每任务 32-48 秒）；
+batch 全量核验 6371357 为 0:0（18 秒），确认 15 组 / 14362 来源读出与冻结版本完全相同，
+30 张新图的原节点顺序、独立事实身份、边权文件和图结构一致。
+首次 GPU 提交同时指定两个 partition 被集群拒绝，无作业落地；改为 gpu-he。
+L40S 排队预计次日，六个尚未启动的检索作业只改 GPU 资源为 H100，未取消或重跑任何题。
+
+| 任务 | 普通检索 | 9B/4B QA 数组 |
+|---|---|---|
+| SH-Doc_QA | 6371303 | 6371360_0-1 |
+| MH-Doc_QA | 6371304 | 6371361_0-1 |
+| FactConsolidation-SH | 6371305 | 6371362_0-1 |
+| FactConsolidation-MH | 6371306 | 6371363_0-1 |
+| LoCoMo | 6371314 | 6371364_0-1 |
+| 2WikiMultiHopQA | 6371315 | 6371365_0-1 |
+
+QA 依赖对应任务完整检索和全量构图核验成功；六数组全部成功后 batch 6371379
+使用现有 report_results 汇总四格完整对照。两份原图/旧 refinement 参照仅整目录引用，
+不按题拼接。SH/FCSH/FCMH 的两候选普通检索已经各 100 题通过；其余与 QA 待完成。
+MH 两候选普通检索也完成（6371304，0:0，1:09），4B/9B QA 已实际启动。
+另提交 batch 6371419，依赖六任务检索完成，核对四格完整题目顺序和五个原始来源映射，
+用既有 gold_passage_recall_at_k / precision 函数对 2Wiki 的 original_source_text 计算证据指标。
+旧 QA runner 附带的 passage 指标对扩展读出文本做精确匹配，不作为本轮证据召回；
+答案主指标、QA 调用和原评分协议不改。总报告 6371379 也等待这一核验成功。
+首个端到端任务已完成：SH 9B 的两候选各 100 条预测落盘，6371360_0 为 0:0（2:53）。
+该结果只证明本轮新构图到 QA 的完整执行路径已跑通，仍等待六任务、双 reader 的统一报告。
+
+4B 的两候选已完成六任务，batch 6372865 为 0:0（6 秒）：复用 audited_score，
+对照原始 case 集逐条核对预测数量、主指标均值与 summary，并重新核对九项 baseline。
+以下为百分制；LoCoMo 使用 F1，2Wiki 使用 answer F1，四项 MAB 使用 substring EM。
+
+| 4B 配置 | SH | MH | FCSH | FCMH | LoCoMo | 2Wiki | 严格胜出 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 旧 refinement | 87 | 59 | 60 | 8 | 51.2541 | 55.9857 | 5/6 |
+| 显式事实节点 | 87 | 60 | 62 | 5 | 51.6924 | 49.3027 | 3/6 |
+| 显式事实节点 + refinement | 88 | 57 | 61 | 8 | 51.1234 | 56.4728 | 5/6 |
+
+显式节点加 refinement 相对旧方案有升有降，没有扩大 4B 胜出范围。
+随后 9B LoCoMo 6371364_0 完成，0:0（55:13）；完整四格报告 6371379 为 0:0（14 秒），
+两候选各六任务、双 reader 共 13544 条新预测均完成，原图两组参照整目录复用。
+完整结果位于该输出根目录的 results.md / comparison.json，主指标、case 覆盖和 usage 核对通过。
+
+| 9B 配置 | SH | MH | FCSH | FCMH | LoCoMo | 2Wiki | 严格胜出 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 旧 refinement | 91 | 58 | 67 | 9 | 57.0747 | 56.4669 | 5/6 |
+| 显式事实节点 | 93 | 59 | 64 | 4 | 57.5441 | 51.0319 | 2/6 |
+| 显式事实节点 + refinement | 93 | 61 | 64 | 9 | 57.4277 | 57.0537 | 5/6 |
+
+结论：显式事实节点加 refinement 维持双 5/6，但没有增加胜出任务数；9B 的 MH 改善同时
+伴随 FCSH 回退 3 点，4B 的 MH 回退 2 点。它不能统一替代旧配置，也不证明显式节点必需。
+两 reader 各自输入 token 从旧 refinement 的 11107895 降到 10934922，仍不是等 token 比较；
+跨 H100/L40S 的 QA 秒数不用于加速主张。该轮作为结构消融保留，等待投影轮完整结果。
+
+第二轮后续任务一度因 H100 后续资源安排等待；只将尚未启动的短任务 6372097/6372098
+时限由 2 小时改为 15 分钟，2Wiki 6372100 改为 1 小时，LoCoMo 6372099 改为 1.5 小时。
+依据是同环境、同规模第一轮的实测时长；不改变运行中的作业、GPU 型号或实验协议。
+短任务已全部完成，第二轮长任务已全部启动，无因观察超时而取消或重跑。
+
+### 2026-09-14：历史文本 ZIP 归档
+
+24 个历史作业 JSON、7 个退役实验/进度说明 MD、2 个历史环境 TXT 共 33 个文件，
+原始内容合计 146296 字节，归档为
+`/oscar/home/zliu328/agent-memory-archives/refinement_only_20260914/legacy_notes.zip`。
+ZIP 完整性检查和解压流逐文件 cmp 均通过，随后移出工作目录；不新增替代脚本或 JSON。
+当前算法文档、消融定义、方法记录和相关工作仍保留，历史文档链接改指 Git 旧版本。
+不删除当前运行环境、模型权重、结果或缓存；这次主要减少目录杂项，不是大容量存储清理。
+
+### 2026-09-14：冻结为原始抽取 + refinement 消融参照
+
+用户决定保留当前结果与 cache，供后续抽取/构图研究比较；尚未运行新的抽取方法。
+主配置为 canonical_latest_rrf_window，对照为 original_graph_rrf_window；保留完整六任务、
+9B/4B、检索上下文、QA、usage、OpenIE、底图/embedding、两阶段 schema 和 LLM 缓存。
+独立归档目录：`/oscar/home/zliu328/agent-memory-archives/refinement_only_20260914/`。
+目录内 README 记录范围、原路径和恢复边界；数据 tar 解引用历史 QA 软链接，源码另存 tar。
+后续新方法必须使用新的输出目录，不覆盖当前结果或共享原始缓存；大型产物不上传 GitHub。
+这组是未来比较的“原始抽取 + refinement”参照，不预称已完成 generator 优化消融。
+归档作业 6369944 在 batch 完成（0:0，1:04），两个 tar 与原文件逐一对照通过；
+数据归档约 2.3 GiB，含最终 24 份 QA 预测、45 份 SQLite、15 份底图和 15 份 OpenIE。
 
 每一轮补充：模块变化、直接参照、完整范围、4B/9B 结果、实际成本、正负例证、状态与产物路径。
 当前只做既有机制删减与消融，不新增 heuristic、公式、数据规则或任务路由。保留实际实现和负结果，

@@ -1,12 +1,11 @@
 """Retrieve, evaluate and verify the frozen main graph and its original-graph control."""
 
 import argparse
+import gc
 import json
 from pathlib import Path
 from time import perf_counter
 
-from experiments.run_anchormem import TASKS
-from experiments.run_gap_query_memory import MeasuredFinalAnswer
 from experiments.runner import RetrievedCase, _retrieval_record, evaluate_retrieval
 from main import _config_from_args, _load_groups, _seed_everything, build_parser
 
@@ -14,10 +13,27 @@ from main import _config_from_args, _load_groups, _seed_everything, build_parser
 BASE = Path("/oscar/scratch/zliu328/agent-memory-outputs")
 SOURCE = BASE / "final_qwen3_30b_seed42_clean_20260910"
 MODELS = ("Qwen/Qwen3.5-9B", "Qwen/Qwen3.5-4B", "Qwen/Qwen3.5-2B")
+TASKS = ("SH-Doc QA", "MH-Doc QA", "FactConsolidation-SH", "FactConsolidation-MH", "LoCoMo", "2WikiMultiHopQA")
+
+
+class MeasuredFinalAnswer:
+    """Record actual QA usage without modifying benchmark generation settings."""
+
+    def __init__(self, model, stream):
+        self.model, self.stream = model, stream
+
+    def answer(self, messages, **generation):
+        start = perf_counter()
+        response = self.model.answer(messages, **generation)
+        self.stream.write(json.dumps({**self.model.last_usage, "seconds": perf_counter() - start,
+                                      "generation_settings": generation}) + "\n")
+        self.stream.flush()
+        return response
 
 
 def write_json(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n")
+
 
 def evaluate(args):
     from utils.models import HuggingFaceChatModel
@@ -50,6 +66,22 @@ def retrieval_config(args):
     return _config_from_args(common).hipporag_config(official), common
 
 
+def completed_group_prefix(rows, groups):
+    actual = [(r["group_id"], r["case"]["case_id"], r["case"]["question"]) for r in rows]
+    expected = [(g.group_id, c.case_id, c.question) for g in groups for c in g.cases]
+    if actual != expected[:len(actual)]:
+        raise ValueError("Existing retrieval is not the original task prefix")
+    completed, offset = set(), 0
+    for group in groups:
+        stop = offset + len(group.cases)
+        if offset < len(rows) < stop:
+            raise ValueError("Resume requires complete source groups, not a partial group")
+        if stop <= len(rows):
+            completed.add(group.group_id)
+        offset = stop
+    return completed
+
+
 def retrieve(args):
     from optimization.retriever.hipporag import CacheMissGuard, GenerationFailureGuard, load_optimized_memory
 
@@ -60,13 +92,35 @@ def retrieve(args):
         built = json.loads((directory / "build_complete.json").read_text())
         if built["groups"] != [group.group_id for group in groups]:
             raise ValueError("Built graph groups differ from the original loader")
-        count = 0
-        with (directory / "retrieval.jsonl").open("x") as stream:
+        retrieval_path = directory / "retrieval.jsonl"
+        existing = ([json.loads(line) for line in retrieval_path.open()]
+                    if args.resume_completed_groups and retrieval_path.exists() else [])
+        completed = completed_group_prefix(existing, groups)
+        count, provider_calls = len(existing), 0
+        if args.resume_completed_groups and (directory / "retrieval_complete.json").exists():
+            if count != sum(len(group.cases) for group in groups):
+                raise ValueError("Completed retrieval has incomplete records")
+            print(json.dumps(dict(task=args.task, variant=variant, preserved_complete=count)), flush=True)
+            continue
+        if args.allow_generator_calls:
+            for group_id in completed:
+                with (directory / "runtime" / group_id / "recognition_usage.jsonl").open() as usage:
+                    provider_calls += sum(1 for _ in usage)
+        with retrieval_path.open("a" if args.resume_completed_groups else "x") as stream:
             for group in groups:
+                if group.group_id in completed:
+                    continue
                 memory = load_optimized_memory(config, directory / "memory" / group.group_id,
                                                directory / "runtime" / group.group_id)
-                guard = (GenerationFailureGuard if args.allow_generator_calls else CacheMissGuard)(memory._generator)
+                usage_stream = None
                 try:
+                    if args.allow_generator_calls:
+                        from baseline.graph_usage import GraphUsageRecorder
+                        usage_stream = (directory / "runtime" / group.group_id / "recognition_usage.jsonl").open("x")
+                        client = memory._generator.openai_client
+                        client.chat.completions.create = GraphUsageRecorder(usage_stream).wrap(
+                            client.chat.completions.create, method=variant, stage="recognition", group_id=group.group_id)
+                    guard = (GenerationFailureGuard if args.allow_generator_calls else CacheMissGuard)(memory._generator)
                     rows = memory._memory.chunk_embedding_store.get_all_id_to_rows()
                     keys = json.loads((directory / "memory" / group.group_id / "lexical_source_keys.json").read_text())
                     if [rows[key]["content"] for key in keys] != list(dict.fromkeys(group.memory_items)):
@@ -82,10 +136,23 @@ def retrieve(args):
                         count += 1
                     write_json(directory / "runtime" / group.group_id / "retrieval_cost.json", memory.efficiency_metrics())
                 finally:
-                    memory.close()
+                    try:
+                        memory.close()
+                    finally:
+                        if usage_stream is not None:
+                            usage_stream.close()
+                        memory = guard = client = None
+                        gc.collect()
+                        import torch
+                        if torch.cuda.is_available():
+                            torch.cuda.empty_cache()
+                if usage_stream is not None:
+                    with open(usage_stream.name) as usage:
+                        provider_calls += sum(1 for _ in usage)
                 print(json.dumps(dict(task=args.task, variant=variant, group=group.group_id, questions=count)), flush=True)
         settings = json.loads((directory / "settings.json").read_text())
-        write_json(directory / "settings.json", dict(settings, config=config, full_questions=count))
+        write_json(directory / "settings.json", dict(settings, config=config, full_questions=count,
+                                                     additional_generator_calls=provider_calls))
         write_json(directory / "retrieval_complete.json", dict(questions=count, uses_saved_query_resets=False))
 
 
@@ -125,11 +192,15 @@ def main():
     parser.add_argument("--phase", choices=("retrieve", "evaluate", "verify"), required=True)
     parser.add_argument("--task", choices=TASKS, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
-    parser.add_argument("--variants", nargs="+", choices=("canonical_latest_rrf_window", "original_graph_rrf_window"),
-                        default=["canonical_latest_rrf_window"])
+    parser.add_argument("--variants", nargs="+", choices=("canonical_latest_rrf_window", "original_graph_rrf_window",
+                        "statement_projection_loop_free_rrf_window", "statement_projection_loop_free_refined_rrf_window",
+                        "statement_projection_loop_free_retained_index_rrf_window"),
+                        default=["statement_projection_loop_free_refined_rrf_window"])
     parser.add_argument("--evaluation-backbone", choices=MODELS[:2], default=MODELS[0])
     parser.add_argument("--generator-base-url", default="http://127.0.0.1:9/v1")
     parser.add_argument("--allow-generator-calls", action="store_true")
+    parser.add_argument("--resume-completed-groups", action="store_true",
+                        help="Append only after an intact prefix of complete source groups")
     parser.add_argument("--path", default="/oscar/scratch/zliu328/agent-memory-data/locomo/locomo10.json")
     parser.add_argument("--data-root", default=str(Path(__file__).resolve().parents[1] / "baseline_algorithms/HippoRAG/reproduce/dataset"))
     args = parser.parse_args()

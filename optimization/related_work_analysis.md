@@ -147,7 +147,24 @@ Zep 区分事实有效时间与系统摄入时间；REMem 保留带时间限定�
 这两种已有机制都比按关系标签统一保留最后来源更接近具体事实级处理。
 需要时先做已有机制的对照，不追加新的 state/event 标签级覆盖规则。
 尤其不能对没有时间语义的百科段落，把 loader 顺序解释成事实新旧。
-时间线不是目前所有任务共同瓶颈，不把整个方法定位提前锁死在时间更新上。
+按最新讨论，以更新/consolidation 为问题动机；但时间线不是所有任务共同瓶颈，
+普通检索任务用于检查适用范围，不能作为同等强度的冲突解决证据。
+
+### 更新主线的补充近邻（2026-09-14）
+
+重新核对原论文方法节，而非合并其不同模型或不同数据范围的成绩：
+
+| 工作 | 与更新相关的实际机制 | 与当前实现的边界 |
+|---|---|---|
+| [TEPA](https://arxiv.org/html/2608.07429) | 带 Hypothesis/Active/Revoked 生命周期的记忆；用支持/冲突证据更新状态，限制检索到 active 记录 | 我们离线选择图支持，不采用其后验、阈值或验证试验；历史原文仍可被检索，不是相同的撤销语义 |
+| [StateFuse](https://arxiv.org/html/2607.05844) | 不可变操作与针对 claim 的撤销，显式 ConflictSet，查询投影不改基础状态 | “保留历史、派生视图”已有直接先例；我们没有复制合并、显式冲突接口或语义撤销句柄，不能借用其系统保证 |
+| [Reliable Post-Retrieval Assembly](https://arxiv.org/html/2606.01435) | 检索后抽取候选和版本编号，执行确定的新版本选择；多跳逐步处理 | 改动位于检索后/推理流程；当前按用户范围冻结此阶段，研究来源支持如何进入离线图，不移植其 query decomposition |
+
+更新/consolidation 本身不能作为 novelty。当前可区分的具体操作是选中来源支持如何形成
+图传播权重；四格主实验和支持选择消融需要支持这一主张。
+本地 reader 已含新编号优先指令（utils/prompts.py），但图只按来源段落取最后支持，
+同段多个值仍共存。[MAB 方法与附录](https://arxiv.org/html/2507.05257v4#S3)
+不能替当前实现提供事实级冲突处理的保证。保持已有划分、loader 和指标，不为故事另造冲突子集。
 
 ## 评测与可比较性
 
@@ -160,7 +177,7 @@ Zep 区分事实有效时间与系统摄入时间；REMem 保留带时间限定�
   主指标是 substring exact match，不改成 token F1。
 - LoCoMo 使用 locomo10 的全部 1986 题，保留原类别评分及 adversarial 处理。
 - 2Wiki 使用 HippoRAG 发布的 1000 题及配套 corpus，不称为整个原始 2Wiki 数据集全量。
-- 同一候选覆盖上述六任务全部 3386 题和三个 reader，共 10158 次回答；
+- 当前同一候选覆盖上述六任务全部 3386 题和 4B/9B 两个 reader，共 6772 次回答；2B 已退役。
   不能拿部分题完成或逐任务挑配置的结果代替整个方法。
 - 沿用已有 gold passage 指标检查检索，仅在有官方支持证据的任务上使用；
   不把答案字符串命中率包装成证据正确率，不新增自定义综合分数。
@@ -177,9 +194,9 @@ REMem 另报 BLEU、LLM judge 等，且有不同推理模式。
 
 首次文献核对只更新研究路线，未新增算法实现或提交新实验。
 随后继续推进的来源事实 incidence 结构对照及其完整作业矩阵，
-见 [fact_incidence_experiment.md](fact_incidence_experiment.md)。
+见 [fact_incidence_experiment.md](https://github.com/Sizchode/agent-memory/blob/c443de4790e619d43c5bd9dcce9ccea707da56bc/optimization/fact_incidence_experiment.md)。
 该组现已完成，9B/4B/2B 分别严格胜出 1/6、2/6、1/6，未取代旧最佳候选。
-据此启动 [上下文化索引表示对照](contextual_gists_experiment.md)：
+据此启动 [上下文化索引表示对照](https://github.com/Sizchode/agent-memory/blob/c443de4790e619d43c5bd9dcce9ccea707da56bc/optimization/contextual_gists_experiment.md)：
 只复用 REMem 公开抽取模板，先完成来源表示，再区分向量匹配与图传播。
 当前运行的是抽取阶段，不能声称新的图检索或 QA 已有效。
 已有状态/事件实验不取消。此前 rank-window 的 FactConsolidation-SH 检索作业

@@ -6,17 +6,45 @@ from types import SimpleNamespace
 import igraph as ig
 import numpy as np
 
-from optimization.retriever.hipporag import CacheMissGuard, GenerationFailureGuard
+from optimization.retriever.hipporag import CacheMissGuard, GenerationFailureGuard, restrict_fact_index
 from optimization.graph_construction.source_consolidation import latest_relation_weights, retained_statements
 from optimization.graph_construction.compiled_sources import compile_sources
 from optimization.graph_construction.source_window import attach_source_windows
+from optimization.graph_construction.statement_incidence import statement_incidence_graph, project_statement_graph
 from optimization.retriever.hybrid_graph import fuse_rankings, HybridGraphMemory
 from optimization.retriever.compiled_sources import CompiledSourceMemory, compiled_item
 from baseline.base import RetrievedItem
+from optimization.run_graph import completed_group_prefix
 
 
 class GraphConstructionTests(unittest.TestCase):
 
+    def test_retrieval_resume_requires_complete_original_groups(self):
+        groups = [SimpleNamespace(group_id="g", cases=[SimpleNamespace(case_id="a", question="q1"),
+                                                       SimpleNamespace(case_id="b", question="q2")])]
+        rows = [{"group_id": "g", "case": {"case_id": "a", "question": "q1"}},
+                {"group_id": "g", "case": {"case_id": "b", "question": "q2"}}]
+        self.assertEqual(completed_group_prefix([], groups), set())
+        self.assertEqual(completed_group_prefix(rows, groups), {"g"})
+        with self.assertRaises(ValueError):
+            completed_group_prefix(rows[:1], groups)
+        with self.assertRaises(ValueError):
+            completed_group_prefix(rows[::-1], groups)
+
+    def test_fact_candidate_selection_preserves_vectors_and_provenance(self):
+        vectors = np.arange(6).reshape(3, 2)
+        provenance = {"entity": {"source"}}
+        hippo = SimpleNamespace(fact_node_keys=["a", "b", "c"], fact_embeddings=vectors,
+                                ent_node_to_chunk_ids=provenance, proc_triples_to_docs=provenance)
+        restrict_fact_index(hippo, ["c", "a"])
+        self.assertEqual(hippo.fact_node_keys, ["c", "a"])
+        np.testing.assert_array_equal(hippo.fact_embeddings, vectors[[2, 0]])
+        self.assertIs(hippo.ent_node_to_chunk_ids, provenance)
+        self.assertIs(hippo.proc_triples_to_docs, provenance)
+        with self.assertRaises(ValueError):
+            restrict_fact_index(hippo, ["a", "a"])
+        with self.assertRaises(ValueError):
+            restrict_fact_index(hippo, ["missing"])
 
     def test_reciprocal_rank_fusion_rewards_shared_sources_and_preserves_stable_ties(self):
         graph = [RetrievedItem("a", 0.9), RetrievedItem("b", 0.1)]
@@ -185,6 +213,83 @@ class SourceConsolidationTests(unittest.TestCase):
             {"s": "s", "old": "old", "new": "new"}, lambda x: x, schema=schema)
         np.testing.assert_array_equal(weights, [0, 1, 0, 0, 1, 1])
         self.assertEqual(schema["r"]["cardinality"], "multiple")
+
+
+class StatementIncidenceTests(unittest.TestCase):
+    def test_loop_free_projection_preserves_fact_degrees_and_residual_edges(self):
+        graph = ig.Graph(n=7, edges=[(4, 0), (4, 1), (4, 2), (5, 0), (5, 3), (1, 2)])
+        graph.vs["name"] = ["a", "b", "p", "q", "statement-0", "statement-1", "statement-2"]
+        graph.es["weight"] = [1, 1, 1, 1, 1, 0.7]
+        projected = project_statement_graph(graph, 4)
+        self.assertFalse(any(projected.is_loop()))
+        np.testing.assert_allclose(projected.strength(weights="weight"), [2, 1.7, 1.7, 1])
+        self.assertAlmostEqual(projected.es[projected.get_eid(0, 1)]["weight"], 0.5)
+        self.assertAlmostEqual(projected.es[projected.get_eid(0, 3)]["weight"], 1)
+        self.assertAlmostEqual(projected.es[projected.get_eid(1, 2)]["weight"], 1.2)
+        self.assertEqual(graph.vcount(), 7)
+
+    def test_loop_free_projection_rejects_singleton_facts(self):
+        graph = ig.Graph(n=2, edges=[(0, 1)])
+        graph.vs["name"] = ["a", "statement-0"]
+        graph.es["weight"] = [1]
+        with self.assertRaises(ValueError):
+            project_statement_graph(graph, 1)
+
+    def test_projection_implements_complete_membership_transition(self):
+        graph = ig.Graph(n=4, edges=[(3, 0), (3, 1), (3, 2)])
+        graph.vs["name"] = ["a", "b", "source", "statement-0"]
+        graph.es["weight"] = [1, 1, 1]
+        projected = project_statement_graph(graph, 3)
+        self.assertEqual(projected.vs["name"], ["a", "b", "source"])
+        np.testing.assert_allclose(projected.strength(weights="weight"), [1, 1, 1])
+        scores = projected.personalized_pagerank(reset=[1, 0, 0], damping=0.5, weights="weight")
+        np.testing.assert_allclose(scores, [3 / 5, 1 / 5, 1 / 5])
+
+    def test_projection_keeps_residual_edges_and_ignores_unsupported_statements(self):
+        graph = ig.Graph(n=5, edges=[(0, 1), (3, 0), (3, 1), (3, 2)])
+        graph.vs["name"] = ["a", "b", "source", "statement-0", "statement-1"]
+        graph.es["weight"] = [0.7, 1, 1, 1]
+        projected = project_statement_graph(graph, 3)
+        np.testing.assert_allclose(projected.strength(weights="weight"), [1.7, 1.7, 1])
+        self.assertAlmostEqual(projected.es[projected.get_eid(0, 1)]["weight"], 0.7 + 1 / 2)
+        self.assertEqual(graph.vcount(), 5)
+
+    def test_statement_identity_preserves_relations_and_shared_sources(self):
+        graph = ig.Graph(n=4, edges=[(0, 1), (0, 2), (1, 2), (0, 3), (1, 3)])
+        graph.vs["name"] = ["a", "b", "p0", "p1"]
+        graph.es["weight"] = [3, 1, 1, 1, 1]
+        graph.es["passage_source"] = [None, "p0", "p0", "p1", "p1"]
+        graph.es["synonym_score"] = [0.7, 0, 0, 0, 0]
+        documents = [{"idx": "p0", "extracted_triples": [["a", "r", "b"], ["a", "s", "b"]]},
+                     {"idx": "p1", "extracted_triples": [["a", "r", "b"]]}]
+        selected = [(d["idx"], tuple(t)) for d in documents for t in d["extracted_triples"]]
+        result = statement_incidence_graph(graph, documents, selected, {"a": "a", "b": "b"},
+                                           lambda x: x, refined=False)
+        self.assertEqual(result.vs["name"][:4], graph.vs["name"])
+        self.assertEqual(result.vcount(), 6)
+        self.assertEqual(set(result.neighbors(4)), {0, 1, 2, 3})
+        self.assertEqual(set(result.neighbors(5)), {0, 1, 2})
+        self.assertEqual(result.es[result.get_eid(0, 1)]["weight"], 0.7)
+        self.assertEqual(graph.es["weight"], [3, 1, 1, 1, 1])
+        graph.es["weight"] = [1, 0, 0, 1, 1]
+        refined = statement_incidence_graph(graph, documents, [("p1", ("a", "r", "b"))],
+                                            {"a": "a", "b": "b"}, lambda x: x, refined=True)
+        self.assertEqual(refined.vs["name"], result.vs["name"])
+        self.assertEqual(set(refined.neighbors(4)), {0, 1, 3})
+        self.assertEqual(refined.degree(5), 0)
+        self.assertEqual(refined.degree(2), 0)
+        self.assertEqual(refined.get_eid(0, 1, error=False), -1)
+
+    def test_duplicate_and_self_statements_use_binary_membership(self):
+        graph = ig.Graph(n=2, edges=[(0, 1)])
+        graph.vs["name"] = ["a", "p"]
+        graph.es["weight"], graph.es["passage_source"], graph.es["synonym_score"] = [1], ["p"], [0]
+        documents = [{"idx": "p", "extracted_triples": [["a", "r", "a"], ["a", "r", "a"]]}]
+        result = statement_incidence_graph(graph, documents, [("p", ("a", "r", "a"))] * 2,
+                                           {"a": "a"}, lambda x: x, refined=False)
+        self.assertEqual(result.vcount(), 3)
+        self.assertEqual(set(result.neighbors(2)), {0, 1})
+        self.assertTrue(result.is_simple())
 
 
 if __name__ == "__main__":
