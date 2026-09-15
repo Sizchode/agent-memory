@@ -15,8 +15,10 @@
 
 2026-09-14：提交当前无自环构图及 retained-fact-index 独立实验，默认仍为已完整验证的
 `statement_projection_loop_free_refined_rrf_window`，不根据部分结果提前切换。
-retained-index 的 2Wiki 已完成：9B answer F1 57.7539、4B 56.3973；LoCoMo 和
-最终报告 6387725 尚未完成。四项 MAB 数值与完整调用成本见下文该实验节。
+retained-index 的 2Wiki 已完成：9B answer F1 57.7539、4B 56.3973；9B LoCoMo
+6387723_0 随后完成，F1 57.5679，9B 六任务完整分数已全部超过本地基线阈值。
+4B LoCoMo 和最终报告 6387725 尚未完成，不报双 6/6。
+四项 MAB 数值与完整调用成本见下文该实验节。
 
 本次移除 Git 中九份已归档的退役 MD/TXT，共 1367 行；归档中保留原内容。
 raw-relation、删直连、显式事实节点及旧自环投影的独立实验开关已退役，原始图两格
@@ -28,6 +30,9 @@ raw-relation、删直连、显式事实节点及旧自环投影的独立实验�
 baseline/graph_usage.py 与 utils/models.py 两行真实 token 计量，不提交其余 baseline 改动。
 清理前完整源码位于 construction_experiments_20260914/implementation_before_publication_cleanup.tar，
 已逐文件 tar --compare 通过。batch 6389057 的 28 项回归测试通过；git diff --check 通过。
+从提交 592b6ce 导出干净目录后，batch 6389081 再次通过全部 28 项测试，以及 build_graph
+和 GraphUsageRecorder 导入检查；不依赖工作树中未提交的旧实验脚本。
+该检查不等于在新机器重跑六任务 GPU 实验；数据、模型与既有上游环境仍需按原协议准备。
 
 - 当前按用户新要求只推进 **4B、9B 的全六任务消融与代码删减**；2B 不再参与当前目标，旧结果保留。
   以下三个 reader 的提分表及早期作业快照是历史记录，不代表仍继续优化 2B。
