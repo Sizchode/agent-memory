@@ -32,7 +32,8 @@ def build(args):
     variants = ((f"{args.construction}_rrf_window", f"{args.construction}_refined_rrf_window") if incidence else
                 ("canonical_latest_rrf_window", "original_graph_rrf_window"))
     if args.retained_fact_index:
-        variants = (f"{args.construction}_retained_index_rrf_window",)
+        variants = ((f"{args.construction}_retained_index_rrf_window" if incidence else
+                     "canonical_latest_retained_index_rrf_window"),)
     for variant in variants:
         directory = args.output_root / variant / slug
         directory.mkdir(parents=True, exist_ok=False)
@@ -73,7 +74,7 @@ def build(args):
         retained, _ = retained_statements(documents, ordered, text_processing, schema)
         contents = attach_source_windows(compile_sources(documents, ordered, retained, timestamps, text_processing),
                                          ordered, 3)
-        if incidence:
+        if incidence or args.retained_fact_index:
             frozen = json.loads((args.readout_root / "compiled_sources" / slug / group.group_id /
                                  "contents.json").read_text())
             if contents != frozen:
@@ -137,8 +138,8 @@ def main():
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--construction", choices=("projected", "statement_projection_loop_free"),
                         default="statement_projection_loop_free")
-    parser.add_argument("--retained-fact-index", action="store_true",
-                        help="Restrict existing recognition candidates to the refined graph's supported facts")
+    parser.add_argument("--retained-fact-index", action=argparse.BooleanOptionalAction, default=True,
+                        help="Use supported facts as recognition candidates; disable for original-index ablations")
     parser.add_argument("--readout-root", type=Path,
                         default=BASE / "optimization_canonical_latest_cleanup_seed42_20260914")
     parser.add_argument("--source-root", type=Path, default=SOURCE / "hipporag2")
@@ -146,8 +147,6 @@ def main():
     parser.add_argument("--path", default="/oscar/scratch/zliu328/agent-memory-data/locomo/locomo10.json")
     parser.add_argument("--data-root", default=str(Path(__file__).resolve().parents[1] / "baseline_algorithms/HippoRAG/reproduce/dataset"))
     args = parser.parse_args()
-    if args.retained_fact_index and args.construction != "statement_projection_loop_free":
-        parser.error("--retained-fact-index requires the refined loop-free graph")
     build(args)
 
 

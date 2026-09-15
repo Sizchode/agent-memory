@@ -3,26 +3,31 @@
 当前方法暂名 **Source-Supported Graph Indexing（来源支持驱动的图索引）**：
 先选择事实支持，再从支持构造传播图；最新独立消融还让同一支持决定事实识别候选。
 问题主线是 consolidation 后的索引构造，不是新抽取器、agentic retrieval 或 PL 正确性理论。
-具体设计与尚缺的对照见 [research_novelty.md](research_novelty.md)。
+论文标题方向为 **Consolidate Before You Propagate**；具体设计与证据边界见
+[research_novelty.md](research_novelty.md)。
 
-更新：2026-09-14。默认改为 `statement_projection_loop_free_refined_rrf_window`：
-来源支持选择后执行已有无自环事实投影，保留来源直连；不重新抽取或调在线检索参数。
-六任务完整结果为 9B 5/6、4B 6/6；同 H100 的旧 refinement 对照为 4/6、6/6。
-9B FCSH 为 65，低于最佳 baseline 66；有任务回退，不宣称双 reader 全面胜出。
-显式事实节点、含自环投影的完整对照已归档并移除实验入口。
-删直连为 9B 4/6、4B 5/6；全部支持但去 synonym 为 5/6、4/6，均不采用。
-失败开关已删除，所有图、缓存与完整结果保留。清理后重建与普通检索核验状态见 record.md。
-比较使用预先指定的同 H100 旧图复现；历史成绩另存，不择高、不按题拼接。
-默认切换后的六任务四格普通检索核验已全部通过。删除图侧 canonical 标签的完整消融
-仍为 9B 5/6、4B 6/6，但 FCMH 从 11/9 降至 9/6；保留为取舍结果，不替换默认。
-该轮 reader 事实附录冻结，不能据此取消整条流水线的 schema。实验入口已归档退役，见 record.md。
-无自环 refined 构图下删除额外来源直连的完整消融为 9B 4/6、4B 5/6，未采用；
-该轮仍保留事实投影中的来源关联。实验开关已归档退役，默认保留两类来源连接。
-当前新增 `--retained-fact-index` 独立消融：只让已有保留事实进入识别候选，图和 reader 冻结。
-候选变化可能触发新 recognition，原提示/模型/算子不改；这轮不再声称识别候选完全冻结，
-生成调用须实测，尚无完整 QA 结果，不改默认。旧事实索引负结果及本轮门槛见 record.md。
-截至发布核验，候选 9B 六任务已完成，分数均超过本地基线阈值；4B 的四项 MAB 与
-2Wiki 已完成并严格胜出，LoCoMo 及双 reader 总报告尚未完成，不报双 6/6。
+更新：2026-09-14。默认为 `statement_projection_loop_free_retained_index_rrf_window`：
+同一份保留支持生成无自环事实投影图，并筛选原事实识别候选；保留来源直连。
+OpenIE、原向量、recognition/PPR 算子、RRF、读出和 QA 协议不变；候选变化会改变查询种子。
+
+六任务完整结果及同索引构图对照均已核验，原指标按百分制列出：
+
+| reader / 构图 | SH | MH | FCSH | FCMH | LoCoMo | 2Wiki | 严格胜出 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 9B 新构图 + 保留事实索引 | 91 | 63 | 68 | 11 | 57.5679 | 57.7539 | 6/6 |
+| 9B 旧 refinement 图 + 同索引 | 94 | 59 | 64 | 15 | 57.4063 | 56.6379 | 4/6 |
+| 4B 新构图 + 保留事实索引 | 90 | 62 | 61 | 12 | 51.0135 | 56.3973 | 6/6 |
+| 4B 旧 refinement 图 + 同索引 | 91 | 59 | 61 | 12 | 50.4071 | 55.9104 | 6/6 |
+
+这是对九项完整本地 baseline 的逐任务严格胜出，不是全领域 SOTA 或独立测试泛化。
+两种图并非逐任务支配：新图的 SH 和 9B FCMH 回退，保留完整取舍结果。
+原候选索引下的新构图为 9B 5/6、4B 6/6；新候选改善目标覆盖，但其 2Wiki 小幅回退。
+完整四格、同索引对照、删减实验和原始成本见 [record.md](record.md)。
+
+新索引正式检索新增 recognition 2168 次，输入 6323456、输出 102681 token，pilot 另计。
+旧图同索引复用相同识别缓存，新增调用为零；不等于方法整体无需识别成本。
+获胜配置已独立重建：15 组图、14362 来源、167074 候选完全匹配，3386 题普通接口验证通过。
+显式事实节点、旧自环投影、raw-relation 和删直连等独立实验入口已归档退役，结果和缓存保留。
 
 ## 方法
 
@@ -30,9 +35,9 @@
 
 | 层次 | 当前改动 | 保持不变 |
 |---|---|---|
-| 构图与索引 | 用事实及其实际来源的成员关联生成无自环投影，替换原实体对事实计数贡献 | OpenIE、原实体/段落节点、embedding、事实识别候选索引 |
+| 构图与索引 | 事实及其实际来源的无自环投影；同一支持选择筛选原事实候选 | OpenIE、原实体/段落节点、embedding、原实体/事实来源映射 |
 | 图表示 refinement | 关系键归一、按最后来源选择事实支持、筛选来源直连并去掉 synonym 贡献 | 原始历史文本 |
-| 检索、读出与 QA | 本轮冻结，不作为新增构图贡献 | recognition/PPR、BM25/RRF、五中心、来源窗口、事实附录、QA 协议 |
+| 检索、读出与 QA | 算子冻结，不作为新检索贡献；候选改变会影响识别输入和查询种子 | recognition/PPR、BM25/RRF、五中心、来源窗口、事实附录、QA 协议 |
 
 实现中先选择支持，再构造事实关联和投影；refinement 是功能划分，不表示必须在新图建完后
 再执行一遍后处理。目前是离线整合，没有在线增量更新接口。
@@ -44,7 +49,8 @@
    当前对所有关系采用此政策，不读取 role/cardinality 或按 state/event 决定是否覆盖。
 4. 将每个不同的规范化三元组表示为事实关联，成员是主体、客体及其被保留的来源。
    采用 Kumar 等（2020，式 3）的已有无自环度数保持投影，物化回原实体/段落节点；
-   保留有支持的原来源直连，不保留 synonym 贡献。不更新原向量或事实识别候选索引。
+   保留有支持的原来源直连，不保留 synonym 贡献。由同一支持选择保留原事实识别候选，
+   不更新原向量，不修改实体/事实到原来源的映射。
 5. 查询走原 HippoRAG recognition/PPR，以及同语料 BM25；
    两者各取前五，以等权 RRF（常数 60）合并为五个中心来源。
 6. 读出完整中心原文、来源位置/已有时间与保留三元组 JSON。
@@ -90,18 +96,26 @@ Python 入口保留在仓库；以下三个 Oscar sbatch 启动器仅保留本�
 已由 `build_graph` 替代并删除，不再依赖保存的 query seed、历史检索排名或 adaptive 中间产物。
 cardinality 分支、纯三元组读出及旧候选列表已删除。旧主配置入口曾通过六任务两种图的
 完整重建与普通检索验证；本次去 discourse 后另做全量校验，不把旧验证算作新验证。
-主图默认 `statement_projection_loop_free_refined_rrf_window`。
-构图默认同时产出有无 refinement 两格；`--construction projected` 产出旧 refinement 与原图两格。
-四格读出规则相同，不能与历史目录中同名但旧读出的对照混用。具体作业和范围见 record.md。
+主图默认 `statement_projection_loop_free_retained_index_rrf_window`。
+默认只构建获胜配置；`--construction projected` 构建旧 refinement 图与同一保留事实索引。
+`--no-retained-fact-index` 恢复原完整候选索引，并分别构建有无 refinement 两格；
+结合两种 construction 可复现原候选索引下的四格对照。读出规则相同，不能与历史旧读出混用。
+实际配置选择与各阶段完整范围见 record.md。
 
-在 Oscar 重建已有来源索引的六任务图：
+在具备上述来源索引、schema 和冻结读出的环境中，直接使用仓库内的 Python 入口。
+例如重建一个任务，六任务分别使用前述原任务名和同一新输出根目录：
 
 ```bash
-sbatch --array=0-5 --export=ALL,EXPERIMENT_ID=<fresh_name> optimization/build_graph.sbatch
+python -m optimization.build_graph \
+  --task "SH-Doc QA" \
+  --output-root /oscar/scratch/zliu328/agent-memory-outputs/<fresh_name>
 ```
 
-随后用 `run_graph.sbatch` 的 `PHASE=retrieve` 执行检索，`PHASE=evaluate` 执行 QA，
-或直接调用 Python CLI。`TASK` 使用 `SH-Doc QA` / `MH-Doc QA` 的空格拼写；
+Oscar 上 CPU 构建提交到 batch 分区；本地保留的 sbatch 只是调度包装，不是 Git checkout 的前置文件。
+随后用 `python -m optimization.run_graph --phase retrieve` 执行检索，`--phase evaluate` 执行 QA，
+同时指定相同的 `--task` 与 `--output-root`。识别缓存不全时需提供同源生成服务地址，
+并显式启用 `--allow-generator-calls`；默认验证路径不允许缓存未命中后静默降级。
+`--task` 使用 `SH-Doc QA` / `MH-Doc QA` 的空格拼写；
 输出目录中的任务名使用下划线。新语料索引与 schema 可用 `build_graph.py` 的 root 参数指定，
 数据仍走已有 loader；这一步不负责重新抽取 OpenIE 或重新生成 schema。
 默认新构图会与 `--readout-root` 下的冻结读出逐条核对；迁移语料需提供对应来源索引、schema
@@ -130,7 +144,8 @@ test set 已用于开发与配置选择，不能报告成独立测试泛化。
 目前没有一项主机制已被完整消融证明可全局无损删除。
 discourse 的删除是已披露的效果/简化取舍。原 schema 提示仍输出 role/cardinality，
 为保持生成协议未删除这些字段；图与附录已不使用它们，不声称消除其历史生成成本。
-最新正负结果、成本与等待项见 [record.md](record.md) 和 [ablation_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/ablation_jobs.json)。
+最新正负结果与成本见 [record.md](record.md)；历史调度记录见
+[ablation_jobs.json](https://github.com/Sizchode/agent-memory/blob/f2121c11cc6d0c36bf931674152db0ca07669573/optimization/ablation_jobs.json)。
 
 以下是已冻结的旧 refinement 对照，不是当前无自环构图或同 H100 四格结果。
 该轮固定检索/读出规则，精简主图相对原图的 2Wiki 分差为 9B +6.79、4B +7.71 点，

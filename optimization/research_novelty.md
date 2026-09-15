@@ -10,9 +10,55 @@
 和已冻结的 RRF、读出、QA。这是一套离线图索引方法，不是在线更新系统或新的检索器。
 
 系统的“基础记录与派生视图”最贴近实现，图论描述具体投影；目前不以 PL 理论为贡献。
-候选筛选尚待完整双 reader 六任务结果，不替换已验证的默认配置。
-即使取得六任务胜出，也必须补“旧图 + 同样新候选索引”才能区分索引与新构图的作用。
+候选筛选已完整达到双 reader 六任务 6/6；它改善部分任务，但两 reader 的 2Wiki 小幅回退。
+“旧 refinement 图 + 同样新候选索引”已完整完成，为 9B 4/6、4B 6/6，不能替代新图的双 6/6。
+默认采用新图加保留事实索引；新图的 SH 和 9B FCMH 回退，不是逐任务支配。
 来源顺序选择仍是经验政策，不能因使用物化视图术语就改称无 heuristic 的理论算法。
+
+### 论文主张与 novelty
+
+标题方向：**Consolidate Before You Propagate: Source-Supported Indexing for Graph Memory**。
+
+问题起点是“保留什么知识”与“沿什么结构访问知识”并非同一件事：
+图侧已经移除的事实支持，仍可能在识别候选中竞争；只筛候选也没有改变传播连接。
+因此研究支持选择应如何同时体现在传播图和事实识别候选中，而不是只调一组边权。
+本文研究同一保留支持如何派生这两个索引，并在固定抽取、向量与下游算子的条件下，
+分别检验事实来源投影和候选筛选的作用。这里的“同一支持”只指这两个派生索引，
+不包含仍可访问全部历史的原文库、BM25、来源窗口和原实体来源映射。
+
+可用于 introduction 的英文主张：We study source-supported graph indexing, in which
+the same retained fact support determines both propagation structure and the fact candidates
+exposed to recognition. Reusing existing OpenIE outputs and embeddings, we jointly examine
+source-aware graph construction and candidate-index restriction under fixed downstream operators.
+
+机制解释假设是减少派生访问结构中的历史干扰，同时保留原文作为完整证据库；
+并非全部答案收益的已证实原因。候选筛选也改变原 min-max 分数及查询种子，
+现有采样差异限制纯图归因。“最后来源优先”是既有经验政策，不等于语义有效性判断。
+
+贡献是这一具体设计及其分离对照，不是新的超图投影定理、首次 memory update，
+或全局索引一致性保证。旧图配同一候选索引仍有部分任务更强，因此应写成整体配置的
+经验取舍，不能把双 6/6 的覆盖率当成新图逐任务支配或统计显著性。
+
+## Experiments: Dataset Selection and Coverage
+
+以下是当前实验范围的英文稿，可放入实验设置；不是全部 MemoryAgentBench 的评测。
+六项是来自三个 benchmark suite 的 task settings，不是六个独立数据集。
+
+**Dataset selection and coverage.** Our evaluation comprises six task settings from three benchmark suites, covering three requirements relevant to offline graph-based memory: access to updated facts, single- and multi-hop evidence retrieval, and long-term conversational recall. From [MemoryAgentBench](https://arxiv.org/html/2507.05257v4), we use SH-Doc QA, MH-Doc QA, FactConsolidation-SH, and FactConsolidation-MH, with 100 questions in each selected released configuration. The consolidation tasks directly test updated-fact access, while the document-QA tasks assess retrieval utility beyond explicit updates. [LoCoMo](https://snap-research.github.io/locomo/) contributes all 1,986 questions from locomo10 across single-hop, multi-hop, temporal, open-domain, and adversarial categories, extending evaluation to multi-session conversational histories. For [2WikiMultiHopQA](https://aclanthology.org/2020.coling-main.580/), we use the [HippoRAG 2](https://arxiv.org/html/2502.14802#S4.SS2) released 1,000-question subset and associated corpus, enabling comparison on multi-document reasoning with supporting-evidence annotations. Together, these 3,386 questions assess whether the selected graph and fact index support updated-fact access while retaining utility across document and conversational QA. We evaluate every question in these selected configurations and retain task-specific scoring procedures. This combination provides complementary coverage of the proposed offline indexing scope, not exhaustive coverage of agent memory; procedural learning, tool-use policies, and online adaptation are not evaluated.
+
+**Development protocol.** The evaluation sets were also used for method development and configuration selection; we therefore report in-distribution benchmark results rather than held-out generalization estimates. Each graph is constructed from source material without evaluation questions, answers, or supporting-evidence labels, and is frozen before retrieval. We retain the benchmark-specific scoring procedures across ablations and report each task separately.
+
+本地范围核对：dataset_loader/loader.py 的 _TASK_SOURCES 分别为 ruler_qa1_197K、
+ruler_qa2_421K、factconsolidation_sh_262k、factconsolidation_mh_262k；不混入长度消融。
+LoCoMo 保留五类 QA 的现有评分与 adversarial 处理，不把它扩写成已经评测摘要或多模态生成。
+2Wiki 的 1000 题来自发布子集，不是原始数据全集。每个 reader 共 3386 题，4B/9B 共 6772 次 QA，
+不能把双 reader 的回答数称为独立题目数。四项 MAB 各一个长上下文，LoCoMo 十段对话，
+2Wiki 一个共享语料库；题目共享记忆库，不以题数证明独立样本或统计充分性。
+
+范围的理由是覆盖相关能力与输入形态，而不是由任务数量证明“足够”。特别是本文不评测
+MAB 的 test-time learning 和完整 long-range understanding 任务组，也不复现其整套在线
+增量交互能力评测。FactConsolidation 是直接的更新测试；其余任务检查一般检索/推理的取舍。
+若论文扩展为通用或在线 agent memory，当前任务组合不能单独支持该扩大后的主张。
 
 ## 问题主线：更新与 consolidation
 
@@ -37,7 +83,7 @@ BM25、PPR 种子或来源窗口进入 reader，因此不是“撤销后永不�
 
 | 结构 | 与现有实现的对应 | 下一项可检验问题 | 不能预称的能力 |
 |---|---|---|---|
-| 来源支持上的多个派生视图 | 保留事实支持分别生成传播图和识别候选索引 | 当前 retained-index 全量消融；若有效，再固定候选比较原/新图，区分索引与投影的作用 | 所有索引全局一致、所有旧事实不可访问、语义冲突已经解决 |
+| 来源支持上的多个派生视图 | 保留事实支持分别生成传播图和识别候选索引 | 新图同索引双 6/6，旧 refinement 图同索引为 4/6、6/6；支持两者联合选择，但非逐任务支配或显著性证明 | 所有索引全局一致、所有旧事实不可访问、语义冲突已经解决 |
 | 同一节点集上的两类加权连接 | 事实成员的无自环投影，加上额外来源直连；运行时求和后交给原 PPR | 已有删除直连的完整负结果；后续在获选索引下复查必要性，而不是扫描混合系数 | 新的高阶推理理论、层间扩散算法或纯超图投影单独胜出 |
 
 系统线可进一步参考 [DBSP，PVLDB 2023](https://www.vldb.org/pvldb/vol16/p1601-budiu.pdf)
@@ -69,10 +115,11 @@ BM25、PPR 种子或来源窗口进入 reader，因此不是“撤销后永不�
 当前另一个可操作的问题是派生图与事实识别索引使用不同支持范围：图按选中支持构建，
 recognition 候选仍来自全部历史三元组。单例已显示新事实进入候选后仍被 recognition 排除。
 这为独立检验离线候选索引提供动机，不证明筛选索引一定有效；旧事实索引组合曾有完整负结果。
-尚未实施的新对照必须与已完成的固定识别候选四格分开，不把未来索引变化算成旧图实验的收益。
+新索引对照必须与已完成的固定识别候选四格分开，不把索引变化算成旧图实验的收益。
+当前完整索引对照为双 6/6，旧 refinement 图同索引格为 4/6、6/6；单轮采样差异的归因限制仍然适用。
 
-2026-09-14：下文的主配置结论属于已冻结 refinement 参照。当前正在检验独立事实节点
-及标准 incidence 随机游走投影，分别有无 graph refinement。两轮完整结果均已收齐：
+2026-09-14：已完成独立事实节点及标准 incidence 随机游走投影的两轮对照，
+分别有无 graph refinement。两轮完整结果均已收齐：
 有 refinement 的两种表示均为 9B/4B 双 5/6，收益与回退并存，不统一支配旧方案。
 去掉原 passage-entity 直连贡献的全量消融已完成，联合 refinement 后为 9B 4/6、4B 5/6；
 该失败分支已归档并从代码移除，保留直连。后续无自环事实投影已完成六任务双 reader：
@@ -138,7 +185,8 @@ reader 仍使用 canonical/latest 附录，故这也不是整个系统取消归�
 并生成自然语言 n-ary 事实及置信度；我们的事实来自冻结的 OpenIE 三元组，来源节点也参与成员。
 这只是具体构造和实验边界的区别，不据此宣称超图或来源关联本身具有 novelty。
 [HippoRAG2](https://arxiv.org/html/2502.14802) 本来就有 passage 节点、来源连接及实体/段落 PPR 种子；
-本轮保持这些查询种子与识别过程不变，比较的是离线事实支持如何形成图权重。
+原候选索引下的四格对照保持查询识别不变，比较离线事实支持如何形成图权重；
+新增候选索引对照则改变候选及实际查询种子，不能混为相同的冻结条件。
 当前可检验的贡献仍是这一构造与已有支持筛选的组合及其效果/成本取舍，
 不是新的抽取器、检索算法、可逆编码或语义保持编译器。
 
@@ -150,160 +198,14 @@ reader 仍使用 canonical/latest 附录，故这也不是整个系统取消归�
 的既有度数保持图约简；
 该度数性质属于引用算子，不是我们证明的新定理，且不蕴含 QA 或 PPR 排名保持。
 
-## 冻结旧方案
+## 历史与复现
 
-以下各节记录原 refinement 方案的解释与历史消融，非上文新投影方案的完整描述。
-此前 state/event 与 gist 分支已退役，结果保留；不能拿它们的结构描述当前算法。
-本文不新增公式、优化目标、训练数据或理论保证。
+refinement-only 阶段的理论解释和旧对照已移入归档，避免以“固定拓扑仅改权重”描述当前
+事实来源投影。原文保存在
+`/oscar/home/zliu328/agent-memory-archives/construction_experiments_20260914/research_notes_before_current_method_cleanup.tar`，
+归档与原文逐文件比较通过后整理；不删除实验结果或缓存。
 
-冻结旧配置为 `canonical_latest_rrf_window`：按完整整项消融结果删除 discourse 过滤，
-历史 QA 为双 5/6；同 H100 复现为 9B 4/6、4B 6/6，解释分差时以完整同硬件表为准。
-生成提示保持不变，图与附录不使用 role/cardinality。删代码后 15 组完整图与 3386 题
-普通检索均已验证与获选消融一致，新读出下的原图 QA 对照与最终核验也已完成。
-
-## 实际研究对象
-
-暂用描述性表述：**来源支持筛选后的检索图物化**。
-原文和 OpenIE 是基础记录；图是为检索生成的派生表示，而非完整世界状态。
-实现依次执行关系键归一、按来源位置选择支持、实体对计数投影，
-最后由现有 HippoRAG 检索。所有关系采用 latest-only，不是 state/event 分类更新。
-
-与 HippoRAG2 的区别集中在支持选择和边权物化；节点、向量、
-查询识别及 PPR 仍复用其实现。RRF、事实附录和窗口是额外检索/读出组件，
-不能把端到端胜出全部归为建图。HippoRAG2 本身已有图记忆与非参数记忆定位，
-因此“从 RAG 到 memory”不是我们的新贡献。
-参见 [HippoRAG2 原论文](https://arxiv.org/html/2502.14802)。
-
-one-shot 指每份语料在查询前离线构建一次，不指一次 LLM 调用。
-当前实测范围是同分布配置开发，不是未见分布上的自适应或泛化保证。
-
-## 再核对近邻方法后的差异
-
-2026-09-14 重新核对下列原论文方法节，并对照当前支持投影与 HippoRAG 本地构图函数。
-这些是机制比较，不把论文中的不同模型、数据范围或指标分数并入本地成绩表。
-
-| 已有工作 | 已经具备的操作 | 当前可比较的具体变化 |
-|---|---|---|
-| [HippoRAG2，第 3.1-3.5 节](https://arxiv.org/html/2502.14802) | 离线 OpenIE 图、phrase/passage 关联、同义边、query-to-triple、recognition 与 PPR | 在同一底图和在线查询流程上，先按规范化关系键选择来源支持，再重新赋权；离线建图与来源关联本身不新 |
-| [A-MEM，第 3.1-3.4 节](https://arxiv.org/html/2502.12110) | 新 note 的属性生成、基于近邻的 LLM 连边、已有 note 的 context/keywords/tags 演化 | 我们不演化 note 内容或重算 note 表示；冻结源抽取和向量，改变派生图支持。差异是写入对象与更新操作，不是“它做 agentic retrieval、我们不做” |
-| [GraphRAG，第 3.1.3-3.1.6 节](https://arxiv.org/html/2404.16130) | 重复关系累计成边权、层次社区检测和摘要、基于社区摘要生成答案 | 支持计数本身已有先例；我们在计数前选择来源，不构建社区摘要层，也不采用其全局问答流程 |
-
-本地 HippoRAG 的 `add_fact_edges` 已累计实体对出现，`add_passage_edges` 已添加值为 1 的来源连接；
-见 [HippoRAG.py](../baseline_algorithms/HippoRAG/src/hipporag/HippoRAG.py)。
-因此当前支持投影不应被包装成一种新聚合代数。真正需要证明有效的是计数前的支持选择，
-尤其关系键归一改变哪些记录相互覆盖；图整体对照与条件消融才是相应证据。
-
-`latest_relation_weights` 返回与原边数相同的权重数组，loader 只替换 `graph.es["weight"]`。
-节点与边并未物理删除。因此可说“支持筛选/边权重物化”，不能仅凭零权重边数声称图存储压缩、
-PPR 加速或索引内存下降。代码行数减少也不是这些系统成本的测量。
-
-## 最贴近的系统视角：物化视图
-
-原始来源不变，按既定选择规则产生支持表，再形成检索权重。
-这个分层能解释为什么可以保留完整原文，却不让全部历史断言继续强化图连接；
-也能解释为什么图与读出必须分别做消融。
-
-加入更晚来源可能移除旧来源的派生支持，因此选择阶段不是单调追加。
-这是已有操作的性质，不是提出了新的数据库理论。
-DBSP 研究以流计算和代数结构实现增量视图维护，覆盖包括非单调操作的查询；
-我们没有实现增量维护、DBSP 算子或其证明，不能继承其性能和正确性结论。
-参见 [Budiu 等，DBSP，PVLDB 2023](https://www.vldb.org/pvldb/vol16/p1601-budiu.pdf)。
-
-适合写作的定位是“离线物化供检索使用的来源支持视图”，不是“新的 memory database”。
-没有 MVCC、事务、并发更新或多版本读取接口，不使用这些术语暗示已实现的能力。
-
-## PL 视角：键归一必须先于覆盖选择
-
-代码先把关系别名变成同一个 slot key，再按来源位置选择支持。
-例如原始来源依次包含 `Alice lives-in Rome` 和 `Alice resides-in Paris`：
-若两个关系被归一，先归一再选择只留下 Paris；
-按两个原始标签分别选择、之后再归一，则两条都会留下。
-这只是现有操作顺序的反例说明，不是新增算法或新定理。
-
-因此 canonicalization 的作用不是让 PPR 理解谓词，而是改变哪些断言竞争同一槽位。
-关闭 latest 后，保持 discourse 分类不变，canonical 标签不再影响实体对计数；
-这是可直接从投影代码检查的机制依赖，不是两个独立收益的保证。
-归一错误也会让无关关系相互覆盖，不能把格式校验当作语义正确性。
-
-LLVM MemorySSA 提供内存版本与 def/use 关系，并利用 alias analysis 辅助判断覆盖。
-它可作为“先辨认键身份、再讨论覆盖”的参考，但我们没有程序控制流、
-所有未来读取的活跃性分析或语义保持证明。
-来源后来被提及不意味着旧事实永远不会被问到，故不称为 safe dead-store elimination。
-参见 [LLVM MemorySSA 官方文档](https://www.llvm.org/docs/MemorySSA.html)。
-
-PL 在此提供可解释的分阶段结构，不能仅凭 compiler 一词创造 novelty。
-
-## 图论与 provenance：支持投影，而非新图空间
-
-保留三元组按无序实体对累计支持；段落到实体的支持用是否存在表示。
-原顶点不合并，谓词没有独立传播通道，事实出现不是当前 PPR 的独立顶点。
-因此当前方法既不是实体商图，也不是已实现的超图消息传播或 hyperbolic embedding。
-
-Provenance semirings 为关系查询的来源标注提供已有代数框架，
-可帮助区分“支持出现次数”与“某支持是否存在”。
-但当前代码只做计数/存在性投影，并未实现完整符号 provenance；
-前面的 latest 选择也不能直接套用正关系代数的半环组合性质。
-参见 [Green、Karvounarakis、Tannen，Provenance Semirings，PODS 2007](https://www.cs.ucdavis.edu/~green/papers/pods07.pdf)。
-
-同理，删边权不等于 spectral sparsification。
-有效电阻稀疏化研究的是保持图二次型的近似，我们没有这样的目标或界，
-也不保证 PPR、可达性或 QA 保持。
-参见 [Spielman、Srivastava，Graph Sparsification by Effective Resistances](https://arxiv.org/abs/0803.0929)。
-
-最准确的图描述仍是“在固定拓扑上重新物化来源支持权重”，不能改名成新几何空间。
-
-## 哪些结论由当前实验支持
-
-- 旧主配置在九项既定完整 baseline 中严格胜出：9B 为 5/6，4B 为 6/6。
-  这是整套系统结果，不是单独图收益；详见 [record.md](record.md)。
-- 同时删掉图的归一、latest 与 discourse，保留原事实读出：9B 为 3/6，4B 为 5/6。
-  再同时删附录：9B 为 5/6，4B 为 4/6。两套统一候选均不能替代主配置。
-- 去附录可以减少约 29% QA 输入 token，但 FactConsolidation-SH 回退 19/13 个百分点。
-  不能称附录无用，也不能只写多跳任务上的增益。
-- 去 latest 已全六任务完成，9B 为 4/6、4B 为 6/6，未达到两个 reader 的统一阶段目标。
-  六项单消融现已全部收齐，完整报告 6355178 审核通过。相同上下文的 QA 分数也发生变化，
-  小幅升降不能直接作为组件的因果收益或删除依据。
-- 图-only 去 discourse 保持 9B 5/6、4B 6/6；LoCoMo 分别为 +0.20 / -0.50 点。
-  在当前阶段目标下，没有证据必须把该分类器用于图支持筛选；这不是分数无损或统计等价的证明。
-  整项移除的完整结果现已收齐：9B/4B 均 5/6，SH 4B 为 -3 点回退，
-  LoCoMo 分别为 +0.1019 / -0.2045 点。本项目按精简目标采用此取舍，不称规则无损冗余。
-- 同一支持选择规则同时用于图和事实附录。CPU 全量检查发现，附录也取消 discourse 过滤，
-  会在当前图-only 消融的排名上改变 930 题的上下文。因此图-only 分数不能证明整项规则可删。
-  这是两个派生表示之间的实际依赖，不是独立、可加的组件收益；完整检查见 `record.md`。
-- 旧 schema 曾出现错误别名合并；last-source 也可能损害多值与历史事实。
-  这些不是理论包装可以消除的局限。
-
-当前可以提出的贡献假设是：把关系键归一与来源支持选择联合放在离线图物化阶段，
-是否能在固定在线检索和读出的条件下提供有价值的效果/成本取舍。
-该假设需要固定 reader/RRF/窗口/事实表示的图对照支持；
-若消融最后只支持读出收益，就收窄论文主张，不能补造图论保证。
-
-## 写作决定
-
-最终新读出的原图对照已完成，保持同一 recognition/PPR、BM25/RRF、top5、
-离线来源表示规则、QA prompt/解码/指标。下表为精简主图减原图的百分点，非旧读出分差：
-
-| Reader | SH | MH | FCSH | FCMH | LoCoMo | 2Wiki |
-|---|---:|---:|---:|---:|---:|---:|
-| 9B | -3 | 0 | +3 | +3 | -0.7070 | +6.7925 |
-| 4B | +1 | +6 | +1 | +5 | -0.1976 | +7.7070 |
-
-原图与主图对九项既定 baseline 的胜出分别是双 2/6、双 5/6。
-该结果支持在固定检索/读出规则下研究来源支持物化的整体作用，不支持所有任务更好、
-全领域 SOTA 或独立的 canonicalization/latest 收益归因。选择的来源不同，
-每 reader 全任务输入 token 增加 136764，所以也不是严格等 token 的比较。
-支持投影尚未独立消融，单次 QA 仍受原采样协议影响；不从分差补造统计或图论保证。
-完整对照与 13544 条结果核验见 record.md，最终实验为 `optimization_canonical_latest_cleanup_seed42_20260914`。
-
-不把六组模块写成六项创新。当前更值得解释的是关系键归一与来源覆盖之间的依赖，
-以及同一支持选择结果如何分别进入图权重和读出表示。canonicalization 与 latest 的条件消融
-给出了保留这条依赖链的开发集依据，但不能拆成两个独立、可加的贡献。
-RRF、窗口和附录必须作为额外系统组件披露，图侧 discourse 不宜作为必要核心机制宣传。
-整项删除已支持将其移出主路径，不为原六项配置寻找六个理论名称。
-事实读出随之改变，旧读出下的原图对照仍只证明旧配置的条件收益；
-新配置使用上面的独立完整对照，不继承旧分差。
-
-优先采用系统的物化视图解释，PL 的键归一/覆盖顺序作辅助，
-图投影说明实际表示及其损失。三者都引用已有理论，不宣称发明这些结构。
-不新增机制以迎合故事，也不把失败的 state/event、incidence、gist 算入最终算法。
-最终 novelty 必须落在可复现的具体差异与完整证据，而不是理论名称的数量。
+当前算法入口和普通查询接口见 [README.md](README.md)，新旧结构、单模块删减、失败运行、
+完整 QA 与成本见 [record.md](record.md)。最新近邻方法比较见
+[related_work_analysis.md](related_work_analysis.md#当前贡献定位2026-09-14)。
+不从已归档阶段继承未经新索引验证的必要性结论；旧图-only 消融也不等于整条流水线的删除。

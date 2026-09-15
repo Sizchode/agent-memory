@@ -2,6 +2,7 @@
 
 import unittest
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import igraph as ig
 import numpy as np
@@ -18,6 +19,22 @@ from optimization.run_graph import completed_group_prefix
 
 
 class GraphConstructionTests(unittest.TestCase):
+
+    def test_default_graph_and_query_configuration_agree(self):
+        from optimization import build_graph, run_graph
+
+        common = ["--task", "SH-Doc QA", "--output-root", "/unused"]
+        for options, retained in (([], True), (["--no-retained-fact-index"], False)):
+            with patch("sys.argv", ["build_graph", *common, *options]), patch.object(build_graph, "build") as build:
+                build_graph.main()
+                args = build.call_args.args[0]
+                self.assertEqual(args.construction, "statement_projection_loop_free")
+                self.assertEqual(args.retained_fact_index, retained)
+        with patch("sys.argv", ["run_graph", *common, "--phase", "verify"]), \
+                patch.object(run_graph, "_seed_everything"), patch.object(run_graph, "verify") as verify:
+            run_graph.main()
+            self.assertEqual(verify.call_args.args[0].variants,
+                             ["statement_projection_loop_free_retained_index_rrf_window"])
 
     def test_retrieval_resume_requires_complete_original_groups(self):
         groups = [SimpleNamespace(group_id="g", cases=[SimpleNamespace(case_id="a", question="q1"),
