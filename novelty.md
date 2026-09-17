@@ -1,196 +1,293 @@
-# 算法与研究主张
+# 方法说明：我们改了什么，为什么这样改
 
-更新：2026-09-17。实验、消融、成本和运行状态只在 [results.md](results.md) 维护。
+更新：2026-09-17。本文面向没有参与项目的读者。完整分数和实验记录见 [results.md](results.md)。
 
-## 最新故事与状态
+## 1. 这个项目要解决什么问题
 
-**在不重新抽取知识、不更换在线推理算法的条件下，把“事实及其来源”作为构图单元，将实体间的关联与指向原始证据的连接共同投影为检索图。** 工作名称仍为 Source-Supported Graph Indexing；这是当前最值得验证的构图主张，不是已经证明成立的机制结论。
+大模型回答一个它没有记住的问题时，可以先搜索资料，再根据找到的资料作答。这就是检索增强生成，简称 RAG。
 
-问题不是图中有没有 passage 节点，而是事实与证据之间的关联如何决定传播权重。只保存实体对关系、再另加段落包含边，与按每条事实的主体、客体和实际来源共同构图，是不同的建模选择。我们的研究对象是这项离线构图选择能否改善证据访问，并能否迁移到不同 reader 和已有 agentic memory algorithm。
+我们的项目改的是中间的“搜索资料”部分，更具体地说，**改的是搜索之前怎样组织资料，而不是重新训练大模型或设计新的多步搜索流程。**
 
-当前默认仍为 raw-relation 版本，9B 5/6、4B 6/6；旧关系归一完整版本为双 6/6。这里均指严格超过九项完整本地 baseline 的逐任务最佳，而非全领域 SOTA。性能优先：保留强版本及缓存作参照，只删除证据表明不重要的部分，不为减少模块数直接采用更弱配置。
+资料已经被抽取成了“谁、有什么关系、另一个对象是什么”这样的三元组，也保留了对应的原文。我们研究：**这些实体和原文应该怎样连接，才能让现有搜索程序更容易找到回答问题需要的证据？**
 
-**本轮消融改变了故事：共同筛选图和候选并未稳定优于只筛一侧。** 因此旧标题方向 Consolidate Before You Propagate 暂不作为核心贡献，来源顺序筛选也不再被预设为不可缺少。固定 all-support 读出、完整候选和 RRF 后，原图为 9B 3/6、4B 2/6，新图为双 5/6；这已支持构图组合有独立于读出规则的贡献，但不是投影算子单独有效或全任务都提高的证明。
+当前方法可以概括为：
 
-最贴合实现的是图表示与证据索引视角。“记忆编译”可以描述原始记录到派生索引的离线流程，但没有新增 PL 理论、语义保持证明或在线增量维护保证。不以换成 system/PL 名称代替机制证据。
+> 复用已有的三元组和原文出处。建图时，把每条三元组中的实体与对应原文一起考虑，重新计算它们之间的连接；收到问题后，仍用已有方法搜索这张图，再让大模型根据找到的文字作答。
 
-## 问题与贡献逻辑
+本轮不重新抽取整库知识，不微调模型。构图不使用问题、标准答案或标准证据标签逐题定制连接。
 
-1. **为什么重要：** 抽取与 embedding 已经完成后，仍可能因索引组织不当而取不到回答所需的原始证据。若仅改变构图即可改善多个 reader，便可复用既有昂贵抽取，并保留现有查询接口。
-2. **为什么难：** 构图、候选识别、种子归一化和读出共同影响 QA。删掉一个组件后下降，只能说明它在该组合中有用，不能单独证明新图有效；有来源节点也不保证证据路径有用。
-3. **与已有工作的具体区别：** 不是首次使用来源、超图或 PPR，而是复用已有二元 OpenIE，把事实的实体与实际来源放在同一关联单元中，再用已有投影返回原实体/段落节点，检验这项替换是否有收益。
-4. **证据如何闭合：** 构图贡献由固定读出的原图/新图对照回答；支持选择由图侧/候选侧四格回答；来源路径互补性由单独和联合删除回答；reader 与 agentic 接入验证可迁移性。未完成的项目不能写成结果。
+## 2. 用一个例子讲完整流程
 
-完整流程：已有 OpenIE/embedding → 可选来源支持筛选 → 事实-实体-来源关联与无自环投影 → 原 recognition/PPR 与 BM25/RRF → 原文、事实附录和局部来源窗口 → 原 QA。当前实现中的“可选”表示正在消融的设计，不表示已从默认路径删除。
+以下是虚构的讲解例子，不是实验中的成功案例。
 
-## 1. 信息抽取：继承部分
+| 记录 | 原文 |
+|---|---|
+| 记录 1 | 小林在甲公司工作。 |
+| 记录 2 | 小林换到了乙公司。 |
+| 记录 3 | 乙公司的总部在上海。 |
 
-沿用 HippoRAG OpenIE：Qwen3-30B-A3B-Instruct-2507 先做段落 NER，再输入原文和实体列表抽取 `(subject, relation, object)`。保存每条三元组的实际来源；原实体、事实、段落向量由 Qwen3-Embedding-0.6B 生成。本轮复用这些缓存，不重做 IE 或微调 generator。
+问题是：“小林目前所在公司的总部在哪？”
 
-代码：[openie_openai.py](baseline_algorithms/HippoRAG/src/hipporag/information_extraction/openie_openai.py)。构图只使用来源材料，不使用问题、答案或 gold evidence。loader 会加载原评测对象，不代表问答字段参与构图决策。
+回答需要找到小林现在的公司，再找到这家公司的总部。只按问题和单条原文的相似程度搜索，可能漏掉其中一步，也可能找到旧记录。
 
-## 2. Refinement：选择事实支持
+### 第一步：从原文中抽取三元组
 
-当前主方法直接使用底座 OpenIE 的规范化关系文本，不生成额外关系 schema，不做关系聚类或语义归一。
-2026-09-17 已采用完成双 reader 全六任务评测的 raw-relation 版本：9B 5/6、4B 6/6。
-两个关系归一模块及 schema 作业入口已删除；旧完整版本及其产物保留为消融参考。
+大模型把原文整理成：
 
-[retained_statements](optimization/graph_construction/source_consolidation.py#L7) 的关键代码：
+    记录 1 -> (小林, 工作于, 甲公司)
+    记录 2 -> (小林, 工作于, 乙公司)
+    记录 3 -> (乙公司, 总部位于, 上海)
 
-```python
-normalized = tuple(normalize(list(triple)))
-subject, relation, _ = normalized
-slot = (subject, relation)
-latest[slot] = max(latest.get(slot, -1), positions[key])
-```
+三个位置分别是主体、关系和客体。这一步叫 OpenIE，即开放式信息抽取。抽取结果可能出错，不能把三元组当成人工核实的真相。
 
-原函数还保存各条记录，随后只保留 `positions[key] == latest[slot]` 的支持。同一末来源的多值全部保留，所有关系使用同一政策。关系别名不会额外合并，三元组/向量身份沿用底座。上面省略记录收集与合法性检查，完整实现见链接。
+我们使用 HippoRAG 原有的抽取流程，并复用之前保存的结果。每条三元组都能找到它来自哪条原文。
 
-这是 loader 顺序政策，不等于事件时间或语义冲突检测。关系归一同时从图、候选和附录删除，
-不是只把图侧开关关掉；删去它有性能代价，9B FCSH 从 68 降至 64，因此不再称双 6/6。
-简化实现已通过 27 项测试、15 组图/候选/读出的独立精确重建，以及 3386 题普通接口检索匹配。raw 四格、模块删除和种子归一化对照已完成；预算控制不再推进。
-四格不支持共同筛选稳定优于单侧：只筛图为 9B 6/6、4B 5/6，共同筛为 9B 5/6、4B 6/6。
-整链取消支持选择仍双 5/6，因此共享支持选择不能继续写作已证明必要的核心机制。更薄候选尚在联合消融，冻结后再确定最终主张。
+实体、三元组和原文的向量也已经算好。向量是一串用于比较文本语义相似程度的数字；“有向量”不等于“已经知道两个对象在图上应该怎样连接”。
 
-## 3. 构图：事实与来源共同参与
+### 第二步：决定哪些三元组的出处参与构图
 
-[statement_incidence_graph](optimization/graph_construction/statement_incidence.py#L6) 将每个不同规范化三元组作为内部事实单元，成员为主体、客体及保留的实际来源。成员关系是二值的，不按重复次数累加：
+当前规则是：对于相同的“主体 + 关系”，只采用资料加载顺序中最后一条原文提供的三元组。如果最后一条原文同时提供多个值，就全部保留。
 
-```python
-subject, _, obj = triple
-members = {positions[entity_keys[subject]], positions[entity_keys[obj]]}
-members.update(positions[source] for source in sources[triple])
-edges.extend((len(names) + index, member) for member in sorted(members))
-```
+例子中，“小林 + 工作于”对应甲公司和乙公司。记录 2 排在后面，因此采用记录 2 提供的信息。
 
-[project_statement_graph](optimization/graph_construction/statement_incidence.py#L52) 使用 Kumar 等的已有无自环约简。`incidence` 的行是原实体/段落节点、列是内部事实单元：
+**这就是之前文档中 refinement 在当前实现里的具体含义，没有另一个隐藏的优化过程。**
 
-```python
-degrees = np.asarray(incidence.sum(axis=0), dtype=np.float64).ravel()
-if np.any(degrees == 1):
-    raise ValueError("A loop-free fact transition requires at least two members")
-degrees = degrees - 1
-inverse = np.divide(1.0, degrees, out=np.zeros_like(degrees), where=degrees > 0)
-facts = incidence @ sparse.diags(inverse) @ incidence.T
-facts.setdiag(0)
-facts.eliminate_zeros()
-projected = adjacency[:original_vertices, :original_vertices] + facts
-```
+这项规则有明显限制：
 
-每个有 m 个成员的事实对不同成员贡献 `1/(m-1)`；额外保留有支持的原 passage-entity 直连，去掉 synonym 贡献。最后运行普通实体/段落加权图，不保留新的在线事实节点或事实 embedding。
+- 加载顺序不一定等于事件发生顺序。
+- 一个人可能同时在两家公司工作，不能保证前一条信息已经失效。
+- 原文没有被删除，其他搜索路径仍可能找到旧记录。
 
-投影及其度数性质属于 [Kumar 等 2020，式 3](https://link.springer.com/article/10.1007/s41109-020-00300-3)，不是我们的新定理。谓词区分事实身份，但 PPR 不读谓词标签/方向；投影不可保证反推出原事实，不是无损编码。当前活跃事实几乎都只有一个来源，不能用“多来源超边融合”解释主要收益。
+因此，它是待验证的经验规则，不是通用的冲突识别或记忆更新算法。后面的消融会检查哪些地方需要它。
 
-### 理论解释与实验责任
+旧版还额外合并意思相近的关系表达，例如“工作于”和“就职于”。这套关系归一已经删除，当前直接使用底座抽取出的关系文本。
 
-该已有算子对应两步随机游走：从当前节点选择一个关联事实，再在该事实的其他成员中均匀选择下一节点。当前事实等权，大小为 m 的事实对每个成员贡献的总出边权为 `(m-1)/(m-1)=1`，避免未经归一化的 clique expansion 随成员数放大传播质量。实际代码另加的来源直连属于额外传播通道，不能从这个性质推出它有必要或可以删除。原论文已有此随机游走解释；我们贡献的候选是将具体事实来源表示接入这套算子，而非新游走理论。
+### 第三步：建立实体和原文之间的连接
 
-这给出的是传播机制解释，不是 QA 正确性、冲突处理或最优索引证明。支持筛选决定哪些成员进入关联结构，其语义适用性仍需单独检验。全任务统一、由节点/事实度数计算权重，也不等于已经学习了 self-adaptive memory。
+“图”就是节点和连接组成的结构。在这里，节点包括实体和原文记录，连接还有一个表示强度的数值，叫权重。
 
-| 需要解释的主张 | 已有理论或代码性质 | 必须由实验回答的部分 |
+对于“小林工作于乙公司”这条事实，我们一起考虑三个节点：
+
+    小林、乙公司、记录 2
+
+然后在它们之间建立普通的两两连接：
+
+    小林 <-> 乙公司
+    小林 <-> 记录 2
+    乙公司 <-> 记录 2
+
+如果同一条三元组有多个被保留的原文出处，这些原文都可以参与连接。同一个成员不会因为重复出现而重复计数。
+
+**之前说的“投影”，具体就是把一组成员之间的关联转换成普通的两两连接。** 这是已有的图论操作，不是把文字投影到一个新向量空间，也不是训练一个新模型。
+
+图论中，一条连接可以同时涉及多个成员时，叫“超边”；这样的结构叫“超图”。我们先按每条事实组织这些成员，再转成原有搜索程序能够使用的普通图。
+
+连接权重采用已有方法：一组有 3 个成员，每对不同成员获得 1/2 的贡献；有 4 个成员，每对获得 1/3。这样，每个成员从同一条事实获得的总连接贡献都是 1，不会仅仅因为这条事实涉及更多成员就增大。
+
+这个转换及其性质来自 [Kumar 等的已有方法](https://link.springer.com/article/10.1007/s41109-020-00300-3)，不是我们的新公式。它不添加自己到自己的连接，也不保证问答一定正确。
+
+当前实现还保留额外的实体到原文的直接连接，并去掉原图中因实体名称相似而添加的连接。额外直连与上面转换产生的连接可能承担相近作用，所以需要检验能否删掉其中一种。
+
+**这里真正的研究选择是“哪些成员应当一起决定连接”，不是发明了图论转换本身。** 最后在线搜索的仍是普通加权图，没有额外的在线事实节点。
+
+## 3. 收到问题后，怎样找到材料并作答
+
+这一阶段主要沿用已有方法。下面分别解释旧文档里的几个术语。
+
+### “候选识别”：让大模型判断哪些三元组与问题有关
+
+系统先按向量相似度，从三元组清单中找出若干可能相关的条目，再把这些条目和问题交给大模型筛选。
+
+例如，“小林工作于乙公司”可能有助于回答总部位置，“小林喜欢游泳”则可能无关。
+
+HippoRAG 把这一步称为 recognition。它只是筛选搜索的起点，不是最终回答问题，也不是重新抽取全部知识。
+
+用于查找的三元组清单，和用于传播分数的图，是两份不同的数据。当前默认版还会从清单中排除没有被上一节规则选中的三元组；我们也在测试恢复完整清单。
+
+所以，**改变图中的连接，不等于改变大模型在这一步能看到哪些三元组。** 这正是需要分开做消融的原因。
+
+### “种子”：图搜索从哪里开始，各个起点有多重要
+
+根据筛选出的三元组，系统给其中的实体分配起始分数；与问题相似的原文也会得到起始分数。这些起点及其分数通常称为种子。
+
+接下来运行 HippoRAG 原有的个性化 PageRank，简称 PPR。直观上，它从与问题相关的节点出发，沿连接反复访问其他节点，同时不断返回起点，最后给原文排序。
+
+这不是让大模型规划搜索路线，也不保证访问过的每条连接都是有效推理。没有筛到相关三元组时，还可能使用底座的其他检索路径。
+
+### “种子归一化”：把相似度分数换到统一尺度
+
+旧文档的这个说法，指的是：**三元组与问题的相似度先经过最小值到最大值缩放，再参与计算起始分数。**
+
+例如，相似度为 0.2、0.6、1.0，缩放后是 0、0.5、1。
+
+为什么要单独检查？如果删掉最低分的条目，剩下的 0.6、1.0 就会被缩放成 0、1。某条三元组虽然还在，其对应的起始分数也可能变了。
+
+因此，筛掉一些条目后结果提高，不能全部解释成“去除了错误信息”。也可能是起始分数改变了。我们做了单独对照：保持三元组清单和大模型筛选结果不变，只恢复完整清单对应的缩放范围。
+
+### RRF：合并两种搜索的排名
+
+除了图搜索，我们还运行 BM25，也就是基于词语匹配程度的搜索。
+
+两条路线的原始分数不能直接相加。RRF 是一种已有的排名合并方法：只看名次，一条原文排名越靠前，贡献越大；两条路线都找到它，就把贡献相加。
+
+具体使用文献中的 1 / (60 + 名次)，两条路线等权。当前每条路线取前 5 条，合并后选出 5 条原文。它不是我们发明的新排序公式。[RRF 原论文](https://cormack.uwaterloo.ca/cormacksigir09-rrf.pdf)
+
+### “读出”：只是整理大模型最终看到的参考材料
+
+旧文档把普通的文字整理步骤叫成“读出”，容易让人误以为还有一个新模块。实际操作是，对每条选中的原文附上：
+
+1. 该原文的位置和可用的时间标记。
+2. 从中抽取、且被当前规则保留的三元组列表。
+3. 前后最多各 3 条相邻原文，只在时间标记相同、非空且连续的范围内补充。
+
+第三项是直接附上原文，不是大模型摘要，也不是自动判断哪些句子属于同一主题。遇到不同时间标记就停止；不同搜索结果之间可能附上重复的相邻原文，目前没有跨结果去重。
+
+所以，选中 5 条原文，不代表最终只有 5 段文字，更不代表固定的输入长度。
+
+最后，回答问题的大模型按原任务的提示词读这些文字、生成答案。它不直接读取图，也不读取 RRF 分数。实验中的 reader 指的就是这个回答模型。
+
+## 4. 哪些是我们的改动，哪些不是
+
+| 环节 | 当前做法 | 在本项目中的位置 |
 |---|---|---|
-| 为什么这样定投影权重 | 已有无自环、度数保持的超图约简；现有单元测试覆盖无自环、节点加权度及小图 PPR | 在我们的事实来源表示上是否改善实际 QA，不能由度数性质推出 |
-| 为什么需要来源连接 | 保留从事实实体到原始证据的传播通道 | 联合删除双 1/6、单删双 5/6 支持通道可替代，而非两条通道均必要 |
-| 为什么筛图与筛候选不等价 | 前者改变传播边，后者还能改变识别、种子及 min-max 范围 | 四格和固定识别的归一化对照；当前结果不支持共同筛选稳定最优 |
-| 为什么固定通用参数 | RRF 在当前 top-5 条件下，已检查的一组常数排序等价 | 来源窗口、候选窗口尚需敏感性验证；格式选择不能用投影理论解释 |
+| 抽取三元组、计算向量 | 复用已有结果 | 不是本轮贡献 |
+| 选择参与构图的原文出处 | 同一主体和关系采用最后来源 | 我们加入、需要消融的经验规则 |
+| 建图 | 每条三元组的实体和原文一起决定连接及权重 | 当前主要研究对象 |
+| 限制可搜索的三元组 | 默认只保留有选中出处的条目 | 正在检验能否删除 |
+| 大模型筛选、图搜索 | 沿用 HippoRAG 的 recognition 和 PPR | 不是新检索算法 |
+| 合并排名 | 使用已有 RRF | 组合设计，不是新公式 |
+| 整理参考材料 | 原文、三元组列表、相邻记录 | 会影响成绩，需要与构图作用分开检验 |
 
-## 4. 候选索引：与图共用支持
+**最值得主张的贡献是：不重做信息抽取、不改在线搜索算法，仅改变事实与原文的连接方式，能否改善最终问答。**
 
-[build_graph.py](optimization/build_graph.py) 用保留支持选择原 fact 行，保留原相对顺序。在线加载由 [restrict_fact_index](optimization/retriever/hipporag.py#L10) 完成：
+这件事有用，是因为知识抽取已经花了成本。如果重新组织现有结果就能改善多个回答模型，就不必为了这项改进再次抽取整库资料。不过，首次建立底座索引的成本仍然存在。
 
-```python
-positions = {key: i for i, key in enumerate(hippo.fact_node_keys)}
-vectors = hippo.fact_embeddings[[positions[key] for key in keys]]
-hippo.fact_node_keys = list(keys)
-hippo.fact_embeddings = vectors
-```
+难点在于，连接方式、搜索起点和参考材料都会影响答案。完整系统分数高，不足以证明其中某一个设计有效。
 
-没有重算向量，也不修改实体/事实到原来源的映射。候选集合改变会影响 HippoRAG 的 min-max 分数与查询种子，不能说识别输入完全不变。原文库、BM25、来源窗口仍能访问历史，所以不是所有访问路径的全局一致性或 active-only memory。
+### 与相关工作的区别
 
-## 5. 检索、读出与 QA
+- **[HippoRAG 2](https://arxiv.org/html/2502.14802)** 已有实体、原文节点、实体到原文的连接，以及大模型筛选和 PPR。我们的区别不是“第一次保存出处”，而是按每条三元组的实体及实际原文共同决定连接及其权重。
+- **[HyperGraphRAG](https://arxiv.org/html/2503.21322)** 已用超图表达涉及多个实体的事实。我们不重新抽取这类事实或另建其检索向量，而是复用已有三元组和出处，再转换成原搜索程序能使用的图。
+- **[A-MEM](https://arxiv.org/html/2502.12110)** 包含生成记忆笔记、建立链接和修改已有记忆。我们当前研究的是提前建立的索引，没有实现那样的持续写入与演化。以后需要真正接入已有 agentic memory algorithm，才能验证在那种流程中的作用。
 
-原 recognition LLM 从向量召回的事实中筛选相关项，原实体种子及 dense passage 种子进入 PPR。图检索与同语料 BM25 各前五，通过固定等权 RRF（60）合并为五中心；没有新的 agentic 查询循环。
+已有的数学工具可以使用，但不能把它说成新理论。当前也不能主张首次使用超图、已经解决语义冲突，或仅靠改成 PL/system 术语就获得新的贡献。
 
-对应 [hybrid_graph.py](optimization/retriever/hybrid_graph.py#L11)：
+## 5. 消融已经说明了什么
 
-```python
-scores[item.text] = scores.get(item.text, 0.0) + 1.0 / (rank_constant + rank)
-order = sorted(candidates, key=lambda text: -scores[text])[:top_k]
-```
+消融是关掉某个步骤、尽量保持其他条件不变，再看结果。它检验该步骤在当前组合中是否有用，不自动证明新颖性或不可替代性。
 
-[compiled_sources.py](optimization/graph_construction/compiled_sources.py) 返回中心原文、来源位置/时间及保留事实 JSON；[source_window.py](optimization/graph_construction/source_window.py) 在连续相同非空 timestamp 内补前后三条原文，不跨中心去重。原 QA prompt、生成设置及评分保留。五中心不是五段文本或固定 token 预算。
+下面的“6/6”表示在六个任务上，严格超过九个完整本地对比方法的逐任务最佳成绩，平局不算赢；不是全领域 SOTA，也不是六次独立重复试验。
 
-## Novelty 来源与相关工作
+### 已经删除了什么
 
-潜在创新落在**具体的事实来源构图方式及其可替换性验证**，不是现成算子的首创。支持选择与候选筛选属于已检验的设计选项，不能在四格结果不支持时继续声称二者协同是贡献来源。
-
-| 近邻工作 | 已有机制 | 当前区别 |
+| 完整配置 | Qwen 9B | Qwen 4B |
 |---|---|---|
-| [HippoRAG 2](https://arxiv.org/html/2502.14802) | 已有 phrase/passage 节点、事实边、包含边、synonym、recognition 与 PPR | 我们按每条事实的实体及实际来源建立关联，再投影回原节点；继承在线查询，不以“加 provenance”主张首创 |
-| [CatRAG](https://aclanthology.org/2026.findings-acl.290.pdf) | query-adaptive 导航及边权 | 我们在查询前构建共享索引，不增加查询时路径规划 |
-| [HyperGraphRAG](https://arxiv.org/html/2503.21322) | 抽取自然语言 n-ary 事实，以实体-超边二部图存储，分别检索实体与超边并结合文本块 | 我们不重新抽取 n-ary 事实或训练超边向量，而以已有三元组及实际来源构造关联并投影，在线仍用原 recognition/PPR；不是“首次把超图用于 RAG” |
-| [A-MEM](https://arxiv.org/html/2502.12110) | note 构造、链接、历史 note 演化 | 我们不改写记忆内容；它的写入机制仍是直接相关工作 |
-| [Zep](https://arxiv.org/html/2501.13956v1) | 时间有效性及矛盾识别/失效 | 我们的来源顺序选择没有同等语义保证 |
+| 旧版，包含额外的关系归一 | 6/6 | 6/6 |
+| 当前默认版，删除额外关系归一 | 5/6 | 6/6 |
 
-“减少历史干扰”是解释假设，不是全部 QA 分差的已证实原因。系统视角是原始记录与派生索引分离；图论视角是事实关联与已有投影。未实现 DBSP 增量维护、MemorySSA、语义保持编译或 hyperbolic embedding，不将这些名称写成贡献。
+简化并非无损：9B 在 FactConsolidation-SH 上从 68 降到 64，低于最佳 baseline 的 66。对应代码已经实际删除，核心相关代码净减 377 行；27 项测试、15 组独立构建及 3386 题普通接口检索核对通过。
 
-投影权重由事实成员数计算，属于已有度数归一化，不是逐数据集调参，也不是学到了自适应策略。固定 RRF、窗口和附录属于组合设计，不能因全任务统一就宣称它们本身具有 novelty。来源顺序筛选仍是经验规则，不能写成语义冲突检测。
+### 构图和三元组清单必须一起筛选吗？目前不是
 
-**新增的归因证据：** 固定 all-support 读出、候选和 RRF，原图与新图的 2Wiki 为 49.52→57.17（9B）、47.42→55.81（4B）；FCMH 为 2→9、4→6。4B 的 MH、FCSH 和 LoCoMo 并非同步提高，实际输入长度也未匹配。构图替换包含事实投影、来源直连权重及 synonym 处理，不能把差值全部归给投影公式。
+以下实验固定连接权重的计算方法、排名融合和参考材料整理规则，只改变两处是否按最后来源筛选：
 
-同时删除事实来源成员和额外来源直连使两个 reader 均降至 1/6，而单独删除任一路径仍双 5/6。这支持来源连通路径具有替代性，反对“两条路径都不可缺少”的叙事。完整候选、保留图支持这一更强候选的同类消融仍在继续；不同 reader 和 agentic 接入的迁移验证尚未完成。
+| 构图时筛选出处 | 搜索前筛选三元组清单 | 9B | 4B |
+|---|---|---|---|
+| 否 | 否 | 5/6 | 4/6 |
+| 否 | 是 | 5/6 | 5/6 |
+| 是 | 否 | 6/6 | 5/6 |
+| 是 | 是 | 5/6 | 6/6 |
 
-旧完整版本的新 reader 迁移结果进一步限定主张：对 BM25、Dense、HippoRAG 2，Gemma-3-4B 为 6/6，Llama-3.1-8B 为 4/6；这些不是简化主方法的迁移成绩。该完整版本中，删窗口使 LoCoMo 下降 5.66/3.13 点，删事实附录使 FCSH 下降 24/16 点（9B/4B）；端到端收益不能全归给传播图，结构与读出的贡献须分别报告。简化版冻结后另做第三 reader 与九 baseline 的完整比较。
+只筛构图和两处都筛，各有优势。因此，原先“两个地方用同一份筛选结果会更好”的假设没有得到稳定支持，不能继续当作已经成立的核心故事。
 
-## 仍保留的人工选择
+完整三元组清单版本的其他模块仍在测试，尚未因此切换默认实现。
 
-撤回此前“六组、18 项”的精确计数。该数字来自旧分组清单减去关系归一组，并非完整的逐项代码审计；其中混合了数值、模块开关、由定义推出的行为和表示格式，且遗漏了 RRF 的零分过滤与同分排序等实现规则。不能据此宣称只有 18 个 heuristic 或需要扫 18 个参数。
+### 新图本身有用吗？已有支持，但要说清对照范围
 
-按当前默认路径，实际设置如下。此表用于定位实验维度，不再通过主观拆分宣称一个总数。
+另一个实验保留全部事实出处，固定完整三元组清单、排名融合及参考材料整理规则，只替换图。原图为 9B 3/6、4B 2/6，新图为两个模型各 5/6。
 
-| 部分 | 当前代码中的选择 | 应怎样检验 |
+例如，该对照中 2Wiki 的答案 F1 从 49.52 提高到 57.17（9B），从 47.42 提高到 55.81（4B）。这支持构图改动有作用，不只是附加文字带来提升。
+
+但是，这次替换同时改变了事实之间的连接、原文连接权重和相似实体连接，不能把全部收益归给投影公式。两个版本选到的材料也可能不同，没有匹配成相同的实际输入长度。
+
+### 两种到原文的连接都必须保留吗？不能这么说
+
+在保留全部事实出处的配置中：
+
+- 只去掉三元组成员中的原文，两个模型仍各为 5/6。
+- 只去掉额外的实体到原文直连，两个模型仍各为 5/6。
+- 两者一起去掉，两个模型都降到 1/6。
+
+这说明两种连接可能互相补偿。它支持“需要可用的原文连接”，不支持“两种连接都不可缺少”，也说明不能把单项删除直接合并。
+
+去掉相邻原文、三元组附录或关键词融合也出现了回退。因此，完整问答系统的提升不能全部算作新图的提升。逐任务差值见 [results.md](results.md)。
+
+## 6. 哪些选择还有经验性，理论能解释到哪里
+
+目前没有可信的“只剩 18 个”或“共有 23 个 heuristic”的精确总数。旧计数混合了模块、数值和格式；通过重新分组降低数字，不是真正简化。
+
+需要交代的是具体选择：
+
+| 选择 | 已有依据与缺口 |
+|---|---|
+| 相同主体和关系只采用最后来源 | 经验规则；已做两处独立开关及整套取消的对照，不是语义正确性保证 |
+| 三元组中的实体和原文怎样连接 | 建模选择；已做原图对照、单删和联合删除，当前候选版本还在验证 |
+| 连接权重按成员数量计算 | 使用已有的无自环、度数保持方法，不是逐数据集手填权重 |
+| 去掉相似实体连接 | 已测试恢复这些连接，不能预设删除总是更好 |
+| RRF 常数为 60、每路取 5 条 | 常数使用文献默认值并已检查；每路条数尚未系统扫描 |
+| 相邻原文前后各取 3 条 | 关闭整个步骤已有实验，半径敏感性尚未完成 |
+| 三元组列表格式、位置和时间信息、重复原文处理 | 有固定实现，但没有逐项必要性证据 |
+
+RRF 还会忽略 BM25 得分非正的条目；融合分数相同时保留稳定顺序，图搜索结果先进入列表。这些也属于需要说明的实现选择。
+
+常数检查发现：在当前两路等权、各取前 5 条的条件下，文献中的 10、20、30、40、50、60、70、80、90、100、500 都产生相同排名和平局关系，实际融合代码也通过了全部两路重合方式的检查。回答模型只读文字，所以这些值不需要重复跑同一份 QA。常数 0 不满足这个结论；改变路线数或候选数量后也不能照搬。
+
+图论解释的是连接权重为什么这样分配，不能证明最后来源一定正确、相邻原文必须取 3 条，或问答一定提高。这些仍需要实验。
+
+**所有任务使用同一配置，不等于系统已经能自适应学习。** 当前没有学会根据新数据自动选择这些策略；我们也不会把经验规则换个名字，就说成已经得到理论保证。
+
+## 7. 实验覆盖范围与剩余工作
+
+每个回答模型使用六个任务设置，共 3386 题：
+
+| 数据来源 | 使用范围 | 考察能力 |
 |---|---|---|
-| 支持选择 | 规范化 `(subject, relation)` 槽；按 loader 来源顺序选最后位置；保留同位置全部值；所有关系使用同一政策 | 结构消融；不是可连续扫描的数值。保留多值是规则语义，不独立发明新冲突策略 |
-| 事实关联与传播 | 事实成员含主体、客体及实际来源；二值成员关系；已有无自环投影；额外二值 passage-entity 直连；去掉 synonym 贡献 | 来源成员、直连、synonym 已分别/联合测试；标准投影不新增混合系数来调分 |
-| 候选索引 | 仅保留有选中支持的原 fact 行，保持原相对顺序及向量 | 完整原索引对照，正在验证删除此模块后的剩余机制 |
-| 融合 | 图与 BM25 两路等权 RRF；常数 60；每路前 5；最终前 5；跳过非正 BM25 得分；同分时图路顺序优先 | 数值敏感性针对常数及每路窗口；最终返回数属于当前固定评测设置；其他行为不能冒充独立数值参数 |
-| 来源窗口 | 前后最多各 3 条；非空且相同 timestamp；连续扫描遇到不同 timestamp 即停止 | 数值敏感性针对半径；去整个窗口已有消融；边界定义是结构选择 |
-| 读出 | 保留中心原文；附来源位置及可用时间；按源顺序附选中三元组 JSON，并在单来源内去重；不同中心的窗口不做联合去重 | 附录删除已有消融；格式、元数据和去重行为尚无逐项必要性证据，不称已全部消融 |
+| MemoryAgentBench | SH-Doc QA、MH-Doc QA、FactConsolidation-SH、FactConsolidation-MH，各 100 题 | 单步/多步证据查找，更新事实后的问答 |
+| LoCoMo | locomo10 全部 1986 题，保留五类问题 | 长对话中的信息回忆与关联 |
+| 2WikiMultiHopQA | HippoRAG 发布的 1000 题子集及配套语料 | 跨材料的多步问答 |
 
-对应实现：`source_consolidation.py`、`statement_incidence.py`、`compiled_sources.py`、`source_window.py`（均在 `optimization/graph_construction/`），以及 `optimization/retriever/hipporag.py`、`optimization/retriever/hybrid_graph.py`。
-本方法显式数值设置包括 RRF 常数、每路候选窗口和来源窗口半径。RRF 常数已完成下述排序等价性检查；候选窗口与来源窗口半径尚未系统扫描。底座 recognition/PPR、embedding、chunking 和 QA 解码设置固定，不将改变它们的结果混作构图消融。
+“全量”指所选任务设置内的全部问题，不是完整原始 MemoryAgentBench 或 2Wiki 数据集。评分沿用原任务协议，不把不同指标混成一个总分；2Wiki 的答案 F1 衡量生成答案与标准答案的词语重合。
 
-RRF 采用 [Cormack 等 2009](https://cormack.uwaterloo.ca/cormacksigir09-rrf.pdf) 的默认常数 60。按其表 1 的扫描值检查：当前两路等权、每路前五时，`10,20,30,40,50,60,70,80,90,100,500` 的所有单路/双路排名模式均有相同的相对顺序与平局关系；实际融合函数在全部 1546 种两路重合映射下也返回相同的有序文本与 metadata。QA 只读取文本，不读取 RRF 分数，因此这些常数下无需重复 QA。`k=0` 不等价；增加候选窗口、改变路数或权重后结论不自动成立。这是现有算子的范围内性质，不是新的融合算法，也不是从 QA 分数挑出的最优常数。
-标准算子/继承参数、跨数据集统一设置、经验性策略需要区分；当前核心路径没有按任务名选择参数的分支。
-通用参数可以是 principled 方法的组成部分，不要求发明新数学或把每个常数都删掉。
-全局固定也不自动证明来源顺序等经验策略正确，或证明方法具备 self-adaptive 能力。
-新目标仍力争两个 reader 各 6/6；各至少 5/6 是可接受下限，不是停止优化或继续强删的理由。raw 版本已达到此前采用门槛，已实际移除归一代码；保留旧双 6/6 参照，不按任务拼接版本。
-其余模块不由“删了降分”推断内部每个常数必要，也不宣称已经最小化；进行中的消融见 results.md。
+**实验章节可以这样解释数据选择：** 我们选择这六个任务设置，同时检验文档中的单步和多步证据查找、更新事实后的访问，以及长对话记忆问答。它们为离线索引提供互补的评测角度，但不覆盖所有 agent memory 能力，尤其不能替代工具使用、持续交互写入和在线适应实验。
 
-## 其他 Reader 与 Agentic 验证
+当前结果的限制必须公开：测试集也用于开发和配置选择；只使用一个随机种子；不同方法的参考材料长度不完全一致。因此不能据此声称独立测试泛化、统计显著性或全领域 SOTA。
 
-- 本地 Hugging Face 模型为 Llama-3.1-8B-Instruct、Gemma-3-4B-it；与 Qwen 合计三个模型家族、四个 reader 配置。不是 Google API 或 Gemma-4。
-- 先完成当前消融取舍并冻结统一方法，再做九 baseline 加最终方法的六任务全量比较。已有 raw 预检只代表输入对齐，撤销的 QA 队列不能计为已跑；旧 canonical 的三个 baseline 迁移成绩不替代此次主实验。
-- 扩展 reader 时保留各任务原 prompt、指标和解码协议，记录实际模型版本、输入长度和失败；不根据新 reader 成绩反向选择构图参数。
-- Agentic 实验是既有 memory algorithm 原版与接入我们图的配对比较，保留其写入/演化机制。当前仅检查 A-MEM 官方实现，尚无接入或正式结果；六任务不兼容之处须明确报告，不临时改造数据来制造覆盖。
+剩余工作按以下顺序进行：
 
-## 实验段落
+1. 完成剩余消融与相关参数检查，确定统一配置，实际删除可去掉的代码并验证。
+2. 冻结方法后，用本地 Hugging Face 的 Llama-3.1-8B-Instruct 和 Gemma-3-4B-it 跑九个 baseline 加最终方法、六任务全量比较。不使用 Google API，也不根据新模型结果重新调图。
+3. 将我们的图接入已有 agentic memory algorithm，比较原版和接入版，保留对方的记忆写入与演化流程，不用普通多轮问答冒充这个实验。
 
-**Dataset selection and coverage.** We evaluate six task settings from three benchmark suites, covering updated-fact access, single- and multi-hop evidence retrieval, and long-term conversational recall. Four selected MemoryAgentBench configurations contribute 100 questions each: SH-Doc QA, MH-Doc QA, FactConsolidation-SH, and FactConsolidation-MH. LoCoMo contributes all 1,986 questions from locomo10 across five question categories. For 2WikiMultiHopQA, we use HippoRAG 2's released 1,000-question subset and associated corpus. These 3,386 questions connect focused consolidation tests with document and conversational QA. We evaluate all questions in the selected configurations using task-specific scoring. This provides complementary coverage of offline indexing, not exhaustive coverage of agent memory; procedural learning, tool-use policies, and online adaptation are outside scope.
+旧版在新回答模型上有部分对比，不是最终简化版与九个 baseline 的完整结果。Agentic 接入尚无正式结果。
 
-**Development protocol.** The evaluation sets were also used for method development and configuration selection; results are therefore in-distribution benchmark results rather than held-out generalization estimates. Index construction uses source material, not evaluation questions, answers, or evidence labels. Each index is frozen before retrieval.
+## 8. 代码在哪里
 
-依据：[MemoryAgentBench](https://arxiv.org/html/2507.05257v4)、[LoCoMo](https://snap-research.github.io/locomo/)、[2Wiki](https://aclanthology.org/2020.coling-main.580/)。未覆盖完整 MAB 在线交互/能力组，题目共享记忆库，不把题数当独立样本数。
+| 操作 | 文件 |
+|---|---|
+| 选择三元组的原文出处 | [source_consolidation.py](optimization/graph_construction/source_consolidation.py) |
+| 按三元组连接实体与原文，转换为普通图 | [statement_incidence.py](optimization/graph_construction/statement_incidence.py) |
+| 整理原文和三元组列表 | [compiled_sources.py](optimization/graph_construction/compiled_sources.py) |
+| 添加相邻原文 | [source_window.py](optimization/graph_construction/source_window.py) |
+| 加载图、限制三元组清单、调用 HippoRAG | [hipporag.py](optimization/retriever/hipporag.py) |
+| 合并图搜索与关键词搜索 | [hybrid_graph.py](optimization/retriever/hybrid_graph.py) |
+| 构建与运行入口 | [build_graph.py](optimization/build_graph.py)、[run_graph.py](optimization/run_graph.py) |
 
-## 代码与复现
+现有抽取模型为 Qwen3-30B-A3B-Instruct-2507，向量模型为 Qwen3-Embedding-0.6B。复现需要已有 HippoRAG 原始索引、抽取结果和向量；上述入口不负责首次抽取，也不再需要额外关系 schema。
 
-- 构建：`python -m optimization.build_graph --task "SH-Doc QA" --output-root <fresh-directory>`。CPU 用 batch 分区；默认构建当前获胜配置。
-- 原索引四格：加 `--no-retained-fact-index`，分别使用两种 `--construction`；旧图同保留索引使用 `--construction projected`。
-- raw-relation 已是正式构建入口的默认路径，不再依赖临时消融脚本。旧 canonical、删直连及读出删除保留归档结果。
-- 检索/验证/QA：`python -m optimization.run_graph --phase retrieve|verify|evaluate --task ... --output-root ...`。新 reader 用 `--evaluation-backbone` 指定。
-- 识别缓存未命中时需同源 generator 地址及 `--allow-generator-calls`；guard 阻断缓存缺失或 provider 异常后的静默 fallback，不改变上游事实解析失败的处理。不要把缓存验证当成任意新问题无需 LLM。
-- 前置产物：原 HippoRAG 索引及 OpenIE，`--source-root` 可指定。本入口不负责首次抽取，不再需要 schema 或冻结读出；可选 `--readout-root` 仅用于与既有产物核对，新读出由源材料直接构建。
-- 环境：Oscar 的 `agent-memory-envs/hipporag` 用于构图/检索，`runner` 用于 QA，`vllm_cu129` 用于原 generator；CUDA 12.9。沿用现有环境，不重新安装或下载既有模型。
-- 环境定义见 `requirements/`；可移植安装入口为 `requirements/create_environments.sh`，仅新环境需要。各 baseline 隔离安装；兼容补丁位于 `baseline_patches/`，由 `requirements/apply_baseline_patches.sh` 应用。补丁细节与旧运行适配保存在文档归档，不冒充原版算法改进。
+基本调用方式：
 
-仓库自有研究 MD 仅保留本文件与 results.md。旧全文、负结果、代码与缓存的位置见 results.md；第三方 submodule 文档不删。
+    python -m optimization.build_graph --task "SH-Doc QA" --output-root <new-directory>
+    python -m optimization.run_graph --phase retrieve --task "SH-Doc QA" --output-root <new-directory>
+    python -m optimization.run_graph --phase evaluate --task "SH-Doc QA" --output-root <new-directory>
+
+新问题的大模型筛选若没有缓存，仍需要可用的模型服务，不能把实验缓存命中理解成运行时不需要大模型。Oscar 上重计算通过 Slurm 运行；CPU 构图用 batch 分区，沿用已有 hipporag 构图/检索环境与 runner 问答环境。配置见 [requirements/](requirements/)，详细结果与产物位置见 [results.md](results.md)。
