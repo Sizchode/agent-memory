@@ -12,7 +12,8 @@ from main import _config_from_args, _load_groups, _seed_everything, build_parser
 
 BASE = Path("/oscar/scratch/zliu328/agent-memory-outputs")
 SOURCE = BASE / "final_qwen3_30b_seed42_clean_20260910"
-MODELS = ("Qwen/Qwen3.5-9B", "Qwen/Qwen3.5-4B", "Qwen/Qwen3.5-2B")
+MODELS = ("Qwen/Qwen3.5-9B", "Qwen/Qwen3.5-4B", "Qwen/Qwen3.5-2B",
+          "meta-llama/Llama-3.1-8B-Instruct", "google/gemma-3-4b-it")
 TASKS = ("SH-Doc QA", "MH-Doc QA", "FactConsolidation-SH", "FactConsolidation-MH", "LoCoMo", "2WikiMultiHopQA")
 
 
@@ -197,7 +198,7 @@ def main():
                         "statement_projection_loop_free_retained_index_rrf_window",
                         "canonical_latest_retained_index_rrf_window"),
                         default=["statement_projection_loop_free_retained_index_rrf_window"])
-    parser.add_argument("--evaluation-backbone", choices=MODELS[:2], default=MODELS[0])
+    parser.add_argument("--evaluation-backbone", choices=MODELS[:2] + MODELS[3:], default=MODELS[0])
     parser.add_argument("--generator-base-url", default="http://127.0.0.1:9/v1")
     parser.add_argument("--allow-generator-calls", action="store_true")
     parser.add_argument("--resume-completed-groups", action="store_true",
