@@ -34,7 +34,7 @@ class GraphConstructionTests(unittest.TestCase):
                 patch.object(run_graph, "_seed_everything"), patch.object(run_graph, "verify") as verify:
             run_graph.main()
             self.assertEqual(verify.call_args.args[0].variants,
-                             ["statement_projection_loop_free_retained_index_rrf_window"])
+                             ["statement_projection_loop_free_raw_relations_retained_index_rrf_window"])
 
     def test_retrieval_resume_requires_complete_original_groups(self):
         groups = [SimpleNamespace(group_id="g", cases=[SimpleNamespace(case_id="a", question="q1"),
@@ -213,23 +213,6 @@ class SourceConsolidationTests(unittest.TestCase):
     def test_reversing_source_order_changes_only_the_selected_support(self):
         weights, _ = self.construct(["p1", "p0"])
         np.testing.assert_array_equal(weights, [1, 0, 1, 1, 0, 0])
-
-    def test_canonical_schema_merges_relation_aliases(self):
-        self.graph.es["synonym_score"] = [0.0] * 6
-        self.documents[1]["extracted_triples"][0][1] = "alias"
-        schema = {label: {"canonical": "canonical"}
-                  for label in ("r", "alias")}
-        weights, _ = latest_relation_weights(self.graph, self.documents, ["p0", "p1"],
-            {"s": "s", "old": "old", "new": "new"}, lambda x: x, schema=schema)
-        np.testing.assert_array_equal(weights, [0, 1, 0, 0, 1, 1])
-
-    def test_latest_policy_does_not_use_schema_categories(self):
-        self.graph.es["synonym_score"] = [0.0] * 6
-        schema = {"r": {"canonical": "r", "cardinality": "multiple", "role": "discourse"}}
-        weights, _ = latest_relation_weights(self.graph, self.documents, ["p0", "p1"],
-            {"s": "s", "old": "old", "new": "new"}, lambda x: x, schema=schema)
-        np.testing.assert_array_equal(weights, [0, 1, 0, 0, 1, 1])
-        self.assertEqual(schema["r"]["cardinality"], "multiple")
 
 
 class StatementIncidenceTests(unittest.TestCase):

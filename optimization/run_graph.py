@@ -193,11 +193,11 @@ def main():
     parser.add_argument("--phase", choices=("retrieve", "evaluate", "verify"), required=True)
     parser.add_argument("--task", choices=TASKS, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
-    parser.add_argument("--variants", nargs="+", choices=("canonical_latest_rrf_window", "original_graph_rrf_window",
-                        "statement_projection_loop_free_rrf_window", "statement_projection_loop_free_refined_rrf_window",
-                        "statement_projection_loop_free_retained_index_rrf_window",
-                        "canonical_latest_retained_index_rrf_window"),
-                        default=["statement_projection_loop_free_retained_index_rrf_window"])
+    parser.add_argument("--variants", nargs="+", choices=("raw_latest_rrf_window", "original_graph_rrf_window",
+                        "statement_projection_loop_free_raw_relations_rrf_window", "statement_projection_loop_free_raw_relations_refined_rrf_window",
+                        "statement_projection_loop_free_raw_relations_retained_index_rrf_window",
+                        "raw_latest_retained_index_rrf_window"),
+                        default=["statement_projection_loop_free_raw_relations_retained_index_rrf_window"])
     parser.add_argument("--evaluation-backbone", choices=MODELS[:2] + MODELS[3:], default=MODELS[0])
     parser.add_argument("--generator-base-url", default="http://127.0.0.1:9/v1")
     parser.add_argument("--allow-generator-calls", action="store_true")

@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 import numpy as np
 
 
-def retained_statements(documents, ordered_passage_keys, normalize, schema=None):
+def retained_statements(documents, ordered_passage_keys, normalize):
     """Select normalized source-supported statements without changing source text."""
     positions = {key: i for i, key in enumerate(ordered_passage_keys)}
     if {doc["idx"] for doc in documents} != set(positions):
@@ -18,11 +18,6 @@ def retained_statements(documents, ordered_passage_keys, normalize, schema=None)
                 raise ValueError("Malformed source triple")
             normalized = tuple(normalize(list(triple)))
             subject, relation, _ = normalized
-            if schema is not None:
-                record = schema[triple[1]]
-                relation = normalize(record["canonical"])
-                if "update_policy" in record:
-                    raise ValueError("The experimental state/event schema has been retired")
             statements.append((key, normalized, (subject, relation)))
             slot = (subject, relation)
             latest[slot] = max(latest.get(slot, -1), positions[key])
@@ -36,14 +31,14 @@ def retained_statements(documents, ordered_passage_keys, normalize, schema=None)
         subject_relation_slots=len(latest), original_passages_preserved=len(positions))
 
 
-def latest_relation_weights(graph, documents, ordered_passage_keys, entity_keys, normalize, schema=None):
+def latest_relation_weights(graph, documents, ordered_passage_keys, entity_keys, normalize):
     """Keep source support from the last passage mentioning each subject/relation.
 
     Source order is an explicit indexing heuristic, not inferred event time.
     Multiple values in the same final passage remain unresolved and retained.
     The unchanged raw passage store still contains every historical statement.
     """
-    retained, stats = retained_statements(documents, ordered_passage_keys, normalize, schema)
+    retained, stats = retained_statements(documents, ordered_passage_keys, normalize)
     counts = Counter()
     passage_entities = defaultdict(set)
     for key, (subject, relation, obj) in retained:
