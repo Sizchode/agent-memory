@@ -81,7 +81,7 @@
 | [CatRAG，Findings of ACL 2026](https://aclanthology.org/2026.findings-acl.290/) | 根据查询调整图遍历和边权 | 我们研究查询前的离线构图，不引入查询时的动态边权策略 |
 | [HyperGraphRAG](https://arxiv.org/html/2503.21322) | 多实体事实的超图表示与检索 | 我们复用已有二元三元组及出处，再转换成原搜索程序可用的普通图 |
 | [LightMem，ICLR 2026](https://proceedings.iclr.cc/paper_files/paper/2026/hash/a05b72653ec5b473732129829ae04195-Abstract-Conference.html) | 压缩、记忆组织和离线更新 | 本项目当前不替换记忆生成与更新流程，而是研究既有知识的图索引 |
-| [A-MEM，NeurIPS 2025](https://proceedings.neurips.cc/paper_files/paper/2025/hash/19909c36f51abc4856b4560aff3d36d6-Abstract-Conference.html) | Note Construction、Link Generation、Memory Evolution | 用作后续接入实验，检验我们的图是否能改善已有 agentic memory 流程 |
+| [A-MEM，NeurIPS 2025](https://proceedings.neurips.cc/paper_files/paper/2025/hash/19909c36f51abc4856b4560aff3d36d6-Abstract-Conference.html) | Note Construction、Link Generation、Memory Evolution | 研究记忆写入与演化，和本项目的离线索引不同；接入实验已停止，当前下游使用 IRCoT |
 
 研究贡献应落在**具体的图构建方式，以及固定其他步骤后的效果验证**，不是首次使用原文出处、超图或 PPR。完整问答收益也不能全部归因于构图，因为三元组附录、相邻原文和排名融合各自可能影响答案。
 
