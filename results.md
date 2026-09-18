@@ -87,7 +87,23 @@ Gemma 为 4 胜、1 平、1 负，Llama 为 3 胜、3 负。2Wiki 分别提高 6
 
 CPU 检查 `6486245` 已成功完成：中间版与冻结版的 15 组图节点及顺序、边及顺序、权重、原来源索引、排名融合设置和证据文本全部精确一致，前者包含候选过滤清单而后者不包含。结果在同一目录的 `candidate_index_graph_comparison.json`，执行代码保存在 `reader_candidate_ablation_code_20260918.zip`。这使候选筛选的比较不混入额外的构图或上下文改动；但候选筛选本身也会改变 recognition 输入和相似度归一化，不能将其解释为只移除语义错误的信息。
 
-补齐关系归一与候选筛选的最后一格：保留关系归一、使用完整候选。现有缓存位于 `optimization_construction_h100_controls_seed42_20260914/statement_projection_loop_free_refined_rrf_window`，此前 Qwen9B/4B 为 5/6、6/6。结构检查 `6486285` 已成功，15 组图与证据组织均与归一化候选筛选版精确一致；结果位于 `optimization_retained_fact_index_seed42_20260914/candidate_index_graph_comparison.json`。Gemma `6486286`、Llama `6486287` 依赖该检查成功后运行，仍为每模型全部六任务、一张 H100、单 CPU。只评测已有版本，不重新抽取或构图；代码保存在缓存目录上一级的 `reader_normalization_ablation_code_20260918.zip`。该对照用于检验两项删除的交互影响，不按任务或模型拼接配置。
+最后一格也已完成：保留关系归一、使用完整候选。现有缓存位于 `optimization_construction_h100_controls_seed42_20260914/statement_projection_loop_free_refined_rrf_window`，此前 Qwen9B/4B 为 5/6、6/6。结构检查 `6486285` 已成功，15 组图与证据组织均与归一化候选筛选版精确一致；结果位于 `optimization_retained_fact_index_seed42_20260914/candidate_index_graph_comparison.json`。Gemma `6486286`、Llama `6486287` 均成功退出，12 个任务结果的原评分、输入、生成设置与完整性核对全部通过。只评测已有版本，不重新抽取或构图；代码保存在缓存目录上一级的 `reader_normalization_ablation_code_20260918.zip`。
+
+| 保留关系归一、完整候选 | SH-Doc | MH-Doc | FC-SH | FC-MH | LoCoMo | 2Wiki | 严格胜出九 baseline 最佳 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Gemma | 85 | 54 | 64 | 6 | 40.44 | 45.59 | 4/6 |
+| Llama | 89 | 54 | 33 | 1 | 50.00 | 43.65 | 2/6 |
+
+四格现在都有四个 reader 的六任务结果：
+
+| 关系归一 | 候选筛选 | Qwen9B | Qwen4B | Gemma | Llama |
+|---|---|---:|---:|---:|---:|
+| 保留 | 保留 | 6/6 | 6/6 | 5/6 | 3/6 |
+| 保留 | 删除 | 5/6 | 6/6 | 4/6 | 2/6 |
+| 删除 | 保留 | 5/6 | 6/6 | 3/6 | 3/6 |
+| 删除 | 删除，当前方法 | 6/6 | 5/6 | 4/6 | 3/6 |
+
+当前决定：不恢复两项已删除机制，也不按任务或 reader 选择版本。恢复整套旧机制虽提高 Qwen4B/Gemma 的胜出数，但没有解决 Llama 的差距；单独恢复任何一项均不能稳定增加四个 reader 的胜出数。保留简化版是复杂度与已达到的 Qwen 至少双 5/6 门槛之间的取舍，不是声称它在所有分数上最优或这些模块完全无用。新增模型全面领先仍未达到；后续等待已启动的 IRCoT 全量结果，不用四格中的逐任务最优值拼出主结果。
 
 ### Llama FC-SH 初步错误分析
 
