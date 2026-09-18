@@ -65,7 +65,20 @@ Gemma `6484209`、Llama `6484210` 均已成功完成，各一张 H100、单 CPU�
 
 Gemma 为 4 胜、1 平、1 负，Llama 为 3 胜、3 负。2Wiki 分别提高 6.79 和 5.44 分，支持构图在这一多跳问答设置中的作用，但不能将差值单独归因于投影公式。Llama FC-SH 的原图对照达到 33，而新图为 25；LoCoMo 上两个 reader 的新图均低于原图。因此不能把差距全部归给模型能力或输出上限，也不能声称新图对所有 reader 和任务一致更好。
 
-旧完整版本补充 QA：Gemma `6484256`、Llama `6484258` 已在上述原图消融完成后运行，各覆盖六任务，沿用同一个 launcher 的 `--canonical-reference`。复用 `optimization_retained_fact_index_seed42_20260914/statement_projection_loop_free_retained_index_rrf_window` 的完整检索记录与原评分；不重新构图或抽取。该版本同时含关系归一与候选筛选，因此是简化前后整体比较，不能将差值单独归因于关系归一。当前尚无完整六任务成绩，也未将旧版重新设为默认。
+### 简化前后的跨模型对照
+
+旧完整版本 QA：Gemma `6484256`、Llama `6484258` 均成功完成。复用 `optimization_retained_fact_index_seed42_20260914/statement_projection_loop_free_retained_index_rrf_window` 的完整检索记录，不重新构图或抽取；12 个任务结果均通过完整性、原评分、输入文本/长度和生成设置核对。
+
+| 旧完整版本 | SH-Doc | MH-Doc | FC-SH | FC-MH | LoCoMo | 2Wiki | 严格胜出九 baseline 最佳 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Gemma | 85 | 54 | 63 | 7 | 40.17 | 45.90 | 5/6 |
+| Llama | 89 | 55 | 31 | 1 | 50.08 | 43.60 | 3/6 |
+
+相比冻结简化版，Gemma 的胜出数由 4/6 变为 5/6，Llama 仍为 3/6；Llama SH 的 89 是平局，不算胜出。旧版对部分任务有改善，但并非逐任务都更好，也未解决两个 reader 的全部差距。它同时恢复关系归一与候选筛选，不能据此认定两项都不可删除；目前不恢复主算法代码或按模型选择版本。
+
+补齐中间版本：Gemma `6486230`、Llama `6486231` 已提交，使用现有入口 `--reference raw-retained` 评测 `optimization_retained_index_raw_relations_seed42_20260916/statement_projection_loop_free_raw_relations_retained_index_rrf_window`，各一张 H100、单 CPU、六任务共 3386 题。该版本不做关系归一、仍过滤候选，已有 Qwen9B/4B 为 5/6、6/6；新增 reader 成绩尚缺。仅扩展现有 scratch 评测入口的版本选择，不构造新方法或新数据。
+
+CPU 检查 `6486245` 已成功完成：中间版与冻结版的 15 组图节点及顺序、边及顺序、权重、原来源索引、排名融合设置和证据文本全部精确一致，前者包含候选过滤清单而后者不包含。结果在同一目录的 `candidate_index_graph_comparison.json`，执行代码保存在 `reader_candidate_ablation_code_20260918.zip`。这使候选筛选的比较不混入额外的构图或上下文改动；但候选筛选本身也会改变 recognition 输入和相似度归一化，不能将其解释为只移除语义错误的信息。
 
 ### Llama FC-SH 初步错误分析
 
