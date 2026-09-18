@@ -2,6 +2,12 @@
 
 更新：2026-09-18。算法、代码与贡献解释见 [novelty.md](novelty.md)。本文件维护实验事实与必要的运行状态。
 
+### 最新目标
+
+用户追加目标：继续争取 Gemma/Llama 单次 QA 领先，并将 IRCoT 扩展到 Gemma、Llama、Qwen3.5-4B、Qwen3.5-9B，全部覆盖原六任务。单次 QA 与九 baseline 的逐任务最佳值比较；当前 IRCoT 设计比较同一控制流程下的 BM25、HippoRAG 原图和我们的图，不把这三组的最优直接称为全领域 SOTA。
+
+已完成的冻结配置作为不可覆盖的对照保留。若根据新增 reader 结果选择后续方法，需报告其参与开发，不再将最终结果称为未参与选参的跨模型验证；不能按任务或 reader 拼接配置。后续候选仍须统一评测，不改数据、评分或只为我们放宽解码设置。
+
 ### 最新完整主实验
 
 Gemma/Llama 的九 baseline 加冻结方法已全量完成，QA `6482984` / `6482985` 及汇总 `6483363` 均成功。每 reader 十种方法、六任务、33860 条预测，共 67720 条；其中已有三种 baseline 仅按整任务精确匹配复用，其余正式 QA 新运行。两个 reader 完成标记均确认原分数已重算。
@@ -13,7 +19,7 @@ Gemma/Llama 的九 baseline 加冻结方法已全量完成，QA `6482984` / `648
 | Gemma / 我们 | 85 | 54 | 64 | 5 | 39.73 | 45.65 | 4/6 |
 | Gemma / 九 baseline 最佳 | 84 | 49 | 62 | 6 | 41.21 | 44.78 | 参照 |
 
-原始逐方法比较和成本在 `optimization_full_index_local_readers_seed42_20260918/comparison.json`，逐任务预测和 audit 位于同目录。不能称跨模型全面胜出；冻结的图、索引、RRF 与上下文参数不根据上述新结果回调。
+原始逐方法比较和成本在 `optimization_full_index_local_readers_seed42_20260918/comparison.json`，逐任务预测和 audit 位于同目录。不能称跨模型全面胜出；该轮图、索引、RRF 与上下文参数在新增 reader 评测前固定，未按上述结果改动。
 
 ### 当前多步检索安排
 
@@ -27,13 +33,25 @@ IRCoT 准备与接口检查 `6483684` 已通过：15 组、14362 条原来源和
 推理使用官方补全文本格式、贪心生成、最多 300 token 与换行停止，保留其逐句处理和 prompt 长度限制；最终 QA 使用项目原提示词与解码。reader 在原 runner 环境中运行，图后端与官方控制器在独立 IRCoT 环境中运行，同步调用并核对模型版本，不升级现有实验环境。全量入口按完整来源组续跑，未完成组的中间文件先归档，不按题挑选结果；图构建、索引和参数均保持冻结。
 三组沿用上游超过 600 词的段落过滤及每段最多 350 词的推理展示规则，属于该下游算法的既有处理，不作为我们的构图创新。最终 QA 读取所选原文段落；实际长度与成本分别记录，不宣称不同轨迹具有相同实际 token 数。
 
+Qwen 扩展准备：`run_ircot.py` 已支持 4B/9B，配置检查 `6484247` 成功，四模型本地 config/tokenizer 均可读取，模型版本与上下文限制写入 `reader_preflight.json`。这是 CPU 检查，未测试 Qwen 的实际推理或完成其 benchmark。已有 Gemma/Llama 汇总仍只要求原两个 reader；四模型汇总须显式指定四个模型并等待各自全量 QA。Qwen 的真实联合预检与全量作业尚未提交，需在 GPU 轮转时确认事实识别服务仍可用。
+
 ### 新增回答模型的构图消融
 
 Gemma `6484209`、Llama `6484210` 分别依赖 IRCoT QA `6484135`、`6484140` 成功后运行，各一张 H100、单 CPU，不增加同时运行的 GPU 上限。只评测已有 `graph_retained_index_all` 与 `original_graph` 两组，六任务每组 3386 题；固定完整候选索引、排名融合、原文窗口、事实附录和 QA 设置，不做新的构图或抽取。
 
 复用 scratch 中 `raw_module_controls.py` / `run_module_ablation.sbatch`，只扩展模型选择和已有变体选择；未新增脚本或数据处理规则。入口核对本地模型与主实验版本，再由现有评测代码检查原始题序、实际输入长度、解码设置与评分，并逐任务执行真实 pilot。完整方法只有整任务输入精确相同时才复用主实验 QA；否则运行完整任务，不混合逐题结果。产物位于 `optimization_full_index_module_ablation_seed42_20260917` 对应变体下的 reader 子目录。当前是已提交、尚无成绩，不据此声称跨模型构图贡献成立。
 
-后续分析优先检查 Llama FC-SH 的检索证据与错误回答，并整理成本；重复运行尚未提交。已有结果仍为单 seed，不将 1 分左右差异解释为稳定优势，也不因新增 reader 的成绩修改方法。
+旧完整版本补充 QA：Gemma `6484256`、Llama `6484258` 分别依赖上述原图消融完成，各覆盖六任务，沿用同一个 launcher 的 `--canonical-reference`。复用 `optimization_retained_fact_index_seed42_20260914/statement_projection_loop_free_retained_index_rrf_window` 的完整检索记录与原评分；不重新构图或抽取。该版本同时含关系归一与候选筛选，因此是简化前后整体比较，不能将差值单独归因于关系归一。当前无新增 reader 成绩，也未将旧版重新设为默认。
+
+### Llama FC-SH 初步错误分析
+
+核对上述主实验中完整且按题序一致的 100 条预测：我们与 BM25 都对 15 题、仅我们对 10 题、仅 BM25 对 19 题、都错 56 题。因此是 25 对 34，不是 BM25 全面覆盖我们的正确题。所有计数沿用已保存的原 substring EM，未新增评分规则。
+
+同一官方 10-token 回答上限下，我们 60/100 条输出达到上限，BM25 为 30/100；仅 BM25 答对的 19 题中，我们有 12 条达到上限。例 `no15` 的输出止于 `The religion that Albert of Saxony is affiliated with`，尚未给出宗教名称。达到上限不等于放宽后必然正确，当前不据此改上限或给预测补答案。
+
+按原题序检查的首题 `factconsolidation_sh_262k_no0` 中，Llama 回答旧值 University of Florida；正确的新值 Federal University of Rio de Janeiro 已在第二条检索证据中。事实附录分别保留了 `was educated at` 和 `educated at` 两种关系写法，旧值未被同关系筛选排除。该例 BM25 也答错，说明它是共同失败案例，不是净差 9 分的直接解释。这是可检查的关系表示与上下文冲突问题，不足以从一题推断总体原因。该任务没有提供 gold passage 列表，不用答案字符串命中伪造检索 recall。
+
+后续候选选择须结合完整六任务与四个 reader，不能只修这些错误题。重复运行尚未提交；已有结果仍为单 seed，不将 1 分左右差异解释为稳定优势。
 
 ## 评测协议
 
