@@ -76,9 +76,18 @@ Gemma 为 4 胜、1 平、1 负，Llama 为 3 胜、3 负。2Wiki 分别提高 6
 
 相比冻结简化版，Gemma 的胜出数由 4/6 变为 5/6，Llama 仍为 3/6；Llama SH 的 89 是平局，不算胜出。旧版对部分任务有改善，但并非逐任务都更好，也未解决两个 reader 的全部差距。它同时恢复关系归一与候选筛选，不能据此认定两项都不可删除；目前不恢复主算法代码或按模型选择版本。
 
-补齐中间版本：Gemma `6486230`、Llama `6486231` 已提交，使用现有入口 `--reference raw-retained` 评测 `optimization_retained_index_raw_relations_seed42_20260916/statement_projection_loop_free_raw_relations_retained_index_rrf_window`，各一张 H100、单 CPU、六任务共 3386 题。该版本不做关系归一、仍过滤候选，已有 Qwen9B/4B 为 5/6、6/6；新增 reader 成绩尚缺。仅扩展现有 scratch 评测入口的版本选择，不构造新方法或新数据。
+中间版本已完成：Gemma `6486230`、Llama `6486231` 使用现有入口 `--reference raw-retained` 评测 `optimization_retained_index_raw_relations_seed42_20260916/statement_projection_loop_free_raw_relations_retained_index_rrf_window`，各一张 H100、单 CPU、六任务共 3386 题。两项成功退出，12 个任务结果的完整性、原评分、输入及生成设置核对全部通过；不做关系归一、仍过滤候选，结果如下。
+
+| 无关系归一、保留候选筛选 | SH-Doc | MH-Doc | FC-SH | FC-MH | LoCoMo | 2Wiki | 严格胜出九 baseline 最佳 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Gemma | 85 | 54 | 62 | 6 | 39.43 | 45.66 | 3/6 |
+| Llama | 88 | 57 | 31 | 2 | 49.97 | 43.95 | 3/6 |
+
+相对当前完整候选版，恢复候选筛选使 Gemma 的胜出数由 4/6 降到 3/6，Llama 保持 3/6。它提高 Llama 的 FC-SH 等任务，但不足以超过对应最佳 baseline；Gemma FC-SH 与 FC-MH、Llama FC-MH 的平局均不计胜出。因此不能说该机制完全无用，也没有依据直接将它恢复为默认。
 
 CPU 检查 `6486245` 已成功完成：中间版与冻结版的 15 组图节点及顺序、边及顺序、权重、原来源索引、排名融合设置和证据文本全部精确一致，前者包含候选过滤清单而后者不包含。结果在同一目录的 `candidate_index_graph_comparison.json`，执行代码保存在 `reader_candidate_ablation_code_20260918.zip`。这使候选筛选的比较不混入额外的构图或上下文改动；但候选筛选本身也会改变 recognition 输入和相似度归一化，不能将其解释为只移除语义错误的信息。
+
+补齐关系归一与候选筛选的最后一格：保留关系归一、使用完整候选。现有缓存位于 `optimization_construction_h100_controls_seed42_20260914/statement_projection_loop_free_refined_rrf_window`，此前 Qwen9B/4B 为 5/6、6/6。结构检查 `6486285` 已成功，15 组图与证据组织均与归一化候选筛选版精确一致；结果位于 `optimization_retained_fact_index_seed42_20260914/candidate_index_graph_comparison.json`。Gemma `6486286`、Llama `6486287` 依赖该检查成功后运行，仍为每模型全部六任务、一张 H100、单 CPU。只评测已有版本，不重新抽取或构图；代码保存在缓存目录上一级的 `reader_normalization_ablation_code_20260918.zip`。该对照用于检验两项删除的交互影响，不按任务或模型拼接配置。
 
 ### Llama FC-SH 初步错误分析
 
