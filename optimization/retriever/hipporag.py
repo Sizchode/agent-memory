@@ -7,6 +7,16 @@ import shutil
 from baseline.official import HippoRAG2Baseline
 
 
+def restrict_fact_index(hippo, keys):
+    """Select original candidate rows and vectors, leaving provenance maps intact."""
+    positions = {key: i for i, key in enumerate(hippo.fact_node_keys)}
+    if len(set(keys)) != len(keys) or not set(keys).issubset(positions):
+        raise ValueError("Invalid retained fact IDs")
+    vectors = hippo.fact_embeddings[[positions[key] for key in keys]]
+    hippo.fact_node_keys = list(keys)
+    hippo.fact_embeddings = vectors
+
+
 def load_memory(config, source, runtime):
     memory = HippoRAG2Baseline(config, source)
     try:
@@ -37,7 +47,7 @@ def load_optimized_memory(config, artifact_directory, runtime):
     if not metadata_path.exists():
         metadata_path = artifact_directory / "construction.json"
     metadata = json.loads(metadata_path.read_text())
-    if (any(key in metadata for key in ("frozen_graph_file", "passage_index_directory", "retrieval_mode", "retained_fact_keys_file"))
+    if (any(key in metadata for key in ("frozen_graph_file", "passage_index_directory", "retrieval_mode"))
             or metadata.get("pack_source_windows") or (artifact_directory / "fact_index.json").exists()):
         raise ValueError("Retired experimental representation; use the archived implementation")
     source_graph = Path(metadata["source_graph"])
@@ -60,6 +70,8 @@ def load_optimized_memory(config, artifact_directory, runtime):
         if not np.isfinite(weights).all() or np.any(weights < 0):
             raise ValueError("Optimized weights must be finite and nonnegative")
         memory._memory.graph.es["weight"] = weights.tolist()
+        if "retained_fact_keys_file" in metadata:
+            restrict_fact_index(memory._memory, json.loads(Path(metadata["retained_fact_keys_file"]).read_text()))
         if "rank_fusion" in metadata:
             from optimization.retriever.hybrid_graph import HybridGraphMemory
             fusion = metadata["rank_fusion"]

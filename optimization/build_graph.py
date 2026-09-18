@@ -16,7 +16,7 @@ from optimization.graph_construction.source_consolidation import latest_relation
 from optimization.graph_construction.source_window import attach_source_windows
 from optimization.graph_construction.statement_incidence import statement_incidence_graph, project_statement_graph
 from optimization.retriever.hybrid_graph import RANK_CONSTANT, RANK_WINDOW
-from optimization.run_graph import SOURCE, TASKS, write_json
+from optimization.run_graph import BASE, SOURCE, TASKS, write_json
 
 
 def build(args):
@@ -29,21 +29,24 @@ def build(args):
         "--chunk-size", "512", "--path", args.path, "--data-root", args.data_root])
     groups = list(_load_groups(common))
     incidence = args.construction != "projected"
-    variants = ((f"{args.construction}_raw_relations_rrf_window", f"{args.construction}_raw_relations_refined_rrf_window") if incidence else
-                ("raw_latest_rrf_window", "original_graph_rrf_window"))
+    variants = ((f"{args.construction}_rrf_window", f"{args.construction}_refined_rrf_window") if incidence else
+                ("canonical_latest_rrf_window", "original_graph_rrf_window"))
+    if args.retained_fact_index:
+        variants = ((f"{args.construction}_retained_index_rrf_window" if incidence else
+                     "canonical_latest_retained_index_rrf_window"),)
     for variant in variants:
         directory = args.output_root / variant / slug
         directory.mkdir(parents=True, exist_ok=False)
         write_json(directory / "settings.json", dict(task=args.task, variant=variant, seed=42, top_k=5,
-            source_memory=str(args.source_root / slug), relation_normalization="original OpenIE text processing only",
+            source_memory=str(args.source_root / slug), source_schema=str(args.schema_root / slug),
             construction_reads_questions=False, source_order_is_event_time=False,
             construction=args.construction,
-            fact_candidates="original complete index",
+            fact_candidates="retained support" if args.retained_fact_index else "original complete index",
             support_selection=("all extracted support" if variant in
-                (f"{args.construction}_raw_relations_rrf_window", "original_graph_rrf_window") else
-                "latest source per normalized subject/raw relation; no role filtering"),
+                (f"{args.construction}_rrf_window", "original_graph_rrf_window") else
+                "latest source per canonical subject/relation; no role filtering"),
             test_set_used_as_development_set=True, additional_generator_calls=0,
-            inherited_extraction_costs_excluded=True))
+            inherited_extraction_and_schema_costs_excluded=True))
     total = 0
     for group in groups:
         start = perf_counter()
@@ -62,12 +65,16 @@ def build(args):
             for text, timestamp in zip(group.memory_items, group.memory_timestamps, strict=True):
                 timestamps.setdefault(text_to_key[text], timestamp)
         documents = json.loads(openie.read_text())["docs"]
+        schema_dir = args.schema_root / slug / group.group_id
+        schema = json.loads((schema_dir / "schema.json").read_text())
+        if json.loads((schema_dir / "complete.json").read_text())["relations"] != len(schema):
+            raise ValueError("Incomplete relation schema")
         entity_keys = dict(zip(entities["content"], entities["hash_id"], strict=True))
-        weights, stats = latest_relation_weights(graph, documents, ordered, entity_keys, text_processing)
-        retained, _ = retained_statements(documents, ordered, text_processing)
+        weights, stats = latest_relation_weights(graph, documents, ordered, entity_keys, text_processing, schema)
+        retained, _ = retained_statements(documents, ordered, text_processing, schema)
         contents = attach_source_windows(compile_sources(documents, ordered, retained, timestamps, text_processing),
                                          ordered, 3)
-        if args.readout_root is not None:
+        if incidence or args.retained_fact_index:
             frozen = json.loads((args.readout_root / "compiled_sources" / slug / group.group_id /
                                  "contents.json").read_text())
             if contents != frozen:
@@ -79,7 +86,7 @@ def build(args):
         for variant in variants:
             directory = args.output_root / variant / slug / "memory" / group.group_id
             directory.mkdir(parents=True)
-            refined = variant in ("raw_latest_rrf_window", f"{args.construction}_raw_relations_refined_rrf_window")
+            refined = args.retained_fact_index or variant in ("canonical_latest_rrf_window", f"{args.construction}_refined_rrf_window")
             selected_weights = weights if refined else np.asarray(graph.es["weight"], dtype=np.float64)
             graph_file = None
             if incidence:
@@ -106,7 +113,17 @@ def build(args):
                     vertices=transformed.vcount(), edges=transformed.ecount(),
                     new_node_reset=("zero; original entity and passage seeds unchanged" if
                         transformed.vcount() > graph.vcount() else "no additional vertices")))
-        write_json(shared / "construction.json", dict(stats, source_schema=None,
+            if args.retained_fact_index:
+                facts = pd.read_parquet(source_graph.parent / "fact_embeddings/vdb_fact.parquet")
+                selected_facts = {str(triple) for _, triple in retained}
+                if not selected_facts.issubset(set(facts["content"])):
+                    raise ValueError("Retained statements are missing from the original fact index")
+                keys = facts.loc[facts["content"].isin(selected_facts), "hash_id"].tolist()
+                index_file = directory / "retained_fact_keys.json"
+                write_json(index_file, keys)
+                metadata = json.loads((directory / "graph.json").read_text())
+                write_json(directory / "graph.json", dict(metadata, retained_fact_keys_file=str(index_file)))
+        write_json(shared / "construction.json", dict(stats, source_schema=str(schema_dir),
             seconds=perf_counter() - start, frozen=True))
         total += len(ordered)
         print(json.dumps(dict(task=args.task, group=group.group_id, sources=len(ordered))), flush=True)
@@ -121,9 +138,12 @@ def main():
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--construction", choices=("projected", "statement_projection_loop_free"),
                         default="statement_projection_loop_free")
+    parser.add_argument("--retained-fact-index", action=argparse.BooleanOptionalAction, default=True,
+                        help="Use supported facts as recognition candidates; disable for original-index ablations")
     parser.add_argument("--readout-root", type=Path,
-                        help="Optionally verify the newly compiled readout against a frozen reference")
+                        default=BASE / "optimization_canonical_latest_cleanup_seed42_20260914")
     parser.add_argument("--source-root", type=Path, default=SOURCE / "hipporag2")
+    parser.add_argument("--schema-root", type=Path, default=BASE / "optimization_canonical_schema_seed42_20260913")
     parser.add_argument("--path", default="/oscar/scratch/zliu328/agent-memory-data/locomo/locomo10.json")
     parser.add_argument("--data-root", default=str(Path(__file__).resolve().parents[1] / "baseline_algorithms/HippoRAG/reproduce/dataset"))
     args = parser.parse_args()

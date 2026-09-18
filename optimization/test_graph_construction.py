@@ -1,16 +1,13 @@
 """Focused tests for frozen graph transforms and cache-failure handling."""
 
 import unittest
-import json
-from pathlib import Path
-from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
 
 import igraph as ig
 import numpy as np
 
-from optimization.retriever.hipporag import CacheMissGuard, GenerationFailureGuard, load_optimized_memory
+from optimization.retriever.hipporag import CacheMissGuard, GenerationFailureGuard, restrict_fact_index
 from optimization.graph_construction.source_consolidation import latest_relation_weights, retained_statements
 from optimization.graph_construction.compiled_sources import compile_sources
 from optimization.graph_construction.source_window import attach_source_windows
@@ -27,16 +24,17 @@ class GraphConstructionTests(unittest.TestCase):
         from optimization import build_graph, run_graph
 
         common = ["--task", "SH-Doc QA", "--output-root", "/unused"]
-        with patch("sys.argv", ["build_graph", *common]), patch.object(build_graph, "build") as build:
-            build_graph.main()
-            args = build.call_args.args[0]
-            self.assertEqual(args.construction, "statement_projection_loop_free")
-            self.assertFalse(hasattr(args, "retained_fact_index"))
+        for options, retained in (([], True), (["--no-retained-fact-index"], False)):
+            with patch("sys.argv", ["build_graph", *common, *options]), patch.object(build_graph, "build") as build:
+                build_graph.main()
+                args = build.call_args.args[0]
+                self.assertEqual(args.construction, "statement_projection_loop_free")
+                self.assertEqual(args.retained_fact_index, retained)
         with patch("sys.argv", ["run_graph", *common, "--phase", "verify"]), \
                 patch.object(run_graph, "_seed_everything"), patch.object(run_graph, "verify") as verify:
             run_graph.main()
             self.assertEqual(verify.call_args.args[0].variants,
-                             ["statement_projection_loop_free_raw_relations_refined_rrf_window"])
+                             ["statement_projection_loop_free_retained_index_rrf_window"])
 
     def test_retrieval_resume_requires_complete_original_groups(self):
         groups = [SimpleNamespace(group_id="g", cases=[SimpleNamespace(case_id="a", question="q1"),
@@ -50,12 +48,20 @@ class GraphConstructionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             completed_group_prefix(rows[::-1], groups)
 
-    def test_retired_candidate_filter_is_not_silently_ignored(self):
-        with TemporaryDirectory() as root:
-            directory = Path(root)
-            (directory / "graph.json").write_text(json.dumps({"retained_fact_keys_file": "unused"}))
-            with self.assertRaisesRegex(ValueError, "archived implementation"):
-                load_optimized_memory(None, directory, directory / "runtime")
+    def test_fact_candidate_selection_preserves_vectors_and_provenance(self):
+        vectors = np.arange(6).reshape(3, 2)
+        provenance = {"entity": {"source"}}
+        hippo = SimpleNamespace(fact_node_keys=["a", "b", "c"], fact_embeddings=vectors,
+                                ent_node_to_chunk_ids=provenance, proc_triples_to_docs=provenance)
+        restrict_fact_index(hippo, ["c", "a"])
+        self.assertEqual(hippo.fact_node_keys, ["c", "a"])
+        np.testing.assert_array_equal(hippo.fact_embeddings, vectors[[2, 0]])
+        self.assertIs(hippo.ent_node_to_chunk_ids, provenance)
+        self.assertIs(hippo.proc_triples_to_docs, provenance)
+        with self.assertRaises(ValueError):
+            restrict_fact_index(hippo, ["a", "a"])
+        with self.assertRaises(ValueError):
+            restrict_fact_index(hippo, ["missing"])
 
     def test_reciprocal_rank_fusion_rewards_shared_sources_and_preserves_stable_ties(self):
         graph = [RetrievedItem("a", 0.9), RetrievedItem("b", 0.1)]
@@ -207,6 +213,23 @@ class SourceConsolidationTests(unittest.TestCase):
     def test_reversing_source_order_changes_only_the_selected_support(self):
         weights, _ = self.construct(["p1", "p0"])
         np.testing.assert_array_equal(weights, [1, 0, 1, 1, 0, 0])
+
+    def test_canonical_schema_merges_relation_aliases(self):
+        self.graph.es["synonym_score"] = [0.0] * 6
+        self.documents[1]["extracted_triples"][0][1] = "alias"
+        schema = {label: {"canonical": "canonical"}
+                  for label in ("r", "alias")}
+        weights, _ = latest_relation_weights(self.graph, self.documents, ["p0", "p1"],
+            {"s": "s", "old": "old", "new": "new"}, lambda x: x, schema=schema)
+        np.testing.assert_array_equal(weights, [0, 1, 0, 0, 1, 1])
+
+    def test_latest_policy_does_not_use_schema_categories(self):
+        self.graph.es["synonym_score"] = [0.0] * 6
+        schema = {"r": {"canonical": "r", "cardinality": "multiple", "role": "discourse"}}
+        weights, _ = latest_relation_weights(self.graph, self.documents, ["p0", "p1"],
+            {"s": "s", "old": "old", "new": "new"}, lambda x: x, schema=schema)
+        np.testing.assert_array_equal(weights, [0, 1, 0, 0, 1, 1])
+        self.assertEqual(schema["r"]["cardinality"], "multiple")
 
 
 class StatementIncidenceTests(unittest.TestCase):
