@@ -34,6 +34,7 @@ IRCoT 准备与接口检查 `6483684` 已通过：15 组、14362 条原来源和
 全量检索 Gemma `6484109`、Llama `6484134` 已运行，各三后端、每后端 3386 题。最终 QA `6484135` / `6484140` 分别依赖相应检索成功，汇总 `6484141` 再依赖两个 QA 成功。产物为 `optimization_ircot_transfer_seed42_20260918`；运行代码与预检配置保存在其中的 `ircot_execution_code_20260918.zip`。当前无全量 IRCoT QA 成绩，不以预检输出估计方法胜出数。
 推理使用官方补全文本格式、贪心生成、最多 300 token 与换行停止，保留其逐句处理和 prompt 长度限制；最终 QA 使用项目原提示词与解码。reader 在原 runner 环境中运行，图后端与官方控制器在独立 IRCoT 环境中运行，同步调用并核对模型版本，不升级现有实验环境。全量入口按完整来源组续跑，未完成组的中间文件先归档，不按题挑选结果；图构建、索引和参数均保持冻结。
 三组沿用上游超过 600 词的段落过滤及每段最多 350 词的推理展示规则，属于该下游算法的既有处理，不作为我们的构图创新。最终 QA 读取所选原文段落；实际长度与成本分别记录，不宣称不同轨迹具有相同实际 token 数。
+Qwen 真实预检已出现上游 prompt 过长警告。核对 `fit_prompt_into_given_limit`：它先删除示例；若仅当前问题、证据与推理仍超出 8000 GPT-2 token，则从开头逐行移除文字。这不是 CUDA OOM，也不代表跳过了题目，但推理模型可能看不到部分证据。保留官方行为和原检索记录，不为个别模型或后端放宽限制；最终 QA 仍读取所选原文，推理与最终 QA 的上下文不能混为一谈。
 
 Qwen 扩展准备：`run_ircot.py` 已支持 4B/9B，配置检查 `6484247` 成功，四模型本地 config/tokenizer 均可读取，模型版本与上下文限制写入 `reader_preflight.json`。这是 CPU 检查，不是 benchmark。已有 Gemma/Llama 汇总仍只要求原两个 reader；四模型汇总须显式指定四个模型并等待各自全量 QA。
 
@@ -43,11 +44,11 @@ Qwen 扩展准备：`run_ircot.py` 已支持 4B/9B，配置检查 `6484247` 成�
 
 ### 新增回答模型的构图消融
 
-Gemma `6484209`、Llama `6484210` 已解除对 IRCoT QA 的依赖并运行，各一张 H100、单 CPU。只评测已有 `graph_retained_index_all` 与 `original_graph` 两组，六任务每组 3386 题；固定完整候选索引、排名融合、原文窗口、事实附录和 QA 设置，不做新的构图或抽取。
+Gemma `6484209`、Llama `6484210` 均已成功完成，各一张 H100、单 CPU。只评测已有 `graph_retained_index_all` 与 `original_graph` 两组，六任务每组 3386 题；固定完整候选索引、排名融合、原文窗口、事实附录和 QA 设置，不做新的构图或抽取。24 个任务结果均通过完整性、原评分重算、输入文本与长度、原生成设置核对。
 
 复用 scratch 中 `raw_module_controls.py` / `run_module_ablation.sbatch`，只扩展模型选择和已有变体选择；未新增脚本或数据处理规则。入口核对本地模型与主实验版本，再由现有评测代码检查原始题序、实际输入长度、解码设置与评分，并对新运行任务执行真实 pilot。完整方法已逐任务精确匹配并复用主实验 QA，不混合逐题结果。产物位于 `optimization_full_index_module_ablation_seed42_20260917` 对应变体下的 reader 子目录。
 
-首批完整任务结果如下，尚缺 2Wiki，不报告六任务胜出数：
+六任务完整结果如下。这里是新图与原图的受控比较，不是与九 baseline 最佳值比较：
 
 | 任务 | Gemma 新图 / 原图 | Llama 新图 / 原图 |
 |---|---:|---:|
@@ -56,10 +57,11 @@ Gemma `6484209`、Llama `6484210` 已解除对 IRCoT QA 的依赖并运行，各
 | FC-SH | 64 / 62 | 25 / 33 |
 | FC-MH | 5 / 2 | 1 / 0 |
 | LoCoMo | 39.73 / 40.65 | 49.48 / 51.03 |
+| 2Wiki | 45.65 / 38.87 | 43.97 / 38.54 |
 
-Llama FC-SH 的原图对照达到 33，而新图为 25；LoCoMo 上两个 reader 的新图均低于原图。因此不能把差距全部归给模型能力或输出上限，也不能声称新图对所有 reader 和任务一致更好。
+Gemma 为 4 胜、1 平、1 负，Llama 为 3 胜、3 负。2Wiki 分别提高 6.79 和 5.44 分，支持构图在这一多跳问答设置中的作用，但不能将差值单独归因于投影公式。Llama FC-SH 的原图对照达到 33，而新图为 25；LoCoMo 上两个 reader 的新图均低于原图。因此不能把差距全部归给模型能力或输出上限，也不能声称新图对所有 reader 和任务一致更好。
 
-旧完整版本补充 QA：Gemma `6484256`、Llama `6484258` 分别依赖上述原图消融完成，各覆盖六任务，沿用同一个 launcher 的 `--canonical-reference`。复用 `optimization_retained_fact_index_seed42_20260914/statement_projection_loop_free_retained_index_rrf_window` 的完整检索记录与原评分；不重新构图或抽取。该版本同时含关系归一与候选筛选，因此是简化前后整体比较，不能将差值单独归因于关系归一。当前无新增 reader 成绩，也未将旧版重新设为默认。
+旧完整版本补充 QA：Gemma `6484256`、Llama `6484258` 已在上述原图消融完成后运行，各覆盖六任务，沿用同一个 launcher 的 `--canonical-reference`。复用 `optimization_retained_fact_index_seed42_20260914/statement_projection_loop_free_retained_index_rrf_window` 的完整检索记录与原评分；不重新构图或抽取。该版本同时含关系归一与候选筛选，因此是简化前后整体比较，不能将差值单独归因于关系归一。当前尚无完整六任务成绩，也未将旧版重新设为默认。
 
 ### Llama FC-SH 初步错误分析
 
