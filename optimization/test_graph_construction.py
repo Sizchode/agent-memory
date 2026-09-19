@@ -141,6 +141,64 @@ class ModuleArtifactTests(unittest.TestCase):
         self.assertEqual(groups_checked, 15)
 
 
+class IRCoTGraphTests(unittest.TestCase):
+    def test_graph_artifact_selection_preserves_candidates_and_fusion(self):
+        from optimization import ircot
+
+        with TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            keys = root / "retained_fact_keys.json"
+            keys.write_text(json.dumps(["fact"]))
+            rows = {"source": {"content": "Original source text"}}
+            memory = SimpleNamespace(_memory=SimpleNamespace(chunk_embedding_store=SimpleNamespace(
+                get_all_id_to_rows=lambda: rows)), _generator=object())
+            lexical, config = object(), object()
+            group = SimpleNamespace(group_id="group")
+            for name in ("main", "without_graph"):
+                artifact = root / name / "SH-Doc_QA" / "memory" / group.group_id
+                artifact.mkdir(parents=True)
+                metadata = dict(source_graph="original.pickle", retained_fact_keys_file=str(keys),
+                    rank_fusion=dict(rank_constant=60, rank_window=5), compiled_source_file="unused.json")
+                if name == "main":
+                    metadata["constructed_graph_file"] = "constructed.pickle"
+                (artifact / "graph.json").write_text(json.dumps(metadata))
+                (artifact / "lexical_source_keys.json").write_text(json.dumps(list(rows)))
+                np.save(artifact / "edge_weights.npy", np.array([1.0]))
+                for mode in ("graph", "hybrid"):
+                    directory = root / f"output_{name}_{mode}"
+                    with patch.object(ircot, "GRAPH", root / name), \
+                            patch.object(ircot, "GRAPH_RETRIEVAL", mode), \
+                            patch("optimization.retriever.hipporag.load_optimized_memory", return_value=memory) as load, \
+                            patch.object(ircot, "ElasticsearchMemory", return_value=lexical) as es, \
+                            patch.object(ircot, "official_config", return_value=dict(
+                                start_state="retrieve", models={"retrieve": {"retrieval_count": 6}})):
+                        result = ircot.load_backend("optimized_graph", config, "SH-Doc QA", group, directory)
+                    _, index, runtime = load.call_args.args
+                    self.assertIs(load.call_args.args[0], config)
+                    self.assertEqual(runtime, directory / "runtime/SH-Doc_QA/group")
+                    self.assertEqual(json.loads((index / "graph.json").read_text()),
+                                     {k: v for k, v in metadata.items()
+                                      if k not in ("rank_fusion", "compiled_source_file")})
+                    self.assertEqual((index / "edge_weights.npy").resolve(), artifact / "edge_weights.npy")
+                    if mode == "graph":
+                        self.assertIs(result, memory)
+                        es.assert_not_called()
+                    else:
+                        self.assertIs(result.base, memory)
+                        self.assertIs(result.lexical, lexical)
+                        self.assertEqual((result.rank_constant, result.rank_window), (60, 6))
+                        es.assert_called_once_with("SH-Doc QA", group)
+
+    def test_alternative_graph_requires_separate_output(self):
+        import subprocess
+        import sys
+
+        result = subprocess.run([sys.executable, "-m", "optimization.ircot", "prepare",
+            "--graph-root", "/unused/without_graph"], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Use a separate --output-root", result.stderr)
+
+
 class GraphConstructionTests(unittest.TestCase):
 
     def test_recognition_cache_reuse_rejects_changed_configuration(self):

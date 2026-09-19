@@ -784,6 +784,7 @@ def run(model, generator_job, pilot):
 
 
 def report():
+    prepare()
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -795,7 +796,8 @@ def report():
     figures.mkdir(exist_ok=True)
     scores = {}
     lines = ["# IRCoT round-cap results", "", "Seed 42; full six-task data; early stopping enabled.",
-        "Each task uses its native metric. Scores are percentages, not averaged across tasks.", ""]
+        "Each task uses its native metric. Scores are percentages, not averaged across tasks.",
+        f"Graph artifacts: `{GRAPH}`.", ""]
     for model, revision in MODELS.items():
         slug = model.replace("/", "_")
         directory = ROOT / "main" / slug
@@ -836,7 +838,7 @@ def report():
                   "|---|---|---:|---:|---:|---:|"]
         fig, axes = plt.subplots(2, 3, figsize=(13, 7), constrained_layout=True)
         for ax, task in zip(axes.flat, TASKS, strict=True):
-            graph_label = "IRCoT + hybrid graph" if GRAPH_RETRIEVAL == "hybrid" else "IRCoT + our graph and index"
+            graph_label = "IRCoT + graph and BM25" if GRAPH_RETRIEVAL == "hybrid" else "IRCoT + graph and index"
             for variant, label, color in (("bm25", "IRCoT + BM25", "#3268a8"),
                     ("optimized_graph", graph_label, "#c15242")):
                 curve = scores[model][task][variant]
@@ -857,6 +859,7 @@ def report():
         plt.close(fig)
         lines.append("")
     write_json(ROOT / "comparison.json", dict(complete=True, seed=SEED, scores=scores,
+        graph_root=str(GRAPH), graph_retrieval=GRAPH_RETRIEVAL,
         test_set_used_as_development_set=True, scores_recomputed=True))
     (ROOT / "results.md").write_text("\n".join(lines) + "\n")
 
@@ -868,11 +871,14 @@ if __name__ == "__main__":
     parser.add_argument("--generator-job-id")
     parser.add_argument("--output-root", type=Path, default=ROOT)
     parser.add_argument("--service-root", type=Path, default=SERVICE_ROOT)
+    parser.add_argument("--graph-root", type=Path, default=GRAPH,
+                        help="Existing graph/index artifacts; use a separate output root for ablations")
     parser.add_argument("--graph-retrieval", choices=("graph", "hybrid"), default="graph")
     args = parser.parse_args()
     ROOT, SERVICE_ROOT, GRAPH_RETRIEVAL = args.output_root, args.service_root, args.graph_retrieval
-    if GRAPH_RETRIEVAL == "hybrid" and ROOT == SERVICE_ROOT:
-        parser.error("Use a separate --output-root for the hybrid graph experiment")
+    if ROOT == SERVICE_ROOT and (GRAPH_RETRIEVAL == "hybrid" or args.graph_root != GRAPH):
+        parser.error("Use a separate --output-root when changing graph artifacts or retrieval")
+    GRAPH = args.graph_root
     if args.phase == "setup":
         setup()
     elif args.phase == "prepare":
