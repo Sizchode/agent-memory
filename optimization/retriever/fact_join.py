@@ -34,14 +34,31 @@ class FactJoinSearch:
 
     @staticmethod
     def value(term, bindings):
-        return bindings.get(term) if term.startswith("?") else term
+        return bindings.get(term, None if term.startswith("?") else term)
 
-    def search(self, patterns, score, beam_width=8):
-        """score(pattern, subject, object, fact_ids) ranks the bound atom's candidates."""
+    def search(self, patterns, score, beam_width=8, node_distances=None):
+        """Rank bound atoms, optionally subtracting each known node's distance once.
+
+        node_distances maps each literal to normalized candidate names and L2
+        distances. Combined with negative relation L2 scores this uses SimGRAG's
+        distance sum, but retains directed beam search, not its full algorithm.
+        """
         if not patterns:
             return []
         if beam_width <= 0:
             raise ValueError("beam_width must be positive")
+        literal_candidates = {}
+        if node_distances is not None:
+            literals = {term for pattern in patterns for term in (pattern.subject, pattern.object)
+                        if not term.startswith("?")}
+            if set(node_distances) != literals:
+                raise ValueError("Semantic matching requires candidates for every literal")
+            for term, distances in node_distances.items():
+                if any(self.normalize(name) != name or not math.isfinite(distance) or distance < 0
+                       for name, distance in distances.items()):
+                    raise ValueError("Node candidates require normalized names and finite nonnegative distances")
+                for role, lookup in (("subject", self.subjects), ("object", self.objects)):
+                    literal_candidates[term, role] = set().union(*(lookup.get(name, set()) for name in distances))
         states = [Match({}, (), 0.0)]
         for _ in patterns:
             expanded = []
@@ -54,9 +71,12 @@ class FactJoinSearch:
                 pattern = patterns[position]
                 subject, obj = (self.value(term, state.bindings) for term in (pattern.subject, pattern.object))
                 selected = None
-                for value, lookup in ((subject, self.subjects), (obj, self.objects)):
+                for term, role, value, lookup in ((pattern.subject, "subject", subject, self.subjects),
+                                                 (pattern.object, "object", obj, self.objects)):
                     if value is not None:
-                        candidates = lookup.get(self.normalize(value), set())
+                        candidates = (literal_candidates[term, role]
+                                      if node_distances is not None and term not in state.bindings
+                                      else lookup.get(self.normalize(value), set()))
                         selected = set(candidates) if selected is None else selected & candidates
                 candidates = sorted(self.facts if selected is None else selected)
                 if pattern.subject == pattern.object:
@@ -64,15 +84,21 @@ class FactJoinSearch:
                                   self.normalize(self.facts[fact][2])]
                 if not candidates:
                     continue
-                values = score(pattern, subject, obj, candidates)
+                values = list(score(pattern, subject, obj, candidates))
                 if len(values) != len(candidates) or not all(math.isfinite(value) for value in values):
                     raise ValueError("The scorer must return one finite value per candidate")
+                if node_distances is not None:
+                    for i, fact in enumerate(candidates):
+                        assignments = {pattern.subject: self.facts[fact][0], pattern.object: self.facts[fact][2]}
+                        values[i] -= sum(node_distances[term][self.normalize(value)]
+                                         for term, value in assignments.items()
+                                         if term in node_distances and term not in state.bindings)
                 order = sorted(range(len(values)), key=lambda i: (-values[i], candidates[i]))[:beam_width]
                 for rank in order:
                     fact = candidates[rank]
                     bindings = dict(state.bindings)
                     for term, value in ((pattern.subject, self.facts[fact][0]), (pattern.object, self.facts[fact][2])):
-                        if term.startswith("?"):
+                        if term.startswith("?") or node_distances is not None:
                             if term in bindings and self.normalize(bindings[term]) != self.normalize(value):
                                 raise AssertionError("Candidate generation broke a shared binding")
                             bindings[term] = value

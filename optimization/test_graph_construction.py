@@ -48,6 +48,53 @@ class QueryPatternTests(unittest.TestCase):
 
 
 class FactJoinSearchTests(unittest.TestCase):
+    def test_semantic_literals_remain_bound_and_node_cost_is_counted_once(self):
+        documents = [dict(idx="a", passage="source", extracted_triples=[
+            ["Alice", "parent", "Bob"], ["Alice", "lives", "Rome"],
+            ["Alicia", "parent", "Ben"], ["Alicia", "lives", "Paris"]])]
+        with TemporaryDirectory() as directory:
+            index = FactIndex.build(Path(directory) / "facts.sqlite", documents)
+            try:
+                search = FactJoinSearch(index, str.casefold)
+                patterns = [PatternAtom("Ally", "parent", "?person", "q"),
+                            PatternAtom("Ally", "lives", "?place", "q")]
+
+                def score(pattern, subject, obj, facts):
+                    return [-0.5 if search.facts[fact][1] == pattern.relation else -10 for fact in facts]
+
+                self.assertEqual(search.search(patterns, score), [])
+                matches = search.search(patterns, score, node_distances={"Ally": {"alice": 0.2, "alicia": 0.8}})
+                self.assertEqual(matches[0].bindings, {"Ally": "Alice", "?person": "Bob", "?place": "Rome"})
+                self.assertAlmostEqual(matches[0].score, -1.2)
+                self.assertEqual(matches[1].bindings, {"Ally": "Alicia", "?person": "Ben", "?place": "Paris"})
+                self.assertAlmostEqual(matches[1].score, -1.8)
+                self.assertEqual(search.search(patterns, score, node_distances={"Ally": {}}), [])
+                for nodes in ({}, {"Ally": {"Alice": 0.2}}, {"Ally": {"alice": -1}},
+                              {"Ally": {"alice": float("nan")}}):
+                    with self.assertRaises(ValueError):
+                        search.search(patterns, score, node_distances=nodes)
+            finally:
+                index.close()
+
+    def test_semantic_self_loop_counts_one_node_and_zero_distances_match_exact(self):
+        documents = [dict(idx="a", passage="source", extracted_triples=[
+            ["A", "same", "A"], ["A", "same", "B"]])]
+        with TemporaryDirectory() as directory:
+            index = FactIndex.build(Path(directory) / "facts.sqlite", documents)
+            try:
+                search = FactJoinSearch(index, str.casefold)
+                score = lambda pattern, subject, obj, facts: [-0.3] * len(facts)
+                pattern = [PatternAtom("A", "same", "A", "q")]
+                exact = search.search(pattern, score)
+                semantic = search.search(pattern, score, node_distances={"A": {"a": 0.2}})
+                self.assertEqual(semantic[0].facts, exact[0].facts)
+                self.assertAlmostEqual(semantic[0].score, -0.5)
+                zero = search.search(pattern, score, node_distances={"A": {"a": 0}})
+                self.assertEqual([(match.facts, match.score) for match in exact],
+                                 [(match.facts, match.score) for match in zero])
+            finally:
+                index.close()
+
     def test_scoring_validation_direction_and_incomplete_cover(self):
         documents = [dict(idx=source, passage=source, extracted_triples=[triple]) for source, triple in (
             ("a", ["A", "parent", "B"]), ("b", ["B", "lives", "C"]),
