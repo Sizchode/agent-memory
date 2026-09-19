@@ -25,6 +25,30 @@ from optimization.run_graph import completed_group_prefix
 
 @unittest.skipUnless(os.environ.get("MODULE_ABLATION_ROOT"), "Set MODULE_ABLATION_ROOT after building all six tasks")
 class ModuleArtifactTests(unittest.TestCase):
+    @unittest.skipUnless(os.environ.get("CHECK_MODULE_CONTROLS"), "Run after all module retrievals")
+    def test_module_retrieval_preserves_original_cases_and_configuration(self):
+        from experiments.runner import _read_retrieval_records
+        from optimization.run_graph import TASKS, MODULES
+        from optimization.report_results import TASK_METRICS
+
+        root = Path(os.environ["MODULE_ABLATION_ROOT"])
+        main = "statement_projection_loop_free_retained_index_rrf_window"
+        for task in TASKS:
+            slug = task.replace(" ", "_")
+            original = list(_read_retrieval_records(root / main / slug / "retrieval.jsonl"))
+            self.assertEqual(len(original), TASK_METRICS[slug][0])
+            config = json.loads((root / main / slug / "settings.json").read_text())["config"]
+            for module in MODULES:
+                directory = root / f"without_{module}" / slug
+                rows = list(_read_retrieval_records(directory / "retrieval.jsonl"))
+                self.assertEqual(len(rows), len(original))
+                self.assertEqual(json.loads((directory / "retrieval_complete.json").read_text())["questions"], len(rows))
+                settings = json.loads((directory / "settings.json").read_text())
+                self.assertEqual(settings["config"], config)
+                self.assertEqual(settings["additional_generator_calls"], 0)
+                for old, new in zip(original, rows, strict=True):
+                    self.assertEqual((old.group_id, old.case, old.top_k), (new.group_id, new.case, new.top_k))
+
     @unittest.skipUnless(os.environ.get("CHECK_MODULE_RETRIEVAL"), "Run after full main-method retrieval")
     def test_main_retrieval_preserves_frozen_qa_inputs(self):
         from experiments.runner import _read_retrieval_records, _answer_prompt, _official_generation

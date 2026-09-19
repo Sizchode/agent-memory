@@ -654,11 +654,15 @@ def run(model, generator_job, pilot):
     from optimization.run_graph import TASKS, SOURCE, retrieval_config
     from experiments.runner import RetrievedCase, _read_retrieval_records, _retrieval_record
     from baseline.base import RetrievedItem
+    from utils.models import release_accelerator_memory
     prepare()
     service = endpoint(generator_job)
     directory = ROOT / ("pilot" if pilot else "main") / model.replace("/", "_")
     directory.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(directory / "execution_code.zip", "w", compression=zipfile.ZIP_DEFLATED) as archive:
+    code_path = directory / "execution_code.zip"
+    if code_path.exists():
+        code_path = directory / f"execution_code_{os.environ['SLURM_JOB_ID']}.zip"
+    with zipfile.ZipFile(code_path, "x", compression=zipfile.ZIP_DEFLATED) as archive:
         archive.write(__file__, "ircot.py")
     if not pilot:
         verified = json.loads((ROOT / "pilot" / model.replace("/", "_") / "complete.json").read_text())
@@ -668,9 +672,12 @@ def run(model, generator_job, pilot):
         assert verified["variants"] == list(VARIANTS) and verified["tasks"] == list(TASKS)
     reader = Reader(model)
     try:
-        write_json(directory / "reader.json", reader.metadata)
+        metadata_path = directory / "reader.json"
+        if metadata_path.exists():
+            metadata_path = directory / f"reader_{os.environ['SLURM_JOB_ID']}.json"
+        write_json(metadata_path, reader.metadata)
         benchmark_prompts = []
-        if not pilot:
+        if not pilot and not (directory / "batch_benchmark.json").exists():
             pilot_directory = ROOT / "pilot" / model.replace("/", "_")
             for task in TASKS:
                 for variant in VARIANTS:
@@ -702,6 +709,7 @@ def run(model, generator_job, pilot):
                         traces = existing["traces"]
                     else:
                         memory = load_backend(variant, config, task, group, directory)
+                        pipeline = None
                         traces, timings = [], []
                         try:
                             if variant != "bm25":
@@ -714,7 +722,14 @@ def run(model, generator_job, pilot):
                                 traces.extend(part)
                                 timings.extend(timing)
                         finally:
-                            memory.close()
+                            try:
+                                memory.close()
+                            finally:
+                                pipeline = memory = None
+                                release_accelerator_memory()
+                                import torch
+                                print(json.dumps(dict(group=group.group_id, variant=variant,
+                                    cuda_allocated_after_close=torch.cuda.memory_allocated())), flush=True)
                         write_json(saved, dict(complete=True, pilot=pilot, model=model, variant=variant,
                             case_ids=[case.case_id for case in cases], traces=traces, batch_timings=timings))
                     if pilot:
