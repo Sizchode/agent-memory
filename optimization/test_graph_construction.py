@@ -23,6 +23,79 @@ from baseline.base import RetrievedItem
 from optimization.run_graph import completed_group_prefix
 from optimization.retriever.reranker import ranking
 from optimization.graph_construction.fact_index import Atom, FactIndex
+from optimization.retriever.query_pattern import messages, parse_pattern
+from optimization.retriever.query_pattern import PatternAtom
+from optimization.retriever.fact_join import FactJoinSearch
+
+
+class QueryPatternTests(unittest.TestCase):
+    def test_question_only_messages_and_shared_variables(self):
+        question = "Where does A's parent live?"
+        self.assertEqual(messages(question)[1], dict(role="user", content=question))
+        content = json.dumps(dict(atoms=[
+            dict(subject="A", relation="has parent", object="?person", query="Who is A's parent?"),
+            dict(subject="?person", relation="lives in", object="?place", query="Where does the parent live?")]))
+        atoms = parse_pattern(content, question)
+        self.assertEqual(atoms[0].object, atoms[1].subject)
+        self.assertEqual(parse_pattern('{"atoms": []}', question), ())
+
+    def test_rejects_invented_constants_and_wrong_schema(self):
+        atom = dict(subject="A", relation="parent", object="Invented name", query="parent of A")
+        for content in (json.dumps(dict(atoms=[atom])), '{"atoms": "bad"}',
+                        '{"atoms": [], "answer": "secret"}', 'not JSON'):
+            with self.assertRaises(ValueError):
+                parse_pattern(content, "Who is A's parent?")
+
+
+class FactJoinSearchTests(unittest.TestCase):
+    def test_scoring_validation_direction_and_incomplete_cover(self):
+        documents = [dict(idx=source, passage=source, extracted_triples=[triple]) for source, triple in (
+            ("a", ["A", "parent", "B"]), ("b", ["B", "lives", "C"]),
+            ("other", ["A", "parent", "D"]), ("reverse", ["B", "parent", "A"]))]
+        with TemporaryDirectory() as directory:
+            index = FactIndex.build(Path(directory) / "facts.sqlite", documents)
+            try:
+                search = FactJoinSearch(index, str.casefold)
+                patterns = [PatternAtom("A", "parent", "?person", "parent"),
+                            PatternAtom("?person", "lives", "C", "where")]
+                matches = search.search(patterns, lambda text, ids: [1.0] * len(ids))
+                self.assertEqual(len(matches), 1)
+                self.assertEqual(matches[0].bindings, {"?person": "B"})
+                self.assertEqual(search.source_cover(matches[0], 1), ())
+                self.assertEqual(search.source_cover(matches[0], 2), ("a", "b"))
+                for scorer in (lambda text, ids: [], lambda text, ids: [float("nan")] * len(ids)):
+                    with self.assertRaises(ValueError):
+                        search.search(patterns, scorer)
+                with self.assertRaises(ValueError):
+                    search.search(patterns, lambda text, ids: [], beam_width=0)
+            finally:
+                index.close()
+
+    def test_bound_entity_limits_scoring_and_source_cover_is_complete(self):
+        documents = [dict(idx=source, passage=source, extracted_triples=triples) for source, triples in (
+            ("a", [["A", "parent", "B"]]), ("b", [["B", "lives", "C"]]),
+            ("distractor", [["D", "lives", "E"]]),
+            ("together", [["A", "parent", "B"], ["B", "lives", "C"]]))]
+        with TemporaryDirectory() as directory:
+            index = FactIndex.build(Path(directory) / "facts.sqlite", documents)
+            try:
+                search = FactJoinSearch(index, str.casefold)
+                calls = []
+
+                def score(text, facts):
+                    calls.append((text, facts))
+                    return [1.0] * len(facts)
+
+                patterns = [PatternAtom("?person", "lives", "?place", "where"),
+                            PatternAtom("a", "parent", "?person", "parent")]
+                matches = search.search(patterns, score)
+                self.assertEqual(len(matches), 1)
+                self.assertEqual(calls, [("a parent", [1]), ("B lives", [2])])
+                self.assertEqual(matches[0].bindings, {"?person": "B", "?place": "C"})
+                self.assertEqual(search.source_cover(matches[0], 1), ("together",))
+                self.assertEqual(search.search([PatternAtom("missing", "parent", "?x", "q")], score), [])
+            finally:
+                index.close()
 
 
 class FactIndexTests(unittest.TestCase):
