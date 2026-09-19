@@ -61,7 +61,7 @@ def qa_usage(directory, count):
     return dict(calls=count, **totals)
 
 
-def report(root, variants, models=None, reference=None):
+def report(root, variants, models=None, reference=None, additional_baseline_roots=()):
     models = list(MODELS[:2] if models is None else models)
     if not models or len(set(models)) != len(models) or not set(models).issubset(MODELS):
         raise ValueError("Select unique supported readers")
@@ -74,17 +74,27 @@ def report(root, variants, models=None, reference=None):
         expected[task] = {(r["group_id"], r["case"]["case_id"]) for r in rows}
         if len(rows) != count or len(expected[task]) != count:
             raise ValueError(f"Reference is incomplete: {task}")
-    baselines = {}
+    baselines, baseline_sources = {}, {}
     for model in models:
+        sources = {}
+        for name, primary in BASELINES.items():
+            candidates = [primary] + [path / name for path in additional_baseline_roots]
+            complete = [path for path in candidates if all(
+                (path / task / "evaluations" / model.replace("/", "_") / "summary.json").is_file()
+                for task in TASK_METRICS)]
+            if not complete:
+                raise ValueError(f"A declared complete baseline is missing: {model}, {name}")
+            sources[name] = complete[0]
+        baseline_sources[model] = {name: str(path) for name, path in sources.items()}
         baselines[model] = {}
         for task in TASK_METRICS:
             scores = {name: audited_score(path / task / "evaluations" / model.replace("/", "_"),
-                                          task, expected[task]) for name, path in BASELINES.items()}
+                                          task, expected[task]) for name, path in sources.items()}
             if any(score is None for score in scores.values()):
                 raise ValueError(f"A declared complete baseline is missing: {model}, {task}")
             baselines[model][task] = dict(scores=scores, best=max(scores.values()))
     result = dict(development_set_results=True, target_wins=6, milestone_wins=5,
-                  baselines=baselines, variants={}, variant_status={})
+                  baselines=baselines, baseline_sources=baseline_sources, variants={}, variant_status={})
     lines = ["# 构图优化结果", "", "既有 test set 用作开发集；缺失成绩不补零。", "",
              "目标包括较大上下文预算的 AnchorMem 官方设置，不能统称等上下文比较。", "",
              "报告 reader：" + "、".join(models) + "。同一候选全部 6/6 为完整胜出，5/6 为阶段里程碑。", ""]
@@ -157,8 +167,10 @@ def main():
     parser.add_argument("--models", nargs="+", choices=MODELS)
     parser.add_argument("--reference-dir", type=Path,
                         help="Frozen main-method variant directory with complete evaluations")
+    parser.add_argument("--additional-baseline-root", type=Path, action="append", default=[],
+                        help="Additional baseline experiment roots; use the first complete six-task directory, never select by score")
     args = parser.parse_args()
-    report(args.output_root, args.variants, args.models, args.reference_dir)
+    report(args.output_root, args.variants, args.models, args.reference_dir, args.additional_baseline_root)
 
 
 if __name__ == "__main__":

@@ -33,6 +33,7 @@ class ReportResultsTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             source, baseline, output = root / "source", root / "baseline", root / "output"
+            extra = root / "extra"
 
             def prediction(directory, score):
                 directory.mkdir(parents=True)
@@ -46,7 +47,10 @@ class ReportResultsTests(unittest.TestCase):
                 row = dict(group_id="group", case={"case_id": "case"})
                 (reference / "retrieval.jsonl").write_text(json.dumps(row) + "\n")
                 for model in models:
-                    prediction(baseline / task / "evaluations" / model, 0.5)
+                    baseline_directory = baseline if model != models[-1] else extra / "control"
+                    prediction(baseline_directory / task / "evaluations" / model, 0.5)
+                    if model == models[-1] and index == 0:
+                        prediction(baseline / task / "evaluations" / model, 0.9)
                     for variant in ("full", "five", "partial", "mixed"):
                         if variant == "partial" and index == 5:
                             continue
@@ -63,9 +67,12 @@ class ReportResultsTests(unittest.TestCase):
                 self.assertEqual(set(current["variants"]["full"]), set(models[:2]))
                 with redirect_stdout(io.StringIO()):
                     report_results.report(output, ["full", "five", "partial", "mixed"], models=models,
-                                          reference=output / "full")
+                                          reference=output / "full", additional_baseline_roots=[extra])
+                with redirect_stdout(io.StringIO()), self.assertRaisesRegex(ValueError, "baseline is missing"):
+                    report_results.report(output, ["full"], models=models)
                 with redirect_stdout(io.StringIO()), self.assertRaisesRegex(ValueError, "Incomplete main-method"):
-                    report_results.report(output, ["five"], models=models, reference=output / "partial")
+                    report_results.report(output, ["five"], models=models, reference=output / "partial",
+                                          additional_baseline_roots=[extra])
             result = json.loads((output / "comparison.json").read_text())
             self.assertEqual(result["target_wins"], 6)
             self.assertEqual(result["milestone_wins"], 5)
@@ -79,6 +86,9 @@ class ReportResultsTests(unittest.TestCase):
             self.assertIsNone(result["variants"]["partial"][models[0]]["delta_from_reference"]["task5"])
             self.assertEqual(result["variants"]["full"][models[0]]["delta_from_reference"]["task5"], 0.0)
             self.assertIn("-10.00", (output / "results.md").read_text())
+            self.assertEqual(result["baseline_sources"][models[-1]]["control"], str(extra / "control"))
+            self.assertEqual(result["baseline_sources"][models[0]]["control"], str(baseline))
+            self.assertEqual(result["baselines"][models[-1]]["task0"]["best"], 0.5)
 
 
 if __name__ == "__main__":
