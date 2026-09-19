@@ -26,6 +26,8 @@ OFFICIAL = CODE / "ircot"
 INPUTS = BASE / "optimization_amem_transfer_seed42_20260918/inputs"
 GRAPH = BASE / "optimization_retained_fact_index_seed42_20260914/statement_projection_loop_free_retained_index_rrf_window"
 ROOT = BASE / "optimization_ircot_batched_seed42_20260918"
+SERVICE_ROOT = ROOT
+GRAPH_RETRIEVAL = "graph"
 VLLM = Path("/oscar/scratch/zliu328/agent-memory-envs/vllm_cu129/bin")
 CONFIG = OFFICIAL / "base_configs/ircot_codex_2wikimultihopqa.jsonnet"
 GENERATOR = "Qwen/Qwen3-30B-A3B-Instruct-2507"
@@ -84,7 +86,7 @@ def elasticsearch_endpoint():
     from elasticsearch import Elasticsearch
     start = perf_counter()
     while perf_counter() - start < 600:
-        path = ROOT / "elasticsearch.json"
+        path = SERVICE_ROOT / "elasticsearch.json"
         if path.exists():
             saved = json.loads(path.read_text())
             client = Elasticsearch([saved["host"]], scheme="http", port=saved["port"], timeout=30)
@@ -148,7 +150,7 @@ def index_elasticsearch():
 class ElasticsearchMemory:
     def __init__(self, task, group):
         from retriever_server.elasticsearch_retriever import ElasticsearchRetriever
-        manifest = json.loads((ROOT / "elasticsearch_indices.json").read_text())
+        manifest = json.loads((SERVICE_ROOT / "elasticsearch_indices.json").read_text())
         assert manifest["complete"]
         entry, = [item for item in manifest["indices"] if item["task"] == task and item["group_id"] == group.group_id]
         self.index, self.sources = entry["index"], group.memory_items
@@ -209,6 +211,11 @@ def prepare():
         prefix_caching=True, original_qa_prompts_and_scoring=True,
         engine="vllm", max_model_len=32768, dtype="bfloat16", bm25_backend="official ElasticsearchRetriever",
         elasticsearch_version="7.10.2", elasticsearch_client_version="7.9.1")
+    if GRAPH_RETRIEVAL == "hybrid":
+        from optimization.retriever.hybrid_graph import RANK_CONSTANT
+        protocol["graph_retrieval"] = dict(method="reciprocal_rank_fusion", rank_constant=RANK_CONSTANT,
+            rank_window=config["models"][config["start_state"]]["retrieval_count"],
+            lexical_backend="official ElasticsearchRetriever", evidence="original sources without augmentation")
     path = ROOT / "protocol.json"
     if path.exists():
         assert json.loads(path.read_text()) == protocol
@@ -234,7 +241,7 @@ def endpoint(job_id):
     import requests
     start = perf_counter()
     while perf_counter() - start < 1800:
-        path = ROOT / "generator.json"
+        path = SERVICE_ROOT / "generator.json"
         if path.exists():
             saved = json.loads(path.read_text())
             if saved["job_id"] == job_id:
@@ -422,7 +429,14 @@ def load_backend(variant, config, task, group, directory):
     if not weights.exists():
         weights.symlink_to(frozen / "edge_weights.npy")
     assert weights.resolve() == (frozen / "edge_weights.npy").resolve()
-    return load_optimized_memory(config, index, runtime)
+    memory = load_optimized_memory(config, index, runtime)
+    if GRAPH_RETRIEVAL == "hybrid":
+        from optimization.retriever.hybrid_graph import HybridGraphMemory
+        ordered = json.loads((frozen / "lexical_source_keys.json").read_text())
+        controller = official_config()
+        window = controller["models"][controller["start_state"]]["retrieval_count"]
+        memory = HybridGraphMemory(memory, ordered, rank_window=window, lexical=ElasticsearchMemory(task, group))
+    return memory
 
 
 class Pipeline:
@@ -822,8 +836,9 @@ def report():
                   "|---|---|---:|---:|---:|---:|"]
         fig, axes = plt.subplots(2, 3, figsize=(13, 7), constrained_layout=True)
         for ax, task in zip(axes.flat, TASKS, strict=True):
+            graph_label = "IRCoT + hybrid graph" if GRAPH_RETRIEVAL == "hybrid" else "IRCoT + our graph and index"
             for variant, label, color in (("bm25", "IRCoT + BM25", "#3268a8"),
-                    ("optimized_graph", "IRCoT + our graph and index", "#c15242")):
+                    ("optimized_graph", graph_label, "#c15242")):
                 curve = scores[model][task][variant]
                 values = [100 * point["score"] for point in curve]
                 ax.plot(CAPS, values, marker="o", label=label, color=color)
@@ -851,7 +866,13 @@ if __name__ == "__main__":
     parser.add_argument("phase", choices=("setup", "prepare", "serve", "serve-elasticsearch", "index-elasticsearch", "worker", "pilot", "run", "report"))
     parser.add_argument("--model", choices=MODELS)
     parser.add_argument("--generator-job-id")
+    parser.add_argument("--output-root", type=Path, default=ROOT)
+    parser.add_argument("--service-root", type=Path, default=SERVICE_ROOT)
+    parser.add_argument("--graph-retrieval", choices=("graph", "hybrid"), default="graph")
     args = parser.parse_args()
+    ROOT, SERVICE_ROOT, GRAPH_RETRIEVAL = args.output_root, args.service_root, args.graph_retrieval
+    if GRAPH_RETRIEVAL == "hybrid" and ROOT == SERVICE_ROOT:
+        parser.error("Use a separate --output-root for the hybrid graph experiment")
     if args.phase == "setup":
         setup()
     elif args.phase == "prepare":

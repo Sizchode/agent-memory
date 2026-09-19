@@ -242,6 +242,13 @@ class GraphConstructionTests(unittest.TestCase):
         self.assertEqual(seen, [("beta", 5)])
         with self.assertRaises(ValueError):
             HybridGraphMemory(base, ["p0"])
+        lexical = SimpleNamespace(retrieve=lambda q, k: seen.append(("lexical", q, k)) or
+                                  [RetrievedItem("beta", 1)], close=lambda: None)
+        injected = HybridGraphMemory(base, ["p0", "p1"], rank_window=6, lexical=lexical)
+        self.assertIs(injected.lexical, lexical)
+        self.assertEqual(injected.retrieve("beta", 6)[0].text, "beta")
+        self.assertEqual(seen[-2:], [("beta", 6), ("lexical", "beta", 6)])
+        injected.close()
 
     def test_source_window_respects_contiguous_timestamp_boundaries(self):
         contents = {str(i): dict(text=f"node{i}", original_source_text=f"record{i}", timestamp=timestamp)

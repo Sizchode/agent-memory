@@ -30,14 +30,15 @@ def fuse_rankings(graph_items, lexical_items, top_k, rank_constant=RANK_CONSTANT
 
 
 class HybridGraphMemory:
-    def __init__(self, memory, ordered_keys, rank_constant=RANK_CONSTANT, rank_window=RANK_WINDOW):
+    def __init__(self, memory, ordered_keys, rank_constant=RANK_CONSTANT, rank_window=RANK_WINDOW, lexical=None):
         self.base = memory
         self._memory, self._generator = memory._memory, memory._generator
         rows = self._memory.chunk_embedding_store.get_all_id_to_rows()
         if len(set(ordered_keys)) != len(ordered_keys) or set(ordered_keys) != set(rows):
             raise ValueError("Lexical index must cover the same complete source corpus")
-        self.lexical = BM25Baseline()
-        self.lexical.build([rows[key]["content"] for key in ordered_keys])
+        self.lexical = lexical if lexical is not None else BM25Baseline()
+        if lexical is None:
+            self.lexical.build([rows[key]["content"] for key in ordered_keys])
         self.rank_constant, self.rank_window = rank_constant, rank_window
 
     def retrieve(self, query, top_k):
