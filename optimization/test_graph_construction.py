@@ -21,6 +21,56 @@ from optimization.retriever.hybrid_graph import fuse_rankings, HybridGraphMemory
 from optimization.retriever.compiled_sources import CompiledSourceMemory, compiled_item
 from baseline.base import RetrievedItem
 from optimization.run_graph import completed_group_prefix
+from optimization.retriever.reranker import ranking
+from optimization.graph_construction.fact_index import Atom, FactIndex
+
+
+class FactIndexTests(unittest.TestCase):
+    def test_roundtrip_preserves_roles_sources_and_repeated_occurrences(self):
+        documents = [dict(idx="a", passage="first", extracted_triples=[
+            ["A", "parent", "B"], ["A", "parent", "B"], ["A", "parent", "C"]]),
+            dict(idx="b", passage="second", extracted_triples=[["B", "parent", "A"]]),
+            dict(idx="empty", passage="without triples", extracted_triples=[])]
+        with TemporaryDirectory() as directory:
+            index = FactIndex.build(Path(directory) / "facts.sqlite", documents)
+            try:
+                self.assertEqual(list(index.documents()), documents)
+                self.assertEqual(index.connection.execute("SELECT count(*) FROM facts").fetchone()[0], 3)
+                with self.assertRaises(FileExistsError):
+                    FactIndex.build(Path(directory) / "facts.sqlite", documents)
+            finally:
+                index.close()
+
+    def test_join_keeps_alternative_sources_separate_from_joint_facts(self):
+        documents = [dict(idx=source, passage=source, extracted_triples=[triple]) for source, triple in (
+            ("a", ["A", "parent", "B"]), ("b", ["B", "lives", "C"]),
+            ("c", ["A", "parent", "B"]), ("d", ["D", "lives", "C"]))]
+        with TemporaryDirectory() as directory:
+            index = FactIndex.build(Path(directory) / "facts.sqlite", documents)
+            try:
+                rows = list(index.joins([Atom("A", "?person", (1,)), Atom("?person", "?place", (2, 3))]))
+                self.assertEqual(len(rows), 1)
+                self.assertEqual(rows[0].bindings, (("?person", "B"), ("?place", "C")))
+                self.assertEqual(rows[0].fact_ids, (1, 2))
+                self.assertEqual(rows[0].sources, (("a", "c"), ("b",)))
+                self.assertEqual(list(index.joins([Atom("B", "A", (1,))])), [])
+                self.assertEqual(list(index.joins([Atom("?x", "?x", (1, 2))])), [])
+                self.assertEqual(list(index.joins([Atom("?x", "?y", ())])), [])
+                with self.assertRaises(ValueError):
+                    list(index.joins([Atom("?x", "?y", (999,))]))
+            finally:
+                index.close()
+
+
+class RerankerTests(unittest.TestCase):
+    def test_stable_descending_order(self):
+        self.assertEqual(ranking([0.2, 0.8, 0.8, 0.1]), [1, 2, 0, 3])
+        self.assertEqual(ranking([]), [])
+
+    def test_nonfinite_scores_are_rejected(self):
+        for value in (float("nan"), float("inf"), -float("inf")):
+            with self.assertRaises(ValueError):
+                ranking([0.5, value])
 
 
 @unittest.skipUnless(os.environ.get("MODULE_ABLATION_ROOT"), "Set MODULE_ABLATION_ROOT after building all six tasks")

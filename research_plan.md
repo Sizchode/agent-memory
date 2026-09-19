@@ -51,7 +51,9 @@
 | [SubgraphRAG](https://proceedings.iclr.cc/paper_files/paper/2025/file/11e1900e680f5fe1893a8e27362dbe2c-Paper-Conference.pdf) | 面向 KGQA 的子图检索 | 子图比单条三元组更适合回答问题不是新的问题定义；具体方法仍需逐项核对 |
 | [Provenance Semirings](https://web.cs.ucdavis.edu/~green/papers/pods07.pdf) | 区分关系查询中的替代来源与联合依赖 | 可用于准确表达依赖，不能直接推出自然语言答案正确性；只记录出处不足以声称用了该理论 |
 
-补充检索还找到 [SAG](https://arxiv.org/abs/2608.12129) 与 [PAGE-RAG](https://arxiv.org/abs/2608.29753)，分别涉及查询时连接和固定预算的证据选择。尚未完成全文与代码核对；在核对之前不宣称本方向首次提出。不能仅凭换成 graph、DB、system 或 compiler 术语主张 novelty。
+进一步核对全文：[SAG](https://arxiv.org/abs/2608.12129) 用事件和实体索引执行查询时连接，再由 LLM 联合选择候选；[PAGE-RAG](https://arxiv.org/abs/2608.29753) 在候选材料上建图，结合相关性、出处、常见连接实体等信号筛选证据。两者都与本轮方向直接相关，不能将“连接事实并筛选证据”当作新贡献。尚未完成这两项的代码复现。
+
+[SimGRAG](https://aclanthology.org/2025.findings-acl.163/) 已将自然语言问题转换为图模式并检索匹配子图，[RoG](https://arxiv.org/abs/2310.01061) 已用关系路径规划检索。因此，后续若增加查询解析或关系连接，也不能仅凭这两个操作声称 novelty。需要验证具体表示、原文出处和联合选择之间的作用，而不是换成 DB 或 compiler 术语。
 
 ## 6. 实验顺序与停止条件
 
@@ -66,4 +68,9 @@
 
 - 已核对旧实现与缓存：存在原始三元组及出处，可先复用；旧图传播不直接读取谓词和主体/客体角色，但候选三元组匹配仍包含谓词，不能说 HippoRAG 整条流程都丢掉关系。
 - 失败诊断：CPU 作业 `6511179` 已成功，耗时 28 秒。两模型、六任务、两后端、四个轮数的 54176 条预测全部重新计算原生分数，核对原始题目、原文列表和任务汇总。
-- 结果位于 `optimization_ircot_batched_seed42_20260918/failure_analysis.json`，可复现脚本归档为同目录的 `failure_analysis_code.zip`，从活动脚本目录删除，不加入 git。不修改旧预测或轨迹；新算法尚未实现，不能报告新算法分数。
+- 结果位于 `optimization_ircot_batched_seed42_20260918/failure_analysis.json`，可复现脚本归档为同目录的 `failure_analysis_code.zip`，从活动脚本目录删除，不加入 git。不修改旧预测或轨迹。
+- 索引基础已实现：`optimization/graph_construction/fact_index.py` 使用 SQLite 保存原始三元组、全部出现位置与出处，支持在候选事实之间执行主体/客体变量连接。同一事实的多个出处保留为替代来源，多条共同匹配的事实保留为不同依赖；不运行 PPR，不根据出现顺序删除值，不执行关系归一。字符串严格相等不解决别名，也不证明语义蕴含。自动查询解析、语义匹配和最终选择尚未接通，不是完整新算法。
+- CPU 作业 `6511351` 成功：六任务 15 组、14362 个原文、按组去重后共 190667 个三元组、199351 条出现记录全部落盘，并从索引精确重建原始三元组出现序列。该检查针对三元组和出处，不声称复原 OpenIE 的所有辅助字段或证明抽取正确。38 项单元测试通过，3 项旧实验产物依赖测试跳过。产物为 `optimization_fact_index_seed42_20260919`，构建脚本归档为 `construction_code.zip` 并从活动目录删除。
+- 固定候选对照已实现：`optimization/retriever/reranker.py` 按 [Qwen3-Reranker-0.6B 官方说明](https://huggingface.co/Qwen/Qwen3-Reranker-0.6B/blob/e61197ed45024b0ed8a2d74b80b4d909f1255473/README.md) 使用固定模型版本、通用指令和 yes/no 分数。不按任务改提示词；超过评分长度上限则报错，不静默截断。
+- Gemma 试跑 `6511321` 已提交，最近调度状态为等待用户 GPU 配额。试跑覆盖六任务，每个原来源组前两题；通过后再跑全量并扩展 Qwen4B。固定 cap=3 的已有 BM25/图轨迹，分别比较 `original_all`、`rerank_all`、`original_top6`、`rerank_top6`，两后端都使用同一 reranker。原顺序对照也在同一 GPU 上重新 QA，避免将不同硬件运行差异误作排序收益。
+- 本轮只是冻结轨迹上的最终 QA 控制，不代表改变了 IRCoT 中间检索，也不是新算法主结果。产物目录 `optimization_evidence_selection_seed42_20260919`，每次新增评分记录成本，已有 query/document 分数可复用；保持原生 loader、prompt、评分和生成设置。调度、缓存及脚本放在 scratch，完成后归档。
