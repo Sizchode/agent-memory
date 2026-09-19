@@ -239,9 +239,9 @@ Llama 的 SH-Doc、FC-SH、FC-MH 分别低于最佳 baseline 的 89、34、2；G
 
 OpenIE、embedding、事实识别、PPR 和 QA 是固定底座，不拆成五项新贡献。事实整理对应 `source_consolidation.py` 及关系归一文件；图构建对应 `statement_incidence.py`；候选索引由 `build_graph.py` 写入、`retriever/hipporag.py` 读取；证据上下文对应 `hybrid_graph.py`、`compiled_sources.py` 和 `source_window.py`。
 
-构建入口现已加入 `--without-module`，四个取值为 `fact_consolidation`、`graph`、`candidate_index`、`evidence_context`，对应上表。输出使用独立的 `without_<module>` 目录，仍调用同一检索与 QA 入口。原默认完整方法不变；不重新 OpenIE、生成 schema 或训练向量。六任务共 15 组的完整方法及四个删除版本已构建；完整方法的图、权重、候选和上下文与冻结缓存一致，四类模块边界检查通过。检索与 QA 消融尚未完成，不能将构建检查当作效果结论。
+构建入口现已加入 `--without-module`，四个取值为 `fact_consolidation`、`graph`、`candidate_index`、`evidence_context`，对应上表。输出使用独立的 `without_<module>` 目录，仍调用同一检索与 QA 入口。原默认完整方法不变；不重新 OpenIE、生成 schema 或训练向量。六任务共 15 组的完整方法及四个删除版本已构建；完整方法的图、权重、候选和上下文与冻结缓存一致，四类模块边界检查通过。完整方法另已重跑全部 3386 题检索，逐题核对原题、顺序、top-k、QA 提示词和生成设置，均与冻结实验一致；新增识别调用为零。四个删除版本的检索与 QA 消融尚未完成，不能将这些检查当作效果结论。
 
-主表为完整方法加四项整块移除，在 Qwen4B、Qwen9B 的六任务上报告原始分数及相对完整方法的差值，不只报告胜出数。已有结果只有在其余模块、题目、上下文和生成设置完全一致时才复用；简化版结果不自动视为完整主方法的消融。IRCoT 优先完成，模块实验随后执行。
+主表为完整方法加四项整块移除，在 Qwen4B、Qwen9B 的六任务上报告原始分数及相对完整方法的差值，不只报告胜出数。已有结果只有在其余模块、题目、上下文和生成设置完全一致时才复用；简化版结果不自动视为完整主方法的消融。完整方法的旧 QA 结果通过上述输入核对后复用；四个删除版本沿用原 Transformers QA 和各任务原指标，不混用本次 IRCoT 的 vLLM 结果。每个 reader 的模块 QA 依赖其 IRCoT 和全量模块检索成功，尚未开始。汇总入口为 `optimization/report_results.py --reference-dir <完整方法目录>`，输出各项原分数及相对完整方法的百分点差值，不跨任务指标求均值。
 
 需要保留两类内部对照，不能靠合并模块省掉：
 

@@ -62,7 +62,10 @@ class ReportResultsTests(unittest.TestCase):
                 current = json.loads((output / "comparison.json").read_text())
                 self.assertEqual(set(current["variants"]["full"]), set(models[:2]))
                 with redirect_stdout(io.StringIO()):
-                    report_results.report(output, ["full", "five", "partial", "mixed"], models=models)
+                    report_results.report(output, ["full", "five", "partial", "mixed"], models=models,
+                                          reference=output / "full")
+                with redirect_stdout(io.StringIO()), self.assertRaisesRegex(ValueError, "Incomplete main-method"):
+                    report_results.report(output, ["five"], models=models, reference=output / "partial")
             result = json.loads((output / "comparison.json").read_text())
             self.assertEqual(result["target_wins"], 6)
             self.assertEqual(result["milestone_wins"], 5)
@@ -72,6 +75,10 @@ class ReportResultsTests(unittest.TestCase):
                 self.assertFalse(result["variant_status"][variant]["achieved"])
             self.assertFalse(result["variant_status"]["partial"]["milestone_achieved"])
             self.assertEqual(result["variants"]["five"][models[0]]["wins"], 5)
+            self.assertAlmostEqual(result["variants"]["five"][models[0]]["delta_from_reference"]["task5"], -0.1)
+            self.assertIsNone(result["variants"]["partial"][models[0]]["delta_from_reference"]["task5"])
+            self.assertEqual(result["variants"]["full"][models[0]]["delta_from_reference"]["task5"], 0.0)
+            self.assertIn("-10.00", (output / "results.md").read_text())
 
 
 if __name__ == "__main__":
