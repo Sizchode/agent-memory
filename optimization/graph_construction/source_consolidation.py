@@ -44,9 +44,14 @@ def latest_relation_weights(graph, documents, ordered_passage_keys, entity_keys,
     The unchanged raw passage store still contains every historical statement.
     """
     retained, stats = retained_statements(documents, ordered_passage_keys, normalize, schema)
+    return statement_weights(graph, retained, entity_keys), stats
+
+
+def statement_weights(graph, statements, entity_keys):
+    """Count selected fact support and its entity-to-source membership."""
     counts = Counter()
     passage_entities = defaultdict(set)
-    for key, (subject, relation, obj) in retained:
+    for key, (subject, relation, obj) in statements:
         source, target = entity_keys[subject], entity_keys[obj]
         counts[tuple(sorted((source, target)))] += 1
         passage_entities[key].update((source, target))
@@ -60,4 +65,4 @@ def latest_relation_weights(graph, documents, ordered_passage_keys, entity_keys,
             weights[i] = float(entity in passage_entities[passage])
         else:
             weights[i] = counts[tuple(sorted((source, target)))]
-    return weights, stats
+    return weights

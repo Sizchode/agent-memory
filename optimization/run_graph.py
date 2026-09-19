@@ -3,6 +3,7 @@
 import argparse
 import gc
 import json
+import shutil
 from pathlib import Path
 from time import perf_counter
 
@@ -15,6 +16,7 @@ SOURCE = BASE / "final_qwen3_30b_seed42_clean_20260910"
 MODELS = ("Qwen/Qwen3.5-9B", "Qwen/Qwen3.5-4B", "Qwen/Qwen3.5-2B",
           "meta-llama/Llama-3.1-8B-Instruct", "google/gemma-3-4b-it")
 TASKS = ("SH-Doc QA", "MH-Doc QA", "FactConsolidation-SH", "FactConsolidation-MH", "LoCoMo", "2WikiMultiHopQA")
+MODULES = ("fact_consolidation", "graph", "candidate_index", "evidence_context")
 
 
 class MeasuredFinalAnswer:
@@ -88,6 +90,12 @@ def retrieve(args):
 
     config, common = retrieval_config(args)
     groups = list(_load_groups(common))
+    cache_root = getattr(args, "recognition_cache_root", None)
+    if cache_root is not None:
+        cache_root = cache_root / args.task.replace(" ", "_")
+        previous = json.loads((cache_root / "settings.json").read_text())
+        if previous["config"] != config:
+            raise ValueError("Recognition cache reuse requires the same original model and request configuration")
     for variant in args.variants:
         directory = args.output_root / variant / args.task.replace(" ", "_")
         built = json.loads((directory / "build_complete.json").read_text())
@@ -111,6 +119,14 @@ def retrieve(args):
             for group in groups:
                 if group.group_id in completed:
                     continue
+                if cache_root is not None:
+                    source_cache, = (cache_root / "runtime" / group.group_id / "llm_cache").glob("*.sqlite")
+                    if source_cache.with_name(source_cache.name + "-wal").exists():
+                        raise ValueError("Use a closed historical cache, not an active SQLite WAL database")
+                    target_cache = directory / "runtime" / group.group_id / "llm_cache" / source_cache.name
+                    if not target_cache.exists():
+                        target_cache.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(source_cache, target_cache)
                 memory = load_optimized_memory(config, directory / "memory" / group.group_id,
                                                directory / "runtime" / group.group_id)
                 usage_stream = None
@@ -153,7 +169,8 @@ def retrieve(args):
                 print(json.dumps(dict(task=args.task, variant=variant, group=group.group_id, questions=count)), flush=True)
         settings = json.loads((directory / "settings.json").read_text())
         write_json(directory / "settings.json", dict(settings, config=config, full_questions=count,
-                                                     additional_generator_calls=provider_calls))
+            additional_generator_calls=provider_calls,
+            recognition_cache_source=None if cache_root is None else str(cache_root)))
         write_json(directory / "retrieval_complete.json", dict(questions=count, uses_saved_query_resets=False))
 
 
@@ -196,11 +213,13 @@ def main():
     parser.add_argument("--variants", nargs="+", choices=("canonical_latest_rrf_window", "original_graph_rrf_window",
                         "statement_projection_loop_free_rrf_window", "statement_projection_loop_free_refined_rrf_window",
                         "statement_projection_loop_free_retained_index_rrf_window",
-                        "canonical_latest_retained_index_rrf_window"),
+                        "canonical_latest_retained_index_rrf_window") + tuple(f"without_{module}" for module in MODULES),
                         default=["statement_projection_loop_free_retained_index_rrf_window"])
     parser.add_argument("--evaluation-backbone", choices=MODELS[:2] + MODELS[3:], default=MODELS[0])
     parser.add_argument("--generator-base-url", default="http://127.0.0.1:9/v1")
     parser.add_argument("--allow-generator-calls", action="store_true")
+    parser.add_argument("--recognition-cache-root", type=Path,
+                        help="Reuse closed historical recognition caches with exactly matching request configuration")
     parser.add_argument("--resume-completed-groups", action="store_true",
                         help="Append only after an intact prefix of complete source groups")
     parser.add_argument("--path", default="/oscar/scratch/zliu328/agent-memory-data/locomo/locomo10.json")

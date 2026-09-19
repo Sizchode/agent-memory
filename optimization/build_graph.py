@@ -1,4 +1,4 @@
-"""Materialize the main graph and its fixed-readout original-graph control."""
+"""Build frozen graph indexes and whole-module ablations of the main method."""
 
 import argparse
 import json
@@ -12,11 +12,11 @@ import pandas as pd
 from baseline.official import _prepend
 from main import _load_groups, build_parser
 from optimization.graph_construction.compiled_sources import compile_sources
-from optimization.graph_construction.source_consolidation import latest_relation_weights, retained_statements
+from optimization.graph_construction.source_consolidation import latest_relation_weights, retained_statements, statement_weights
 from optimization.graph_construction.source_window import attach_source_windows
 from optimization.graph_construction.statement_incidence import statement_incidence_graph, project_statement_graph
 from optimization.retriever.hybrid_graph import RANK_CONSTANT, RANK_WINDOW
-from optimization.run_graph import BASE, SOURCE, TASKS, write_json
+from optimization.run_graph import BASE, SOURCE, TASKS, MODULES, write_json
 
 
 def build(args):
@@ -28,21 +28,29 @@ def build(args):
         "--task", args.task, "--baseline", "bm25", "--output-dir", str(args.output_root),
         "--chunk-size", "512", "--path", args.path, "--data-root", args.data_root])
     groups = list(_load_groups(common))
-    incidence = args.construction != "projected"
+    omitted = getattr(args, "without_module", None)
+    if omitted and (args.construction != "statement_projection_loop_free" or not args.retained_fact_index):
+        raise ValueError("Module ablations start from the unchanged full main method")
+    retain_candidates = args.retained_fact_index and omitted not in ("fact_consolidation", "candidate_index")
+    incidence = args.construction != "projected" and omitted != "graph"
     variants = ((f"{args.construction}_rrf_window", f"{args.construction}_refined_rrf_window") if incidence else
                 ("canonical_latest_rrf_window", "original_graph_rrf_window"))
     if args.retained_fact_index:
         variants = ((f"{args.construction}_retained_index_rrf_window" if incidence else
                      "canonical_latest_retained_index_rrf_window"),)
+    if omitted:
+        variants = (f"without_{omitted}",)
     for variant in variants:
         directory = args.output_root / variant / slug
         directory.mkdir(parents=True, exist_ok=False)
         write_json(directory / "settings.json", dict(task=args.task, variant=variant, seed=42, top_k=5,
-            source_memory=str(args.source_root / slug), source_schema=str(args.schema_root / slug),
+            source_memory=str(args.source_root / slug),
+            source_schema=None if omitted == "fact_consolidation" else str(args.schema_root / slug),
             construction_reads_questions=False, source_order_is_event_time=False,
             construction=args.construction,
-            fact_candidates="retained support" if args.retained_fact_index else "original complete index",
-            support_selection=("all extracted support" if variant in
+            omitted_module=omitted,
+            fact_candidates="retained support" if retain_candidates else "original complete index",
+            support_selection=("all extracted support" if omitted == "fact_consolidation" or variant in
                 (f"{args.construction}_rrf_window", "original_graph_rrf_window") else
                 "latest source per canonical subject/relation; no role filtering"),
             test_set_used_as_development_set=True, additional_generator_calls=0,
@@ -66,27 +74,38 @@ def build(args):
                 timestamps.setdefault(text_to_key[text], timestamp)
         documents = json.loads(openie.read_text())["docs"]
         schema_dir = args.schema_root / slug / group.group_id
-        schema = json.loads((schema_dir / "schema.json").read_text())
-        if json.loads((schema_dir / "complete.json").read_text())["relations"] != len(schema):
-            raise ValueError("Incomplete relation schema")
         entity_keys = dict(zip(entities["content"], entities["hash_id"], strict=True))
-        weights, stats = latest_relation_weights(graph, documents, ordered, entity_keys, text_processing, schema)
-        retained, _ = retained_statements(documents, ordered, text_processing, schema)
+        if omitted == "fact_consolidation":
+            retained = [(doc["idx"], tuple(text_processing(list(triple))))
+                        for doc in documents for triple in doc["extracted_triples"]]
+            weights = statement_weights(graph, retained, entity_keys)
+            stats = dict(source_statements=len(retained), retained_statement_support=len(retained),
+                         original_passages_preserved=len(ordered))
+        else:
+            schema = json.loads((schema_dir / "schema.json").read_text())
+            if json.loads((schema_dir / "complete.json").read_text())["relations"] != len(schema):
+                raise ValueError("Incomplete relation schema")
+            weights, stats = latest_relation_weights(graph, documents, ordered, entity_keys, text_processing, schema)
+            retained, _ = retained_statements(documents, ordered, text_processing, schema)
         contents = attach_source_windows(compile_sources(documents, ordered, retained, timestamps, text_processing),
                                          ordered, 3)
-        if incidence or args.retained_fact_index:
+        if (incidence or args.retained_fact_index) and omitted != "fact_consolidation":
             frozen = json.loads((args.readout_root / "compiled_sources" / slug / group.group_id /
                                  "contents.json").read_text())
             if contents != frozen:
                 raise ValueError("Source readout differs from the frozen refinement comparison")
             contents = frozen
-        shared = args.output_root / "compiled_sources" / slug / group.group_id
+        shared_root = args.output_root / "compiled_sources"
+        if omitted:
+            shared_root /= f"without_{omitted}"
+        shared = shared_root / slug / group.group_id
         shared.mkdir(parents=True)
         write_json(shared / "contents.json", contents)
         for variant in variants:
             directory = args.output_root / variant / slug / "memory" / group.group_id
             directory.mkdir(parents=True)
-            refined = args.retained_fact_index or variant in ("canonical_latest_rrf_window", f"{args.construction}_refined_rrf_window")
+            refined = (args.retained_fact_index or variant in
+                       ("canonical_latest_rrf_window", f"{args.construction}_refined_rrf_window")) and omitted != "graph"
             selected_weights = weights if refined else np.asarray(graph.es["weight"], dtype=np.float64)
             graph_file = None
             if incidence:
@@ -102,9 +121,12 @@ def build(args):
                 selected_weights = np.asarray(transformed.es["weight"], dtype=np.float64)
             np.save(directory / "edge_weights.npy", selected_weights)
             write_json(directory / "lexical_source_keys.json", ordered)
-            write_json(directory / "graph.json", dict(source_graph=str(source_graph), frozen=True, variant=variant,
-                rank_fusion=dict(rank_constant=RANK_CONSTANT, rank_window=RANK_WINDOW),
-                compiled_source_file=str(shared / "contents.json"), edge_order="unchanged source graph edge order"))
+            metadata = dict(source_graph=str(source_graph), frozen=True, variant=variant,
+                            edge_order="unchanged source graph edge order")
+            if omitted != "evidence_context":
+                metadata.update(rank_fusion=dict(rank_constant=RANK_CONSTANT, rank_window=RANK_WINDOW),
+                                compiled_source_file=str(shared / "contents.json"))
+            write_json(directory / "graph.json", metadata)
             if graph_file is not None:
                 metadata_path = directory / "graph.json"
                 metadata = json.loads(metadata_path.read_text())
@@ -113,7 +135,7 @@ def build(args):
                     vertices=transformed.vcount(), edges=transformed.ecount(),
                     new_node_reset=("zero; original entity and passage seeds unchanged" if
                         transformed.vcount() > graph.vcount() else "no additional vertices")))
-            if args.retained_fact_index:
+            if retain_candidates:
                 facts = pd.read_parquet(source_graph.parent / "fact_embeddings/vdb_fact.parquet")
                 selected_facts = {str(triple) for _, triple in retained}
                 if not selected_facts.issubset(set(facts["content"])):
@@ -123,7 +145,8 @@ def build(args):
                 write_json(index_file, keys)
                 metadata = json.loads((directory / "graph.json").read_text())
                 write_json(directory / "graph.json", dict(metadata, retained_fact_keys_file=str(index_file)))
-        write_json(shared / "construction.json", dict(stats, source_schema=str(schema_dir),
+        write_json(shared / "construction.json", dict(stats,
+            source_schema=None if omitted == "fact_consolidation" else str(schema_dir),
             seconds=perf_counter() - start, frozen=True))
         total += len(ordered)
         print(json.dumps(dict(task=args.task, group=group.group_id, sources=len(ordered))), flush=True)
@@ -140,6 +163,8 @@ def main():
                         default="statement_projection_loop_free")
     parser.add_argument("--retained-fact-index", action=argparse.BooleanOptionalAction, default=True,
                         help="Use supported facts as recognition candidates; disable for original-index ablations")
+    parser.add_argument("--without-module", choices=MODULES,
+                        help="Remove one module from the full main method without changing the others")
     parser.add_argument("--readout-root", type=Path,
                         default=BASE / "optimization_canonical_latest_cleanup_seed42_20260914")
     parser.add_argument("--source-root", type=Path, default=SOURCE / "hipporag2")

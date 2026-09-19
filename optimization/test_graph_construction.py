@@ -1,6 +1,11 @@
 """Focused tests for frozen graph transforms and cache-failure handling."""
 
 import unittest
+import json
+import os
+import random
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -8,7 +13,7 @@ import igraph as ig
 import numpy as np
 
 from optimization.retriever.hipporag import CacheMissGuard, GenerationFailureGuard, restrict_fact_index
-from optimization.graph_construction.source_consolidation import latest_relation_weights, retained_statements
+from optimization.graph_construction.source_consolidation import latest_relation_weights, retained_statements, statement_weights
 from optimization.graph_construction.compiled_sources import compile_sources
 from optimization.graph_construction.source_window import attach_source_windows
 from optimization.graph_construction.statement_incidence import statement_incidence_graph, project_statement_graph
@@ -18,7 +23,114 @@ from baseline.base import RetrievedItem
 from optimization.run_graph import completed_group_prefix
 
 
+@unittest.skipUnless(os.environ.get("MODULE_ABLATION_ROOT"), "Set MODULE_ABLATION_ROOT after building all six tasks")
+class ModuleArtifactTests(unittest.TestCase):
+    @unittest.skipUnless(os.environ.get("CHECK_MODULE_RETRIEVAL"), "Run after full main-method retrieval")
+    def test_main_retrieval_preserves_frozen_qa_inputs(self):
+        from experiments.runner import _read_retrieval_records, _answer_prompt, _official_generation
+        from optimization.run_graph import BASE, TASKS
+        from optimization.report_results import TASK_METRICS
+
+        root = Path(os.environ["MODULE_ABLATION_ROOT"])
+        main = "statement_projection_loop_free_retained_index_rrf_window"
+        frozen = BASE / "optimization_retained_fact_index_seed42_20260914" / main
+        for task in TASKS:
+            slug = task.replace(" ", "_")
+            original = list(_read_retrieval_records(frozen / slug / "retrieval.jsonl"))
+            rebuilt = list(_read_retrieval_records(root / main / slug / "retrieval.jsonl"))
+            self.assertEqual(len(original), TASK_METRICS[slug][0])
+            self.assertEqual(len(rebuilt), len(original))
+            old_rng, new_rng = random.Random(42), random.Random(42)
+            for old, new in zip(original, rebuilt, strict=True):
+                self.assertEqual((old.group_id, old.case, old.top_k), (new.group_id, new.case, new.top_k))
+                self.assertEqual(_answer_prompt(old.case, old.retrieved, old_rng),
+                                 _answer_prompt(new.case, new.retrieved, new_rng))
+                self.assertEqual(_official_generation(old.case), _official_generation(new.case))
+            settings = json.loads((root / main / slug / "settings.json").read_text())
+            self.assertEqual(settings["additional_generator_calls"], 0)
+
+    def test_full_reconstruction_and_module_boundaries(self):
+        from optimization.run_graph import BASE, TASKS, MODULES
+
+        root = Path(os.environ["MODULE_ABLATION_ROOT"])
+        main = "statement_projection_loop_free_retained_index_rrf_window"
+        frozen = BASE / "optimization_retained_fact_index_seed42_20260914" / main
+
+        def read(path):
+            return json.loads(path.read_text())
+
+        def same_graph(first, second):
+            self.assertEqual(first.vs["name"], second.vs["name"])
+            self.assertEqual(first.get_edgelist(), second.get_edgelist())
+            np.testing.assert_array_equal(first.es["weight"], second.es["weight"])
+
+        groups_checked = 0
+        for task in TASKS:
+            slug = task.replace(" ", "_")
+            expected = read(frozen / slug / "build_complete.json")
+            self.assertEqual(read(root / main / slug / "build_complete.json"), expected)
+            for module in MODULES:
+                self.assertEqual(read(root / f"without_{module}" / slug / "build_complete.json"), expected)
+            for group in expected["groups"]:
+                directory = root / main / slug / "memory" / group
+                metadata = read(directory / "graph.json")
+                original_metadata = read(frozen / slug / "memory" / group / "graph.json")
+                graph = ig.Graph.Read_Pickle(metadata["constructed_graph_file"])
+                same_graph(graph, ig.Graph.Read_Pickle(original_metadata["constructed_graph_file"]))
+                np.testing.assert_array_equal(np.load(directory / "edge_weights.npy"),
+                    np.load(frozen / slug / "memory" / group / "edge_weights.npy"))
+                candidates = read(Path(metadata["retained_fact_keys_file"]))
+                self.assertEqual(candidates, read(Path(original_metadata["retained_fact_keys_file"])))
+                contents = read(Path(metadata["compiled_source_file"]))
+                self.assertEqual(contents, read(Path(original_metadata["compiled_source_file"])))
+                for module in MODULES:
+                    variant = root / f"without_{module}" / slug
+                    control = variant / "memory" / group
+                    info = read(control / "graph.json")
+                    self.assertEqual(info["source_graph"], metadata["source_graph"])
+                    if module == "graph":
+                        self.assertNotIn("constructed_graph_file", info)
+                        source = ig.Graph.Read_Pickle(info["source_graph"])
+                        np.testing.assert_array_equal(np.load(control / "edge_weights.npy"), source.es["weight"])
+                    elif module != "fact_consolidation":
+                        same_graph(graph, ig.Graph.Read_Pickle(info["constructed_graph_file"]))
+                        np.testing.assert_array_equal(np.load(control / "edge_weights.npy"),
+                                                      np.load(directory / "edge_weights.npy"))
+                    if module in ("candidate_index", "fact_consolidation"):
+                        self.assertNotIn("retained_fact_keys_file", info)
+                    else:
+                        self.assertEqual(read(Path(info["retained_fact_keys_file"])), candidates)
+                    if module == "evidence_context":
+                        self.assertNotIn("rank_fusion", info)
+                        self.assertNotIn("compiled_source_file", info)
+                    else:
+                        self.assertEqual(info["rank_fusion"], metadata["rank_fusion"])
+                        if module != "fact_consolidation":
+                            self.assertEqual(read(Path(info["compiled_source_file"])), contents)
+                    if module == "fact_consolidation":
+                        self.assertIsNone(read(variant / "settings.json")["source_schema"])
+                        stats_path = Path(info["compiled_source_file"]).parent / "construction.json"
+                        stats = read(stats_path)
+                        self.assertEqual(stats["source_statements"], stats["retained_statement_support"])
+                        self.assertIsNone(stats["source_schema"])
+                groups_checked += 1
+        self.assertEqual(groups_checked, 15)
+
+
 class GraphConstructionTests(unittest.TestCase):
+
+    def test_recognition_cache_reuse_rejects_changed_configuration(self):
+        from optimization import run_graph
+
+        with TemporaryDirectory() as temporary:
+            task = Path(temporary) / "SH-Doc_QA"
+            task.mkdir()
+            (task / "settings.json").write_text(json.dumps({"config": {"seed": 42}}))
+            args = SimpleNamespace(task="SH-Doc QA", recognition_cache_root=Path(temporary))
+            with patch.object(run_graph, "retrieval_config", return_value=({"seed": 43}, None)), \
+                    patch.object(run_graph, "_load_groups", return_value=[]):
+                with self.assertRaisesRegex(ValueError, "same original model"):
+                    run_graph.retrieve(args)
 
     def test_default_graph_and_query_configuration_agree(self):
         from optimization import build_graph, run_graph
@@ -30,11 +142,29 @@ class GraphConstructionTests(unittest.TestCase):
                 args = build.call_args.args[0]
                 self.assertEqual(args.construction, "statement_projection_loop_free")
                 self.assertEqual(args.retained_fact_index, retained)
+                self.assertIsNone(args.without_module)
         with patch("sys.argv", ["run_graph", *common, "--phase", "verify"]), \
                 patch.object(run_graph, "_seed_everything"), patch.object(run_graph, "verify") as verify:
             run_graph.main()
             self.assertEqual(verify.call_args.args[0].variants,
                              ["statement_projection_loop_free_retained_index_rrf_window"])
+
+    def test_module_ablation_names_match_build_and_retrieval(self):
+        from optimization import build_graph, run_graph
+
+        common = ["--task", "SH-Doc QA", "--output-root", "/unused"]
+        for module in run_graph.MODULES:
+            with patch("sys.argv", ["build_graph", *common, "--without-module", module]), \
+                    patch.object(build_graph, "build") as build:
+                build_graph.main()
+                args = build.call_args.args[0]
+                self.assertEqual(args.without_module, module)
+                self.assertTrue(args.retained_fact_index)
+                self.assertEqual(args.construction, "statement_projection_loop_free")
+            with patch("sys.argv", ["run_graph", *common, "--phase", "verify", "--variants", f"without_{module}"]), \
+                    patch.object(run_graph, "_seed_everything"), patch.object(run_graph, "verify") as verify:
+                run_graph.main()
+                self.assertEqual(verify.call_args.args[0].variants, [f"without_{module}"])
 
     def test_retrieval_resume_requires_complete_original_groups(self):
         groups = [SimpleNamespace(group_id="g", cases=[SimpleNamespace(case_id="a", question="q1"),
@@ -156,6 +286,13 @@ class SourceConsolidationTests(unittest.TestCase):
         np.testing.assert_array_equal(weights, [0, 1, 0, 0, 1, 1])
         self.assertEqual(stats["retained_statement_support"], 1)
         self.assertEqual(stats["original_passages_preserved"], 2)
+
+    def test_all_support_uses_the_same_weighting_without_source_selection(self):
+        selected = [(doc["idx"], tuple(triple)) for doc in self.documents for triple in doc["extracted_triples"]]
+        keys = {"s": "s", "old": "old", "new": "new"}
+        np.testing.assert_array_equal(statement_weights(self.graph, selected, keys), [1, 1, 1, 1, 1, 1])
+        retained, _ = retained_statements(self.documents, ["p0", "p1"], lambda x: x)
+        np.testing.assert_array_equal(statement_weights(self.graph, retained, keys), self.construct(["p0", "p1"])[0])
 
     def test_compiled_context_preserves_surface_form_and_source_metadata(self):
         documents = [{"idx": "p", "passage": "Original passage", "extracted_triples":
