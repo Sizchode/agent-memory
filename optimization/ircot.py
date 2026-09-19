@@ -614,50 +614,27 @@ class Pipeline:
                     participant.max_num_sentences = max(CAPS)
 
 
-def answer_requests(rows, context_rows=None):
-    from experiments.runner import _answer_prompt, _official_generation
-    if context_rows is not None:
-        for original, rendered in zip(rows, context_rows, strict=True):
-            if (original.group_id, original.case, original.top_k) != (
-                    rendered.group_id, rendered.case, rendered.top_k):
-                raise ValueError("QA context must preserve the original case and retrieval budget")
-            for source, context in zip(original.retrieved, rendered.retrieved, strict=True):
-                if (context.score != source.score or
-                        context.metadata.get("original_source_text") != source.text or
-                        any(context.metadata.get(key) != value for key, value in source.metadata.items()) or
-                        not (context.text == source.text or context.text.startswith(source.text + "\n\n"))):
-                    raise ValueError("QA context must preserve source text, order, scores and metadata")
-    randomizer = random.Random(SEED)
-    return [dict(phase="answer", messages=_answer_prompt(row.case, row.retrieved, randomizer)[0],
-        generation=_official_generation(row.case)) for row in (rows if context_rows is None else context_rows)]
-
-
-def evaluate_task(directory, task, reader, model, pilot, context_path=None):
-    from experiments.runner import _read_retrieval_records, _score, evaluate_retrieval
+def evaluate_task(directory, task, reader, model, pilot):
+    from experiments.runner import _read_retrieval_records, _answer_prompt, _official_generation, _score, evaluate_retrieval
     from optimization.report_results import TASK_METRICS, audited_score
     rows = list(_read_retrieval_records(directory / "retrieval.jsonl"))
-    native_requests = answer_requests(rows)
-    requests = native_requests if context_path is None else answer_requests(
-        rows, list(_read_retrieval_records(context_path)))
-    output = directory / "evaluations" / model.replace("/", "_")
-    output.mkdir(parents=True, exist_ok=True)
-    if context_path is not None:
-        with (output / "qa_requests.jsonl").open("w") as stream:
-            for row, request in zip(rows, requests, strict=True):
-                stream.write(json.dumps(dict(group_id=row.group_id, case_id=row.case.case_id,
-                    **request), ensure_ascii=False) + "\n")
+    randomizer = random.Random(SEED)
+    requests = [dict(phase="answer", messages=_answer_prompt(row.case, row.retrieved, randomizer)[0],
+        generation=_official_generation(row.case)) for row in rows]
     answers, timings = [], []
     for start in range(0, len(requests), BATCH_SIZE):
         result = reader.request(phase="generate", items=requests[start:start + BATCH_SIZE])
         answers.extend(result["responses"])
         timings.append(dict(requests=len(result["responses"]), seconds=result["batch_seconds"]))
+    output = directory / "evaluations" / model.replace("/", "_")
+    output.mkdir(parents=True, exist_ok=True)
 
     class SavedAnswers:
         def __init__(self):
             self.index = 0
 
         def answer(self, messages, **generation):
-            expected = native_requests[self.index]
+            expected = requests[self.index]
             assert messages == expected["messages"] and generation == expected["generation"]
             answer = answers[self.index]
             self.index += 1
@@ -682,7 +659,6 @@ def evaluate_task(directory, task, reader, model, pilot, context_path=None):
                 generation_settings=answer["generation_settings"], seed=SEED)) + "\n")
     write_json(directory / "qa_complete.json", dict(complete=True, questions=len(rows), pilot=pilot,
         score=score, summary=summary, native_evaluator=True, scores_recomputed=True, batch_timings=timings,
-        qa_context_path=None if context_path is None else str(context_path),
         input_tokens=sum(a["usage"]["input_tokens"] for a in answers),
         output_tokens=sum(a["usage"]["output_tokens"] for a in answers)))
 
