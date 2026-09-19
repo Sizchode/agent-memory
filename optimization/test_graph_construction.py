@@ -58,16 +58,17 @@ class FactJoinSearchTests(unittest.TestCase):
                 search = FactJoinSearch(index, str.casefold)
                 patterns = [PatternAtom("A", "parent", "?person", "parent"),
                             PatternAtom("?person", "lives", "C", "where")]
-                matches = search.search(patterns, lambda text, ids: [1.0] * len(ids))
+                matches = search.search(patterns, lambda pattern, subject, obj, ids: [1.0] * len(ids))
                 self.assertEqual(len(matches), 1)
                 self.assertEqual(matches[0].bindings, {"?person": "B"})
                 self.assertEqual(search.source_cover(matches[0], 1), ())
                 self.assertEqual(search.source_cover(matches[0], 2), ("a", "b"))
-                for scorer in (lambda text, ids: [], lambda text, ids: [float("nan")] * len(ids)):
+                for scorer in (lambda pattern, subject, obj, ids: [],
+                               lambda pattern, subject, obj, ids: [float("nan")] * len(ids)):
                     with self.assertRaises(ValueError):
                         search.search(patterns, scorer)
                 with self.assertRaises(ValueError):
-                    search.search(patterns, lambda text, ids: [], beam_width=0)
+                    search.search(patterns, lambda pattern, subject, obj, ids: [], beam_width=0)
             finally:
                 index.close()
 
@@ -82,15 +83,15 @@ class FactJoinSearchTests(unittest.TestCase):
                 search = FactJoinSearch(index, str.casefold)
                 calls = []
 
-                def score(text, facts):
-                    calls.append((text, facts))
+                def score(pattern, subject, obj, facts):
+                    calls.append((pattern.relation, subject, obj, facts))
                     return [1.0] * len(facts)
 
                 patterns = [PatternAtom("?person", "lives", "?place", "where"),
                             PatternAtom("a", "parent", "?person", "parent")]
                 matches = search.search(patterns, score)
                 self.assertEqual(len(matches), 1)
-                self.assertEqual(calls, [("a parent", [1]), ("B lives", [2])])
+                self.assertEqual(calls, [("parent", "a", None, [1]), ("lives", "B", None, [2])])
                 self.assertEqual(matches[0].bindings, {"?person": "B", "?place": "C"})
                 self.assertEqual(search.source_cover(matches[0], 1), ("together",))
                 self.assertEqual(search.search([PatternAtom("missing", "parent", "?x", "q")], score), [])

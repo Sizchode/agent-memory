@@ -37,7 +37,7 @@ class FactJoinSearch:
         return bindings.get(term) if term.startswith("?") else term
 
     def search(self, patterns, score, beam_width=8):
-        """score(text, fact_ids) returns comparable relevance scores for this call."""
+        """score(pattern, subject, object, fact_ids) ranks the bound atom's candidates."""
         if not patterns:
             return []
         if beam_width <= 0:
@@ -64,8 +64,7 @@ class FactJoinSearch:
                                   self.normalize(self.facts[fact][2])]
                 if not candidates:
                     continue
-                text = " ".join(value for value in (subject, pattern.relation, obj) if value is not None)
-                values = score(text, candidates)
+                values = score(pattern, subject, obj, candidates)
                 if len(values) != len(candidates) or not all(math.isfinite(value) for value in values):
                     raise ValueError("The scorer must return one finite value per candidate")
                 order = sorted(range(len(values)), key=lambda i: (-values[i], candidates[i]))[:beam_width]
