@@ -412,6 +412,13 @@ class GraphConstructionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             fuse_rankings([RetrievedItem("a"), RetrievedItem("a")], [], 2)
 
+    def test_reciprocal_rank_fusion_accepts_cached_rankings_without_scores(self):
+        graph = [RetrievedItem("a"), RetrievedItem("b")]
+        lexical = [RetrievedItem("b"), RetrievedItem("c")]
+        self.assertEqual([item.text for item in fuse_rankings(graph, lexical, 3)], ["b", "a", "c"])
+        self.assertEqual([item.text for item in fuse_rankings([], lexical, 3)], ["b", "c"])
+        self.assertEqual([item.text for item in fuse_rankings(graph, [RetrievedItem("c", 0.0)], 3)], ["a", "b"])
+
     def test_hybrid_graph_interface_uses_same_source_corpus_for_new_queries(self):
         seen = []
         rows = {"p0": {"content": "alpha"}, "p1": {"content": "beta"}}

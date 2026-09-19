@@ -18,7 +18,7 @@ def fuse_rankings(graph_items, lexical_items, top_k, rank_constant=RANK_CONSTANT
             if item.text in seen:
                 raise ValueError("A source occurs twice in one ranking")
             seen.add(item.text)
-            if name == "lexical" and (item.score is None or item.score <= 0):
+            if name == "lexical" and item.score is not None and item.score <= 0:
                 continue
             candidates.setdefault(item.text, item)
             scores[item.text] = scores.get(item.text, 0.0) + 1.0 / (rank_constant + rank)
