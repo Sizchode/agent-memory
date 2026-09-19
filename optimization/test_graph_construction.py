@@ -8,6 +8,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
+from dataclasses import replace
 
 import igraph as ig
 import numpy as np
@@ -26,6 +27,74 @@ from optimization.graph_construction.fact_index import Atom, FactIndex
 from optimization.retriever.query_pattern import messages, parse_pattern
 from optimization.retriever.query_pattern import PatternAtom
 from optimization.retriever.fact_join import FactJoinSearch
+
+
+class QAContextTests(unittest.TestCase):
+    def example(self):
+        from experiments.runner import EvaluationCase, RetrievedCase
+        case = EvaluationCase("q", "Where does Alice live?", ("Rome",), "hipporag",
+                              gold_passages=("Alice lives in Rome.",))
+        source = RetrievedItem(case.gold_passages[0], 1.0, {"source_id": "s"})
+        row = RetrievedCase("g", case, (source,), 5)
+        context = replace(source, text=source.text + '\n\nExtracted triples:\n[["Alice", "lives in", "Rome"]]',
+                          metadata=dict(source.metadata, original_source_text=source.text))
+        return row, replace(row, retrieved=(context,))
+
+    def test_context_preserves_decoding_and_locomo_options(self):
+        from experiments.runner import _answer_prompt, _official_generation
+        from optimization.ircot import answer_requests, SEED
+        row, context = self.example()
+        expected = dict(phase="answer", messages=_answer_prompt(row.case, row.retrieved, random.Random(SEED))[0],
+                        generation=_official_generation(row.case))
+        self.assertEqual(answer_requests([row]), [expected])
+        case = replace(row.case, metric="locomo", category=5, adversarial_answer="Paris")
+        native = [replace(row, case=case)] * 4
+        rendered = [replace(context, case=case)] * 4
+        for a, b in zip(answer_requests(native), answer_requests(native, rendered), strict=True):
+            self.assertEqual(a["generation"], b["generation"])
+            self.assertEqual(a["messages"][-1]["content"].split("Question:")[-1],
+                             b["messages"][-1]["content"].split("Question:")[-1])
+
+    def test_rejects_changed_sources_cases_or_budget(self):
+        from optimization.ircot import answer_requests
+        row, context = self.example()
+        item = context.retrieved[0]
+        invalid = [replace(context, group_id="wrong"), replace(context, top_k=6),
+                   replace(context, case=replace(context.case, question="different")),
+                   replace(context, retrieved=()),
+                   replace(context, retrieved=(replace(item, score=2),)),
+                   replace(context, retrieved=(replace(item, text="replacement"),)),
+                   replace(context, retrieved=(replace(item, metadata=dict(item.metadata, source_id="other")),))]
+        for changed in invalid:
+            with self.subTest(changed=changed), self.assertRaises(ValueError):
+                answer_requests([row], [changed])
+        with self.assertRaises(ValueError):
+            answer_requests([row], [])
+
+    def test_augmented_generation_keeps_native_passage_metrics(self):
+        from experiments.runner import _retrieval_record
+        from optimization.ircot import evaluate_task
+        row, context = self.example()
+
+        class Reader:
+            def request(self, phase, items):
+                self.messages = items[0]["messages"]
+                return dict(batch_seconds=0, responses=[dict(answer="Rome",
+                    usage=dict(input_tokens=10, output_tokens=1), generation_settings=items[0]["generation"])])
+
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "retrieval.jsonl").write_text(json.dumps(_retrieval_record(row)) + "\n")
+            contexts = root / "context.jsonl"
+            contexts.write_text(json.dumps(_retrieval_record(context)) + "\n")
+            reader = Reader()
+            evaluate_task(root, "2WikiMultiHopQA", reader, "test", True, contexts)
+            self.assertIn("Extracted triples:", str(reader.messages))
+            result = json.loads((root / "evaluations/test/predictions.jsonl").read_text())
+            self.assertEqual(result["metrics"]["passage_recall_at_5"], 1.0)
+            self.assertEqual(result["retrieved"][0]["text"], row.retrieved[0].text)
+            saved = json.loads((root / "evaluations/test/qa_requests.jsonl").read_text())
+            self.assertEqual(saved["messages"], reader.messages)
 
 
 class QueryPatternTests(unittest.TestCase):
