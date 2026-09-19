@@ -93,11 +93,11 @@ def report(root, variants, models=None, reference=None, additional_baseline_root
             if any(score is None for score in scores.values()):
                 raise ValueError(f"A declared complete baseline is missing: {model}, {task}")
             baselines[model][task] = dict(scores=scores, best=max(scores.values()))
-    result = dict(development_set_results=True, target_wins=6, milestone_wins=5,
+    result = dict(development_set_results=True,
                   baselines=baselines, baseline_sources=baseline_sources, variants={}, variant_status={})
     lines = ["# 构图优化结果", "", "既有 test set 用作开发集；缺失成绩不补零。", "",
              "目标包括较大上下文预算的 AnchorMem 官方设置，不能统称等上下文比较。", "",
-             "报告 reader：" + "、".join(models) + "。同一候选全部 6/6 为完整胜出，5/6 为阶段里程碑。", ""]
+             "报告 reader：" + "、".join(models) + "。按各任务最佳已列 baseline 统计胜、平、负；完整覆盖不等于效果达标。", ""]
     if reference is not None:
         result["reference"] = dict(directory=str(reference), scores={})
         lines += ["## 完整方法参考", "", "| 模型 | " + " | ".join(TASK_METRICS) + " |",
@@ -113,10 +113,10 @@ def report(root, variants, models=None, reference=None, additional_baseline_root
         lines += ["", "下表差值为当前配置减完整方法，单位为百分点；不同任务指标不求平均。", ""]
     for variant in variants:
         result["variants"][variant] = {}
-        lines += [f"## {variant}", "", "| 模型 | " + " | ".join(TASK_METRICS) + " | 严格胜出 |",
+        lines += [f"## {variant}", "", "| 模型 | " + " | ".join(TASK_METRICS) + " | 胜 / 平 / 负 |",
                   "|---|" + "---:|" * (len(TASK_METRICS) + 1)]
         for model in models:
-            scores, costs, wins, complete = {}, {}, 0, 0
+            scores, costs, wins, ties, losses, complete = {}, {}, 0, 0, 0, 0
             for task in TASK_METRICS:
                 directory = root / variant / task / "evaluations" / model.replace("/", "_")
                 score = audited_score(directory, task, expected[task])
@@ -125,11 +125,13 @@ def report(root, variants, models=None, reference=None, additional_baseline_root
                 if score is not None:
                     complete += 1
                     wins += score > baselines[model][task]["best"]
+                    ties += score == baselines[model][task]["best"]
+                    losses += score < baselines[model][task]["best"]
             result["variants"][variant][model] = dict(scores=scores, qa_usage=costs, wins=wins, complete_tasks=complete,
-                                                      milestone_achieved=complete == 6 and wins >= 5,
-                                                      achieved=complete == 6 and wins == 6)
+                                                      ties=ties, losses=losses)
             values = ["未完成" if score is None else f"{100 * score:.2f}" for score in scores.values()]
-            lines.append("| " + model.split("/")[-1] + " | " + " | ".join(values) + f" | {wins}/6 ({complete}/6 完成) |")
+            lines.append("| " + model.split("/")[-1] + " | " + " | ".join(values) +
+                         f" | {wins} / {ties} / {losses} ({complete}/6 完成) |")
             if reference is not None:
                 deltas = {task: None if score is None else score - result["reference"]["scores"][model][task]
                           for task, score in scores.items()}
@@ -137,9 +139,7 @@ def report(root, variants, models=None, reference=None, additional_baseline_root
                 values = ["未完成" if delta is None else f"{100 * delta:+.2f}" for delta in deltas.values()]
                 lines.append("| 相对完整方法 | " + " | ".join(values) + " | |")
         reader_results = result["variants"][variant].values()
-        result["variant_status"][variant] = dict(
-            milestone_achieved=all(row["milestone_achieved"] for row in reader_results),
-            achieved=all(row["achieved"] for row in reader_results))
+        result["variant_status"][variant] = dict(complete=all(row["complete_tasks"] == 6 for row in reader_results))
         lines.append("")
         lines += ["QA 成本仅汇总已完成且有 usage 的任务；不是建图/检索或总 wall time，跨 GPU 耗时不作等硬件比较。", "",
                   "| 模型 | 有 usage 的完整任务 | 调用数 | 输入 token | 输出 token | QA 调用秒数 |",

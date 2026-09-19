@@ -27,7 +27,7 @@ class ReportResultsTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 report_results.qa_usage(directory, 1)
 
-    def test_full_target_requires_same_variant_six_wins_for_every_reader(self):
+    def test_report_separates_wins_ties_losses_and_missing_tasks(self):
         tasks = {f"task{i}": (1, "score") for i in range(6)}
         models = [f"reader{i}" for i in range(3)]
         with tempfile.TemporaryDirectory() as temporary:
@@ -55,9 +55,9 @@ class ReportResultsTests(unittest.TestCase):
                         if variant == "partial" and index == 5:
                             continue
                         tie = variant == "five" and index == 5
-                        tie |= variant == "mixed" and model == models[-1] and index == 5
+                        loss = variant == "mixed" and model == models[-1] and index == 5
                         prediction(output / variant / task / "evaluations" / model,
-                                   0.5 if tie else 0.6)
+                                   0.4 if loss else 0.5 if tie else 0.6)
 
             with patch.multiple(report_results, SOURCE=source, MODELS=models,
                                 TASK_METRICS=tasks, BASELINES={"control": baseline}):
@@ -74,13 +74,17 @@ class ReportResultsTests(unittest.TestCase):
                     report_results.report(output, ["five"], models=models, reference=output / "partial",
                                           additional_baseline_roots=[extra])
             result = json.loads((output / "comparison.json").read_text())
-            self.assertEqual(result["target_wins"], 6)
-            self.assertEqual(result["milestone_wins"], 5)
-            self.assertTrue(result["variant_status"]["full"]["achieved"])
-            self.assertTrue(result["variant_status"]["five"]["milestone_achieved"])
-            for variant in ("five", "partial", "mixed"):
-                self.assertFalse(result["variant_status"][variant]["achieved"])
-            self.assertFalse(result["variant_status"]["partial"]["milestone_achieved"])
+            self.assertNotIn("target_wins", result)
+            self.assertNotIn("milestone_wins", result)
+            for variant in ("full", "five", "mixed"):
+                self.assertTrue(result["variant_status"][variant]["complete"])
+            self.assertFalse(result["variant_status"]["partial"]["complete"])
+            for variant, counts in (("full", (6, 0, 0)), ("five", (5, 1, 0)),
+                                    ("partial", (5, 0, 0)), ("mixed", (5, 0, 1))):
+                row = result["variants"][variant][models[-1]]
+                self.assertEqual((row["wins"], row["ties"], row["losses"]), counts)
+                self.assertEqual(sum(counts), row["complete_tasks"])
+                self.assertNotIn("achieved", row)
             self.assertEqual(result["variants"]["five"][models[0]]["wins"], 5)
             self.assertAlmostEqual(result["variants"]["five"][models[0]]["delta_from_reference"]["task5"], -0.1)
             self.assertIsNone(result["variants"]["partial"][models[0]]["delta_from_reference"]["task5"])
