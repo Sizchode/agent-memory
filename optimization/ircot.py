@@ -671,7 +671,7 @@ def evaluate_task(directory, task, reader, model, pilot):
         output_tokens=sum(a["usage"]["output_tokens"] for a in answers)))
 
 
-def run(model, generator_job, pilot):
+def run(model, generator_job, pilot, render_context=None):
     from argparse import Namespace
     from optimization.run_graph import TASKS, SOURCE, retrieval_config
     from experiments.runner import RetrievedCase, _read_retrieval_records, _retrieval_record
@@ -769,8 +769,10 @@ def run(model, generator_job, pilot):
                         assert trace["case_id"] == case.case_id and trace["question"] == case.question
                         assert 1 <= len(trace["rounds"]) <= max(CAPS) and trace["rounds"][-1]["stopped"]
                         selected = trace["rounds"][min(cap, len(trace["rounds"])) - 1]["selected_sources"]
-                        rows.append(RetrievedCase(group.group_id, case,
-                            tuple(RetrievedItem(group.memory_items[i]) for i in selected), 15))
+                        items = tuple(RetrievedItem(group.memory_items[i]) for i in selected)
+                        if render_context is not None:
+                            items = render_context(task, group, items)
+                        rows.append(RetrievedCase(group.group_id, case, items, 15))
                     if not pilot:
                         expected = list(_read_retrieval_records(SOURCE / "hipporag2" / slug / "retrieval.jsonl"))
                         assert [(row.group_id, row.case) for row in rows] == [(row.group_id, row.case) for row in expected]
