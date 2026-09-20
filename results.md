@@ -2,7 +2,7 @@
 
 更新：2026-09-19。算法、代码与贡献解释见 [novelty.md](novelty.md)。本文件维护实验事实与必要的运行状态。
 
-交接更新（2026-09-19 晚）：四 reader 新事实图 IRCoT 已生成完整 `results.md` / `comparison.json`，gold-only 的四 reader、每条件 1000 题也已生成 `main/complete.json`。下面“尚无结果”等文字是先前时间点的记录，不代表最新状态。最新交接入口、结果路径与 gold-only 表见 [peer_handoff.md](docs/peer_handoff.md)。未重新解释为全面 SOTA，也未修改原始成绩。
+交接更新（2026-09-19 晚）：四 reader 新事实图 IRCoT 已生成完整 `results.md` / `comparison.json`，gold-only 的四 reader、每条件 1000 题也已生成 `main/complete.json`。下面“尚无结果”等文字是先前时间点的记录，不代表最新状态。主实验共享入口见 [peer_handoff.md](docs/peer_handoff.md)；按用户要求，共享目录不包含消融、gold-only 或其他诊断，这些原始产物仍保留。未重新解释为全面 SOTA，也未修改原始成绩。
 
 最新目标：用户允许单次与多轮实验在多数条件下领先，不再要求所有单元格全胜。多轮报告 1、3、5 轮曲线，已跑的 7 轮保留为补充；事后选择主表轮数须说明，逐任务最佳轮数单列且允许 baseline 在同一范围选择。不删历史结果，不把任务平局计作严格获胜，保留 test-as-dev 声明。报告入口改为逐模型列胜、平、负及完整覆盖状态；原指标、原分数和缺失处理不变。新算法研究已重启，见 [research_plan.md](research_plan.md)；下面的既有实验不改名为新算法结果。
 
