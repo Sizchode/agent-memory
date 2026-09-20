@@ -269,6 +269,7 @@ def evaluate_retrieval(
     answer_model: AnswerModel,
     output_dir: str | Path,
     seed: int = 42,
+    report_passage_metrics: bool = True,
 ) -> dict[str, float]:
     """Answer and score an existing retrieval artifact in the evaluator environment."""
 
@@ -286,12 +287,15 @@ def evaluate_retrieval(
                 prediction = prediction.split("Answer:", 1)[1].strip()
             if answer_key is not None:
                 prediction = _locomo_category_5_answer(prediction, answer_key)
+            scores = _score(item.case, prediction, item.retrieved, item.top_k)
+            if not report_passage_metrics:
+                scores = {key: value for key, value in scores.items() if not key.startswith("passage_")}
             result = CaseResult(
                 item.group_id,
                 item.case.case_id,
                 prediction,
                 item.retrieved,
-                _score(item.case, prediction, item.retrieved, item.top_k),
+                scores,
             )
             for name, value in result.metrics.items():
                 metric_values.setdefault(name, []).append(value)

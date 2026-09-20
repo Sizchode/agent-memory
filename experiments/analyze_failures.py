@@ -48,6 +48,17 @@ def primary_metric(metrics: dict[str, float]) -> str:
     raise ValueError(f"no benchmark answer metric in {sorted(metrics)}")
 
 
+def reference_answer_fields(case: dict[str, Any]) -> dict[str, Any]:
+    """Disambiguate the released LoCoMo distractor without changing benchmark labels."""
+    fields = {"answers": case["answers"], "category": case.get("category"),
+              "answer_field_role": "reference_answer"}
+    if case.get("metric") == "locomo" and case.get("category") == 5:
+        fields.update(answer_field_role="adversarial_distractor",
+                      expected_behavior="Indicate that no answer is available in the conversation",
+                      official_scoring_rule="Prediction contains 'no information available' or 'not mentioned', case insensitive")
+    return fields
+
+
 def question_record(
     key: tuple[str, str],
     prediction: dict[str, Any],
@@ -59,7 +70,7 @@ def question_record(
         "group_id": key[0],
         "case_id": key[1],
         "question": case["question"],
-        "answers": case["answers"],
+        **reference_answer_fields(case),
         "prediction": prediction["prediction"],
         "score": prediction["metrics"][metric],
     }
@@ -76,7 +87,7 @@ def consistent_failure_record(
         "group_id": key[0],
         "case_id": key[1],
         "question": case["question"],
-        "answers": case["answers"],
+        **reference_answer_fields(case),
         "retrieved": retrieval[key]["retrieved"],
         "evaluations": {
             evaluator: {
