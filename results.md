@@ -24,6 +24,17 @@
 
 相对各自旧完整方法，Qwen4/Gemma 均为 5 胜 1 负，Qwen9/Llama 均为 4 胜 1 平 1 负。四组 LoCoMo 都有回退：Qwen4 50.15 -> 49.74，Qwen9 57.62 -> 56.04，Gemma 40.00 -> 38.41，Llama 49.57 -> 49.46。Llama 的 QA 输入为 8172137 tokens，旧版为 10491829；质量改善不是所有任务都成立。
 
+各 reader 的 QA 成本如下，均为同一批六任务全部 3386 题的实际 token 累计，不比较不同 tokenizer 的绝对长短。固定原检索来源并保留原文，减少的是事实附录；表中不包含原图构建、查询检索及事实相似度选择成本，因此不是端到端加速结果。
+
+| Reader | 旧版输入 tokens | 新版输入 tokens | 输入减少 | 旧版输出 tokens | 新版输出 tokens |
+|---|---:|---:|---:|---:|---:|
+| Qwen3.5-4B | 11283658 | 9136162 | 19.03% | 23745 | 22501 |
+| Qwen3.5-9B | 11283658 | 9136162 | 19.03% | 28677 | 27849 |
+| Gemma-3-4B | 11102210 | 9072131 | 18.29% | 19781 | 20148 |
+| Llama-3.1-8B | 10491829 | 8172137 | 22.11% | 32081 | 32648 |
+
+数据来自各 reader 完整 `comparison.json` 的逐任务 QA 计数：三个迁移 reader 对应 `qa_scores_and_costs`，原生对照对应 `qa_costs.optimized_graph`；Llama 新版为 `scores.optimized_graph`，旧版为同环境重排试验中的 `scores.optimized_graph[*].original_cost`。不将压缩率作为新的任务评分，也不掩盖 LoCoMo 的代价。
+
 **同组件补充对照不能省略：** Llama 加同样事实补充后的 BM25 在 FC-SH 为 42，HippoRAG 2 在 SH 为 88，均高于我们；对二者逐任务最佳我们为 4 胜 2 负。因此主表的胜出数明确指九项原生 baseline，不是所有已测配置都占优，也不把本次上下文改动的全部收益归给构图。
 
 Llama 完整产物为 `optimization_fact_context_seed42_20260920/source_and_fact_context/main/meta-llama_Llama-3.1-8B-Instruct`，其余三个为 `optimization_source_fact_transfer_seed42_20260920/main/<reader>/comparison.json`。三组迁移预检 `6540880` / `6540882` / `6540884`、全量 `6540928` / `6540929` / `6540931` 及同环境汇总 `6540932` / `6540934` / `6540936` 均已完成。Qwen9 原生对照 `6540673` 为 `COMPLETED 0:0`，用时 1:18:43。原生对照和迁移的四个一次性脚本分别与 `code_6540673.zip`、`code_6540929.zip` 逐字节核对、检查归档完整性后删除，完整预测、输入和代码归档保留。
