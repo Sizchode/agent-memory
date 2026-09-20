@@ -289,15 +289,17 @@ def worker(model):
             generation_defaults=defaults.to_dict())
     print(RESPONSE_PREFIX + json.dumps(metadata), file=output, flush=True)
 
+    def input_ids(item):
+        if item["phase"] == "reason":
+            return tokenizer(item["prompt"])["input_ids"]
+        return tokenizer.apply_chat_template(item["messages"], add_generation_prompt=True,
+            enable_thinking=False, tokenize=True, return_dict=False)
+
     def generate(items):
         prompts, settings = [], []
         for item in items:
             generation = item["generation"]
-            if item["phase"] == "reason":
-                ids = tokenizer(item["prompt"])["input_ids"]
-            else:
-                ids = tokenizer.apply_chat_template(item["messages"], add_generation_prompt=True,
-                    enable_thinking=False, tokenize=True, return_dict=False)
+            ids = input_ids(item)
             assert len(ids) + generation["max_tokens"] <= 32768
             sampling = dict(temperature=generation["temperature"], max_tokens=generation["max_tokens"],
                 seed=SEED, repetition_penalty=defaults.repetition_penalty)
@@ -353,6 +355,12 @@ def worker(model):
                     batch_output_tokens=sum(r["usage"]["output_tokens"] for r in batched["responses"]),
                     first_pass=cold, warmed_up=True,
                     comparison="same vLLM engine, serial versus batched, caches reset before each")
+            elif request["phase"] == "check_context":
+                lengths = [len(input_ids(item)) for item in request["items"]]
+                totals = [length + item["generation"]["max_tokens"]
+                          for length, item in zip(lengths, request["items"], strict=True)]
+                result = dict(input_tokens=lengths, max_model_len=32768,
+                    overflow=[index for index, total in enumerate(totals) if total > 32768])
             else:
                 result = generate(request["items"])
         print(RESPONSE_PREFIX + json.dumps(result), file=output, flush=True)
