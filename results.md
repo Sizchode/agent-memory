@@ -45,7 +45,24 @@ Llama 完整产物为 `optimization_fact_context_seed42_20260920/source_and_fact
 
 下一项 IRCoT 使用同一事实补充操作，仍固定既有轨迹、原文条数和顺序，只改最终 QA 上下文；按原问题选择十条事实，不使用答案或新增子问题。CPU 预检 `6541026` 和全量准备 `6541194` 均成功，后者用时 3 分 16 秒。四 reader 的 GPU 接口预检 Llama/Qwen4/Qwen9/Gemma `6541029` / `6541031` / `6541036` / `6541037` 已全部通过，各为三档轮数、六任务、90 条 QA。按同一设置提交四组全量 `6541203` / `6541210` / `6541220` / `6541221`，各新增 10158 条 QA，合计 40632 条。Llama/Gemma 使用 `gpu`，Qwen4/Qwen9 使用 `gpu-he`；均为 L40S、单 CPU、48 GB、4 小时上限。对照复用已完成且 reader 环境一致的 BM25 原文、图原文及全量附录条件，实际 token 长度先检查，超长报错不删题。目录 `optimization_ircot_fact_context_seed42_20260920`；尚无完整效果结论。
 
-### 新事实补充的 IRCoT：Gemma 全量完成，多轮仍有回退
+### 新事实补充的 IRCoT：Qwen4 三档均胜过 BM25
+
+`6541210` 为 `COMPLETED 0:0`，用时 45 分 47 秒，每档覆盖六任务全部 3386 题，三档共 10158 条 QA。对同环境 BM25，1/3/5 轮均为 6 胜；相对图原文，18 个任务/轮数组合为 16 胜 2 平，无回退。三轮详情如下，百分制：
+
+| 任务 | BM25 原文 | 图原文 | 图加完整附录 | 图加相关事实 |
+|---|---:|---:|---:|---:|
+| SH-Doc QA | 85 | 87 | 88 | 90 |
+| MH-Doc QA | 63 | 63 | 60 | 65 |
+| FactConsolidation-SH | 43 | 49 | 68 | 76 |
+| FactConsolidation-MH | 5 | 14 | 14 | 15 |
+| LoCoMo | 48.21 | 48.91 | 49.59 | 49.23 |
+| 2WikiMultiHopQA | 62.26 | 62.77 | 60.30 | 65.29 |
+
+三轮 QA 输入为图原文 6975688、完整附录 24247107、相关事实 17798720 tokens。相对完整附录，LoCoMo 仍下降；相对图原文虽然没有任务回退，但仍付出了更多 QA 输入成本。该结果只涉及固定轨迹后的最终回答，不代表在线子问题生成或检索改善。完整三档及成本位于 `optimization_ircot_fact_context_seed42_20260920/main/Qwen_Qwen3.5-4B/comparison.json`。
+
+Qwen4 的收益与下方 Gemma 的回退同时保留，不按 reader 选择上下文开关。Llama、Qwen9 尚待完整结果，不能据此提前宣布统一 IRCoT 方法达标。
+
+### 新事实补充的 IRCoT：Gemma 多轮仍有回退
 
 `6541221` 为 `COMPLETED 0:0`，用时 38 分 7 秒，每档轮数覆盖六任务全部 3386 题，1/3/5 轮共 10158 条 QA 已逐题重评分。沿用 one-shot 的同一事实补充模块，固定原 IRCoT 轨迹，只改变最终 QA 上下文。对 BM25，1 轮为 6 胜，3/5 轮均为 3 胜 1 平 2 负；不能用一轮结果代表完整曲线。
 
@@ -62,7 +79,7 @@ Llama 完整产物为 `optimization_fact_context_seed42_20260920/source_and_fact
 
 相关事实相对图原文在全部 18 个任务/轮数组合中为 9 胜 2 平 7 负。它改善事实整合，但三轮和五轮的 LoCoMo、2Wiki 仍低于 BM25；相对完整附录恢复部分 2Wiki 分数，不等于解决多轮差距。三轮 QA 输入为图原文 6613683、完整附录 22862162、相关事实 17004248 tokens，不能称为等 token 比较或多轮整体压缩已成功。
 
-完整三档和逐任务成本位于 `optimization_ircot_fact_context_seed42_20260920/main/google_gemma-3-4b-it/comparison.json`。另外三个 reader 和独立在线增强实验仍在运行；暂不按 reader/轮数选择开关，也不据此把新配置升级为统一 IRCoT 主方法。one-shot 的四 reader 结果不因该回退而改写。
+完整三档和逐任务成本位于 `optimization_ircot_fact_context_seed42_20260920/main/google_gemma-3-4b-it/comparison.json`。Qwen4 已完成，Llama/Qwen9 和独立在线增强实验仍在运行；暂不按 reader/轮数选择开关，也不据此把新配置升级为统一 IRCoT 主方法。one-shot 的四 reader 结果不因该回退而改写。
 
 ### 四 reader 的完整附录增强已全部结束，不作为统一主方法
 
