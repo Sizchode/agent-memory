@@ -21,6 +21,8 @@
 
 完整产物为 `optimization_fact_context_seed42_20260920/source_and_fact_context/main/meta-llama_Llama-3.1-8B-Instruct`。现在固定此配置，直接复用同一份图方法上下文验证另外三个 reader，不改变事实选择；迁移预检 Qwen4 `6540880`、Qwen9 `6540882`、Gemma `6540884`，各六任务 15 组前两题、30 条 QA。输出为 `optimization_source_fact_transfer_seed42_20260920`，候选 QA 可与九 baseline 并行，但必须等双方全量齐全后才写最终比较。四 reader 各 5/6 的总目标尚未达成。
 
+三项迁移预检已全部通过。全量 QA 为 Qwen4 `6540928`、Qwen9 `6540929`、Gemma `6540931`，各 3386 题；固定配置和原始上下文文件不变。CPU 比较汇总 `6540932` / `6540934` / `6540936` 分别依赖对应候选和原生对照成功结束；QA 完成不等于九 baseline 比较已完成，不提前宣告其余 reader 达标。
+
 ### 四 reader 的最终 QA 增强已全部结束，不作为统一主方法
 
 四个作业均为 `COMPLETED 0:0`，六任务全量、1/3/5 轮、三条件，共 121896 条 QA。下表全部对本批原生 IRCoT + BM25，单元格为胜 / 平 / 负，不平均不同任务的评分：
