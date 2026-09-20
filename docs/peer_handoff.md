@@ -6,6 +6,8 @@
 
 Oscar 共享入口：`/oscar/scratch/zliu328/agent-memory-share-zli532-20260919`。
 
+访问方式：用自己的 Oscar 账号登录，执行 `cd /oscar/scratch/zliu328/agent-memory-share-zli532-20260919`，再读 `README.md`。已按用户确认开放该目录的只读访问，不使用逐用户 ACL；其他知道路径的 Oscar 用户也可读取。原始 one-shot 与 IRCoT 目录分别为 `/oscar/scratch/zliu328/agent-memory-outputs/optimization_fact_graph_main_qa_seed42_20260919` 和 `/oscar/scratch/zliu328/agent-memory-outputs/optimization_ircot_fact_graph_seed42_20260919`。最终文件清单以 `manifest.json` 为准，整理完成标记见 `verification.json`。
+
 | 目录 | 内容 | 优先看什么 |
 |---|---|---|
 | `datasets/native_inputs/` | 六任务的原加载器输出，含题目、答案、原文和现有证据标注 | 按原任务加载，不重新筛题 |
@@ -64,7 +66,7 @@ Gold-only 同次运行的答案 F1（百分制）：
 6. 不共享模型权重、HF token、API key、虚拟环境、服务地址文件或运行中的数据库。需要的 gated 模型应由接收者按自己的授权获取。不要依赖交接时仍运行的个人推理/Elasticsearch 服务。
 7. 输入 pickle 依赖项目中的类定义，需先 clone 代码并设置 `PYTHONPATH`。只加载可信来源的 pickle。
 
-共享为个人协作访问，不更改原始数据和模型的授权条款。目录仅向指定账号开放入口；接收者不获得修改原实验资产的权限。
+共享不更改原始数据和模型的授权条款。本目录开放 Oscar 只读访问，并非仅限 zli532；接收者不获得修改原实验资产的权限。不改 home 权限，不放个人凭据。
 
 ## 代码入口
 
