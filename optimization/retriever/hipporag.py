@@ -7,6 +7,51 @@ import shutil
 from baseline.official import HippoRAG2Baseline
 
 
+def query_encoder_identity(hippo):
+    encoder = hippo.embedding_model
+    return dict(model=hippo.global_config.embedding_model_name,
+                instruction_mode=getattr(encoder, "query_instruction_mode", "ignored"),
+                normalize=hippo.global_config.embedding_return_as_normalized,
+                max_seq_length=encoder.model.max_seq_length,
+                revision=encoder.model[0].auto_model.config._commit_hash)
+
+
+def save_query_embeddings(hippo, queries, path):
+    """Persist the two upstream query maps without changing encoding settings."""
+    import numpy as np
+
+    queries = list(dict.fromkeys(queries))
+    arrays = {name: np.stack([hippo.query_to_embedding[name][q] for q in queries])
+              for name in ("triple", "passage")}
+    for values in arrays.values():
+        if values.ndim != 2 or not np.isfinite(values).all():
+            raise ValueError("Invalid query embeddings")
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("xb") as stream:
+        np.savez_compressed(stream, queries=np.asarray(queries),
+                            identity=json.dumps(query_encoder_identity(hippo)), **arrays)
+
+
+def load_query_embeddings(hippo, path):
+    """Load explicitly selected query vectors; never enable an unverified cache implicitly."""
+    import numpy as np
+
+    with np.load(path, allow_pickle=False) as saved:
+        if json.loads(str(saved["identity"])) != query_encoder_identity(hippo):
+            raise ValueError("Query encoder configuration or revision differs")
+        queries = saved["queries"].tolist()
+        if not queries or len(set(queries)) != len(queries) or not all(isinstance(q, str) for q in queries):
+            raise ValueError("Invalid cached query identities")
+        vectors = {name: saved[name] for name in ("triple", "passage")}
+    dimensions = dict(triple=hippo.fact_embeddings.shape[1], passage=hippo.passage_embeddings.shape[1])
+    for name, values in vectors.items():
+        if values.shape != (len(queries), dimensions[name]) or not np.isfinite(values).all():
+            raise ValueError("Cached query dimensions or values differ from the index")
+    for name, values in vectors.items():
+        hippo.query_to_embedding[name].update(zip(queries, values, strict=True))
+
+
 def restrict_fact_index(hippo, keys):
     """Select original candidate rows and vectors, leaving provenance maps intact."""
     positions = {key: i for i, key in enumerate(hippo.fact_node_keys)}

@@ -51,6 +51,78 @@ def comparison(left, right):
                 losses=sum(value < 0 for value in differences))
 
 
+def report_components(root, models, controls):
+    """Reuse native auditing for complete reader/control/task experiment folders."""
+    if (not models or len(set(models)) != len(models) or not set(models).issubset(MODELS)
+            or not controls or len(set(controls)) != len(controls)):
+        raise ValueError("Select unique supported readers and unique controls")
+    if any(Path(control).name != control or control in (".", "..") for control in controls):
+        raise ValueError("Controls must be directory names")
+    root = Path(root)
+    expected = {task: list(_read_retrieval_records(SOURCE / "hipporag2" / task / "retrieval.jsonl"))
+                for task in TASK_METRICS}
+    for task, rows in expected.items():
+        assert len(rows) == len({(r.group_id, r.case.case_id) for r in rows}) == TASK_METRICS[task][0]
+    result = dict(complete=False, seed=42, test_as_dev=True, scores_recomputed=True,
+                  controls=controls, scores={}, comparisons={}, reference_baselines={})
+    lines = ["# 组件对照结果", "", "六任务全量；seed 42；test-as-dev；按未舍入原生分数比较，不跨任务求平均。",
+             "同批组件对照与先前完整九项 baseline 分开报告；不同批次的小幅差值可能包含生成变化。", ""]
+    with zipfile.ZipFile(root / f"report_code_{os.environ['SLURM_JOB_ID']}.zip", "x", zipfile.ZIP_DEFLATED) as archive:
+        for path in (Path(__file__), Path("experiments/runner.py"), Path("optimization/report_results.py")):
+            archive.write(path, path.name if path.is_absolute() else str(path))
+        assert archive.testzip() is None
+    for model in models:
+        slug = model.replace("/", "_")
+        directory = root / slug
+        complete = json.loads((directory / "complete.json").read_text())
+        metadata = json.loads((directory / "reader.json").read_text())
+        assert complete["complete"] and not complete["pilot"] and complete["model"] == model
+        assert set(complete["tasks"]) == set(TASK_METRICS)
+        assert all(set(values) == set(controls) for values in complete["tasks"].values())
+        reference = QA_ROOT / slug / "main"
+        assert metadata == json.loads((reference / "reader.json").read_text())
+        assert metadata["revision"] == MODELS[model]
+        result["scores"][model], result["reference_baselines"][model] = {}, {}
+        lines += ["## " + model, "", "### 本次完整组件对照", "",
+                  "| 任务 | " + " | ".join(controls) + " |", "|---|" + "---:|" * len(controls)]
+        for task in TASK_METRICS:
+            values = {}
+            for control in controls:
+                target = directory / control / task
+                values[control] = audit_cell(target, model, task, expected[task])
+                values[control]["native_summary"] = json.loads((target / "qa_complete.json").read_text())["summary"]
+            result["scores"][model][task] = values
+            reference_values = {name: audit_cell(reference / name / task, model, task, expected[task])
+                                for name in BASELINES}
+            result["reference_baselines"][model][task] = reference_values
+            lines.append("| " + task + " | " + " | ".join(f"{100 * values[c]['score']:.2f}" for c in controls) + " |")
+        values = result["scores"][model]
+        result["comparisons"][model] = {
+            left: {right: comparison([values[t][left]["score"] for t in TASK_METRICS],
+                                    [values[t][right]["score"] for t in TASK_METRICS])
+                   for right in controls if right != left} for left in controls}
+        lines += ["", "### 先前九项 Baseline 参考", "",
+                  "来源：`" + str(reference) + "`。这批 baseline 未在本次重新生成答案；不称为同批比较。", "",
+                  "| 任务 | " + " | ".join(BASELINES) + " |", "|---|" + "---:|" * len(BASELINES)]
+        for task in TASK_METRICS:
+            baselines = result["reference_baselines"][model][task]
+            lines.append("| " + task + " | " + " | ".join(f"{100 * baselines[b]['score']:.2f}" for b in BASELINES) + " |")
+        best = [max(v["score"] for v in result["reference_baselines"][model][t].values()) for t in TASK_METRICS]
+        result.setdefault("against_prior_best_of_nine", {})[model] = {
+            c: comparison([values[t][c]["score"] for t in TASK_METRICS], best) for c in controls}
+        lines += ["", "对先前逐任务最佳的胜/平/负（跨批次参考）：`" +
+                  json.dumps(result["against_prior_best_of_nine"][model], sort_keys=True) + "`", "",
+                  "### 2Wiki 原生段落 Recall@5", "", "| 条件 | Recall@5 (%) |", "|---|---:|"]
+        for control in controls:
+            score = values["2WikiMultiHopQA"][control]["native_summary"]["passage_recall_at_5"]
+            lines.append(f"| {control} | {100 * score:.2f} |")
+        lines += ["", "逐题原生评分与上下文身份已核对；QA token 用量及完整原生汇总见 `comparison.json`。", ""]
+    result["complete"] = True
+    write_json(root / "comparison.json", result)
+    (root / "results.md").write_text("\n".join(lines) + "\n")
+    print(json.dumps(result["comparisons"], indent=2), flush=True)
+
+
 def report(kind):
     root = QA_ROOT if kind == "one-shot" else IRCOT_ROOT
     with zipfile.ZipFile(root / f"report_code_{os.environ['SLURM_JOB_ID']}.zip", "x", zipfile.ZIP_DEFLATED) as archive:
@@ -173,5 +245,16 @@ def plot(model, scores, root):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("kind", choices=("one-shot", "ircot"))
-    report(parser.parse_args().kind)
+    parser.add_argument("kind", choices=("one-shot", "ircot", "components"))
+    parser.add_argument("--root", type=Path)
+    parser.add_argument("--models", nargs="+", choices=tuple(MODELS))
+    parser.add_argument("--controls", nargs="+")
+    args = parser.parse_args()
+    if args.kind == "components":
+        if args.root is None or not args.models or not args.controls:
+            parser.error("components requires --root, --models and --controls")
+        report_components(args.root, args.models, args.controls)
+    else:
+        if args.root is not None or args.models or args.controls:
+            parser.error("--root, --models and --controls apply only to components")
+        report(args.kind)
