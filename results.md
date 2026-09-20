@@ -19,9 +19,24 @@
 
 对九项原生最佳为 5 胜 1 负，对旧完整方法为 4 胜 1 平 1 负。QA 输入为 8172137 tokens，旧完整方法为 10491829；没有训练或重新抽取。**同组件补充对照不能省略：** 加同样事实补充后的 BM25 在 FC-SH 为 42，HippoRAG 2 在 SH 为 88，均高于我们；对二者的逐任务最佳我们为 4 胜 2 负。因此这里的 5/6 明确指九项原生 baseline，不是所有已测配置都占优，更不是全领域 SOTA。数据已用于开发、单 seed 的局限不变。
 
-完整产物为 `optimization_fact_context_seed42_20260920/source_and_fact_context/main/meta-llama_Llama-3.1-8B-Instruct`。现在固定此配置，直接复用同一份图方法上下文验证另外三个 reader，不改变事实选择；迁移预检 Qwen4 `6540880`、Qwen9 `6540882`、Gemma `6540884`，各六任务 15 组前两题、30 条 QA。输出为 `optimization_source_fact_transfer_seed42_20260920`，候选 QA 可与九 baseline 并行，但必须等双方全量齐全后才写最终比较。四 reader 各 5/6 的总目标尚未达成。
+完整产物为 `optimization_fact_context_seed42_20260920/source_and_fact_context/main/meta-llama_Llama-3.1-8B-Instruct`。冻结同一份上下文的迁移预检 Qwen4 `6540880`、Qwen9 `6540882`、Gemma `6540884` 均通过，随后提交各 3386 题全量 `6540928` / `6540929` / `6540931`，不改变事实选择。
 
-三项迁移预检已全部通过。全量 QA 为 Qwen4 `6540928`、Qwen9 `6540929`、Gemma `6540931`，各 3386 题；固定配置和原始上下文文件不变。CPU 比较汇总 `6540932` / `6540934` / `6540936` 分别依赖对应候选和原生对照成功结束；QA 完成不等于九 baseline 比较已完成，不提前宣告其余 reader 达标。
+**Qwen4 和 Gemma 的完整迁移与同环境九 baseline 比较均已完成，各为 5 胜 1 负。** 原生对照各为十方法、33860 条 QA；汇总 `6540932` / `6540936` 已核对 reader 环境一致。以下每格为“新方法 / 九项原生最佳”，百分制、各任务原生指标：
+
+| 任务 | Qwen3.5-4B | Gemma-3-4B |
+|---|---:|---:|
+| SH-Doc QA | 93 / 85 | 89 / 84 |
+| MH-Doc QA | 59 / 55 | 54 / 50 |
+| FactConsolidation-SH | 74 / 55 | 68 / 60 |
+| FactConsolidation-MH | 15 / 5 | 11 / 6 |
+| LoCoMo | 49.74 / 50.55 | 38.41 / 40.87 |
+| 2WikiMultiHopQA | 59.34 / 49.81 | 49.19 / 44.35 |
+
+二者相对各自旧完整方法均为 5 胜 1 负，LoCoMo 分别从 50.15 降至 49.74、从 40.00 降至 38.41，不隐藏该代价。目前三个 reader 达到主比较 5/6，Qwen9 候选及原生对照的完整比较仍待 `6540934` 汇总，不提前宣告四 reader 总目标达成。输出为 `optimization_source_fact_transfer_seed42_20260920/main/<reader>/comparison.json`。
+
+获胜操作已加入普通查询接口 `optimization/retriever/query_fact_context.py`，尚未更改默认方法。CPU 预检 `6540993` 在 FC-SH 因误用底座 recognition 缓存而停止，没有静默退回 dense。修正为旧优化图对应的独立缓存副本后，`6541003` 已完成六任务、15 组、30 题预检，原检索结果及上下文文本、分数、元数据完全一致，零新增编码和识别调用。全量 3386 题重放为 `6541021`。它验证实现重现性，不是新增 QA 成绩或独立泛化证据。
+
+下一项 IRCoT 使用同一事实补充操作，仍固定既有轨迹、原文条数和顺序，只改最终 QA 上下文；按原问题选择十条事实，不使用答案或新增子问题。CPU 预检 `6541026` 依赖完整接口重放成功，四 reader 的 GPU 接口预检 Llama/Qwen4/Qwen9/Gemma 为 `6541029` / `6541031` / `6541036` / `6541037`，各为三档轮数、六任务、90 条 QA。对照复用已完成且 reader 环境一致的 BM25 原文、图原文及全量附录条件，实际 token 长度先检查，超长报错不删题。目录 `optimization_ircot_fact_context_seed42_20260920`；尚未启动全量，不预报收益。
 
 ### 四 reader 的最终 QA 增强已全部结束，不作为统一主方法
 
