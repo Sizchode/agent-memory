@@ -43,7 +43,7 @@ Llama 完整产物为 `optimization_fact_context_seed42_20260920/source_and_fact
 
 模块验证结束后，原 one-shot 事实补充的 `run_fact_context.py` / `.sbatch` 也与 `optimization_fact_context_seed42_20260920/source_and_fact_context/main/code_6540635.zip` 逐字节核对后删除。完整输入、预测、负结果和归档保留；reader 迁移只读输入，不依赖被删除文件。
 
-下一项 IRCoT 使用同一事实补充操作，仍固定既有轨迹、原文条数和顺序，只改最终 QA 上下文；按原问题选择十条事实，不使用答案或新增子问题。CPU 预检 `6541026` 和全量准备 `6541194` 均成功，后者用时 3 分 16 秒。四 reader 的 GPU 接口预检 Llama/Qwen4/Qwen9/Gemma `6541029` / `6541031` / `6541036` / `6541037` 已全部通过，各为三档轮数、六任务、90 条 QA。按同一设置提交四组全量 `6541203` / `6541210` / `6541220` / `6541221`，各新增 10158 条 QA，合计 40632 条。Llama/Gemma 使用 `gpu`，Qwen4/Qwen9 使用 `gpu-he`；均为 L40S、单 CPU、48 GB、4 小时上限。对照复用已完成且 reader 环境一致的 BM25 原文、图原文及全量附录条件，实际 token 长度先检查，超长报错不删题。目录 `optimization_ircot_fact_context_seed42_20260920`；尚无完整效果结论。
+IRCoT 使用同一事实补充操作，仍固定既有轨迹、原文条数和顺序，只改最终 QA 上下文；按原问题选择十条事实，不使用答案或新增子问题。CPU 预检 `6541026` 和全量准备 `6541194` 均成功，后者用时 3 分 16 秒。四 reader 的 GPU 接口预检 Llama/Qwen4/Qwen9/Gemma `6541029` / `6541031` / `6541036` / `6541037` 已全部通过，各为三档轮数、六任务、90 条 QA。四组全量 `6541203` / `6541210` / `6541220` / `6541221` 已全部完成，各新增 10158 条 QA，合计 40632 条。Llama/Gemma 使用 `gpu`，Qwen4/Qwen9 使用 `gpu-he`；均为 L40S、单 CPU、48 GB、4 小时上限。对照复用已完成且 reader 环境一致的 BM25 原文、图原文及全量附录条件，实际 token 长度先检查，超长报错不删题。目录 `optimization_ircot_fact_context_seed42_20260920`；完整结果见下方。
 
 ### 固定轨迹 IRCoT：完整四模型曲线
 
