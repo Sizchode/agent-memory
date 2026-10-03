@@ -27,3 +27,25 @@ index ccf2067..986ed0d 100644
                      timestamps_list,
                      weekday_list,
                      speaker_list,
+diff --git a/src/lightmem/memory/lightmem.py b/src/lightmem/memory/lightmem.py
+index 3fa230b..60a968a 100644
+--- a/src/lightmem/memory/lightmem.py
++++ b/src/lightmem/memory/lightmem.py
+@@ -531,7 +531,7 @@ class LightMemory:
+         self.logger.info(f"[{call_id}] Starting parallel queue construction with {max_workers} workers")
+ 
+         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+-            executor.map(_update_queue_construction, all_entries)
++            list(executor.map(_update_queue_construction, all_entries))
+         self.logger.info(
+             f"[{call_id}] Queue construction completed: {updated_count} updated, {skipped_count} skipped, "
+             f"nonempty_queues={nonempty_queue_count}, empty_queues={empty_queue_count}"
+@@ -626,7 +626,7 @@ class LightMemory:
+                 self.logger.debug(f"[{call_id}] Updated entry: {eid}")
+         self.logger.info(f"[{call_id}] Starting parallel offline update with {max_workers} workers")
+         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+-            executor.map(update_entry, all_entries)
++            list(executor.map(update_entry, all_entries))
+         with lock:
+             self.token_stats["update_calls"] += update_token_stats["calls"]
+             self.token_stats["update_prompt_tokens"] += update_token_stats["prompt_tokens"]

@@ -258,7 +258,7 @@ def endpoint(job_id):
     raise RuntimeError("The requested recognition service did not become ready")
 
 
-def worker(model):
+def worker(model, seed=SEED):
     import torch
     from huggingface_hub import hf_hub_download
     from transformers import AutoConfig, GenerationConfig
@@ -277,14 +277,14 @@ def worker(model):
             if getattr(defaults, name, None) is None:
                 setattr(defaults, name, value)
         assert defaults.no_repeat_ngram_size == 0 and defaults.num_beams == 1
-        llm = LLM(model=str(snapshot), dtype="bfloat16", tensor_parallel_size=1, seed=SEED,
+        llm = LLM(model=str(snapshot), dtype="bfloat16", tensor_parallel_size=1, seed=seed,
             max_model_len=32768, gpu_memory_utilization=0.85, enable_prefix_caching=True,
             max_num_seqs=BATCH_SIZE, max_num_batched_tokens=8192, language_model_only=True,
             safetensors_load_strategy="lazy")
         tokenizer = llm.get_tokenizer()
         metadata = dict(model=model, revision=MODELS[model], gpu=torch.cuda.get_device_name(),
             vllm=importlib.metadata.version("vllm"), transformers=importlib.metadata.version("transformers"),
-            torch=torch.__version__, cuda=torch.version.cuda, seed=SEED, batch_size=BATCH_SIZE,
+            torch=torch.__version__, cuda=torch.version.cuda, seed=seed, batch_size=BATCH_SIZE,
             prefix_caching=True, max_model_len=32768, language_model_only=True,
             generation_defaults=defaults.to_dict())
     print(RESPONSE_PREFIX + json.dumps(metadata), file=output, flush=True)
@@ -302,7 +302,7 @@ def worker(model):
             ids = input_ids(item)
             assert len(ids) + generation["max_tokens"] <= 32768
             sampling = dict(temperature=generation["temperature"], max_tokens=generation["max_tokens"],
-                seed=SEED, repetition_penalty=defaults.repetition_penalty)
+                seed=seed, repetition_penalty=defaults.repetition_penalty)
             if generation["temperature"] > 0:
                 sampling.update(top_k=generation.get("top_k", defaults.top_k) or -1,
                                 top_p=generation.get("top_p", defaults.top_p))
@@ -317,7 +317,7 @@ def worker(model):
         seconds = perf_counter() - start
         assert len(generated) == len(items)
         responses = []
-        for item, prompt, response in zip(items, prompts, generated, strict=True):
+        for item, prompt, response, parameters in zip(items, prompts, generated, settings, strict=True):
             assert list(response.prompt_token_ids) == prompt["prompt_token_ids"]
             assert len(response.outputs) == 1
             completion = response.outputs[0]
@@ -326,7 +326,8 @@ def worker(model):
                 assert answer, "Empty final QA completion"
             responses.append(dict(answer=answer, usage=dict(input_tokens=len(response.prompt_token_ids),
                 output_tokens=len(completion.token_ids), cached_input_tokens=response.num_cached_tokens),
-                generation_settings=item["generation"], finish_reason=completion.finish_reason))
+                generation_settings=item["generation"], sampling_seed=parameters.seed,
+                finish_reason=completion.finish_reason))
         return dict(responses=responses, batch_seconds=seconds)
 
     for line in sys.stdin:
@@ -367,13 +368,16 @@ def worker(model):
 
 
 class Reader:
-    def __init__(self, model):
+    def __init__(self, model, *, seed=SEED):
+        if not isinstance(seed, int) or not 0 <= seed < 2**32:
+            raise ValueError("QA seed must be an unsigned 32-bit integer")
         self.process = subprocess.Popen([str(VLLM / "python"), "-u", str(Path(__file__)),
-            "worker", "--model", model], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1,
+            "worker", "--model", model, "--seed", str(seed)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1,
             env=dict(os.environ, PATH=str(VLLM) + os.pathsep + os.environ.get("PATH", "")))
         try:
             self.metadata = self.read()
             assert self.metadata["revision"] == MODELS[model]
+            assert self.metadata["seed"] == seed
         except BaseException:
             self.close()
             raise
@@ -622,11 +626,13 @@ class Pipeline:
                     participant.max_num_sentences = max(CAPS)
 
 
-def evaluate_task(directory, task, reader, model, pilot):
+def evaluate_task(directory, task, reader, model, pilot, *, seed=SEED):
     from experiments.runner import _read_retrieval_records, _answer_prompt, _official_generation, _score, evaluate_retrieval
     from optimization.report_results import TASK_METRICS, audited_score
     rows = list(_read_retrieval_records(directory / "retrieval.jsonl"))
-    randomizer = random.Random(SEED)
+    if reader.metadata["seed"] != seed:
+        raise ValueError("QA evaluator and reader must use the same seed")
+    randomizer = random.Random(seed)
     requests = [dict(phase="answer", messages=_answer_prompt(row.case, row.retrieved, randomizer)[0],
         generation=_official_generation(row.case)) for row in rows]
     answers, timings = [], []
@@ -649,7 +655,7 @@ def evaluate_task(directory, task, reader, model, pilot):
             return answer["answer"]
 
     adapter = SavedAnswers()
-    summary = evaluate_retrieval(directory / "retrieval.jsonl", answer_model=adapter, output_dir=output, seed=SEED)
+    summary = evaluate_retrieval(directory / "retrieval.jsonl", answer_model=adapter, output_dir=output, seed=seed)
     assert adapter.index == len(rows) == len(answers)
     predictions = [json.loads(line) for line in (output / "predictions.jsonl").open()]
     for row, prediction in zip(rows, predictions, strict=True):
@@ -664,9 +670,10 @@ def evaluate_task(directory, task, reader, model, pilot):
     with (output / "qa_usage.jsonl").open("w") as stream:
         for row, answer in zip(rows, answers, strict=True):
             stream.write(json.dumps(dict(answer["usage"], case_id=row.case.case_id,
-                generation_settings=answer["generation_settings"], seed=SEED)) + "\n")
+                generation_settings=answer["generation_settings"], seed=seed,
+                sampling_seed=answer["sampling_seed"], raw_answer=answer["answer"])) + "\n")
     write_json(directory / "qa_complete.json", dict(complete=True, questions=len(rows), pilot=pilot,
-        score=score, summary=summary, native_evaluator=True, scores_recomputed=True, batch_timings=timings,
+        score=score, summary=summary, seed=seed, native_evaluator=True, scores_recomputed=True, batch_timings=timings,
         input_tokens=sum(a["usage"]["input_tokens"] for a in answers),
         output_tokens=sum(a["usage"]["output_tokens"] for a in answers)))
 
@@ -878,6 +885,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("phase", choices=("setup", "prepare", "serve", "serve-elasticsearch", "index-elasticsearch", "worker", "pilot", "run", "report"))
     parser.add_argument("--model", choices=MODELS)
+    parser.add_argument("--seed", type=int, default=SEED,
+                        help="Explicit QA worker seed; existing experiment commands retain seed 42")
     parser.add_argument("--generator-job-id")
     parser.add_argument("--output-root", type=Path, default=ROOT)
     parser.add_argument("--service-root", type=Path, default=SERVICE_ROOT)
@@ -885,6 +894,8 @@ if __name__ == "__main__":
                         help="Existing graph/index artifacts; use a separate output root for ablations")
     parser.add_argument("--graph-retrieval", choices=("graph", "hybrid"), default="graph")
     args = parser.parse_args()
+    if not 0 <= args.seed < 2**32 or (args.phase != "worker" and args.seed != SEED):
+        parser.error("A nondefault seed is supported only by the QA worker interface")
     ROOT, SERVICE_ROOT, GRAPH_RETRIEVAL = args.output_root, args.service_root, args.graph_retrieval
     if ROOT == SERVICE_ROOT and (GRAPH_RETRIEVAL == "hybrid" or args.graph_root != GRAPH):
         parser.error("Use a separate --output-root when changing graph artifacts or retrieval")
@@ -900,7 +911,7 @@ if __name__ == "__main__":
     elif args.phase == "serve":
         serve()
     elif args.phase == "worker":
-        worker(args.model)
+        worker(args.model, seed=args.seed)
     elif args.phase == "report":
         report()
     else:

@@ -1,0 +1,11 @@
+diff --git a/hypermem/structure.py b/hypermem/structure.py
+--- a/hypermem/structure.py
++++ b/hypermem/structure.py
+@@ -23,6 +23,7 @@ class FactRole(str, Enum):
+     CONTEXT = "context"
+     DETAIL = "detail"
+     TEMPORAL = "temporal"
++    SPATIAL = "spatial"
+     CAUSAL = "causal"
+ 
+ 

@@ -1,0 +1,13 @@
+{
+  "complete": true,
+  "native_score_checks": 40632,
+  "questions": 3386,
+  "readers": 4,
+  "conditions": [
+    "unit",
+    "amor",
+    "unit_released",
+    "amor_released"
+  ],
+  "source_contexts_verified": "/oscar/scratch/zliu328/agent-memory-outputs/optimization_simplified_amor_seed42_20260929/analysis/fact_weighting/inputs/complete.json"
+}

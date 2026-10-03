@@ -1,0 +1,36 @@
+diff --git a/AnchorMem.py b/AnchorMem.py
+--- a/AnchorMem.py
++++ b/AnchorMem.py
+@@ -691,7 +691,7 @@ class AnchorMem:
+                 result = future.result()
+                 
+                 if result["status"] == "error":
+-                    continue
++                    raise RuntimeError(f"Event extraction failed: {result['error']}")
+                 
+                 events = result["events"]
+                 fact_ids = result["related_fact_ids"]
+diff --git a/src/information_extraction/fact_extraction_openai.py b/src/information_extraction/fact_extraction_openai.py
+--- a/src/information_extraction/fact_extraction_openai.py
++++ b/src/information_extraction/fact_extraction_openai.py
+@@ -67,11 +67,15 @@ def extract_event_list(llm_output: str) -> List[str]:
+     text = re.sub(r"^```[a-zA-Z]*\n", "", text, flags=re.MULTILINE)
+     text = re.sub(r"\n```$", "", text, flags=re.MULTILINE)
+ 
+-    events = []
+-    for raw_event in re.findall(r"\((.*?)\)", text, re.DOTALL):
+-        event = raw_event.strip()
+-        if event:
+-            events.append(event)
++    # The released event prompt explicitly requests a JSON list of strings.
++    # Parentheses inside a narrative are content, not event delimiters.
++    try:
++        events = json.loads(text)
++    except json.JSONDecodeError:
++        # Same literal-list parser already used by extract_fact_list above.
++        events = ast.literal_eval(text)
++    if not _is_valid_str_list(events):
++        raise ValueError("Event response must be a JSON list of strings")
+     return events
+ 
+ 

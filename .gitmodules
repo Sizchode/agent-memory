@@ -7,3 +7,21 @@
 [submodule "baseline_algorithms/mem0"]
 	path = baseline_algorithms/mem0
 	url = https://github.com/mem0ai/mem0.git
+[submodule "baseline_algorithms/AnchorMem"]
+	path = baseline_algorithms/AnchorMem
+	url = https://github.com/RayNeo-AI-2025/AnchorMem.git
+[submodule "baseline_algorithms/CatRAG"]
+	path = baseline_algorithms/CatRAG
+	url = https://github.com/kwunhang/CatRAG.git
+[submodule "baseline_algorithms/LinearRAG"]
+	path = baseline_algorithms/LinearRAG
+	url = https://github.com/DEEP-PolyU/LinearRAG.git
+[submodule "baseline_algorithms/BrowseNet"]
+	path = baseline_algorithms/BrowseNet
+	url = https://github.com/bisect-group/BrowseNet.git
+[submodule "baseline_algorithms/REMem"]
+	path = baseline_algorithms/REMem
+	url = https://github.com/intuit-ai-research/REMem.git
+[submodule "baseline_algorithms/HyperMem"]
+	path = baseline_algorithms/HyperMem
+	url = https://github.com/EverMind-AI/HyperMem.git

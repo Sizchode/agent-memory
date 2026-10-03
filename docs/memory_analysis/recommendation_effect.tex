@@ -1,0 +1,19 @@
+\begin{table}[ht]
+\centering
+\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrr}
+\toprule
+Task ($n$) & Q4 & Q9 & G & L \\
+\midrule
+SH-Doc (100) & +9.0 & +11.0 & +10.0 & +8.0 \\
+MH-Doc (100) & +13.0 & +13.0 & +9.0 & +15.0 \\
+FC-SH (100) & +4.0 & +9.0 & +1.0 & +10.0 \\
+FC-MH (100) & +9.0 & +12.0 & +6.0 & +5.0 \\
+LoCoMo (1,986) & -1.9 & -0.5 & +0.5 & +0.4 \\
+2Wiki (1,000) & +13.3 & +12.3 & +10.2 & +9.7 \\
+\bottomrule
+\end{tabular}
+\caption{Effect of recommendation on native answer scores (percentage points), with context construction unchanged. The control replaces graph recommendation with dense selection and retains BM25 fusion. Document/FC scores are substring EM; 2Wiki is answer F1; LoCoMo uses its native category metrics.}
+\label{tab:recommendation-effect}
+\end{table}

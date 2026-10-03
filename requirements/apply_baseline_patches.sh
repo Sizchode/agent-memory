@@ -23,3 +23,12 @@ apply_exact_patch \
 apply_exact_patch \
   "${PROJECT_DIR}/baseline_algorithms/LightMem" \
   "${PROJECT_DIR}/baseline_patches/lightmem_vllm_and_source_id.patch"
+apply_exact_patch \
+  "${PROJECT_DIR}/baseline_algorithms/AnchorMem" \
+  "${PROJECT_DIR}/baseline_patches/anchormem_optional_imports.patch"
+apply_exact_patch \
+  "${PROJECT_DIR}/baseline_algorithms/AnchorMem" \
+  "${PROJECT_DIR}/baseline_patches/anchormem_event_json.patch"
+apply_exact_patch \
+  "${PROJECT_DIR}/baseline_algorithms/HyperMem" \
+  "${PROJECT_DIR}/baseline_patches/hypermem_fact_role.patch"

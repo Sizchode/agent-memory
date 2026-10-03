@@ -82,6 +82,25 @@ class LightMemBaseline:
     def retrieve(self, query: str, top_k: int) -> list[RetrievedItem]:
         return [RetrievedItem(text) for text in self._memory.retrieve(query, limit=top_k)]
 
+    def consolidate(self) -> dict[str, float]:
+        """Run the released LoCoMo offline stage on an already loaded store."""
+        from time import perf_counter
+        from lightmem.factory.memory_manager.openai import OpenaiManager
+
+        # Upstream implements this provider-independent prompt/parser only on
+        # OpenaiManager. Reuse it unchanged with our existing local vLLM client.
+        manager = self._memory.manager
+        if not hasattr(manager, "_call_update_llm"):
+            manager._call_update_llm = OpenaiManager._call_update_llm.__get__(manager)
+        start = perf_counter()
+        self._memory.construct_update_queue_all_entries()
+        queued = perf_counter()
+        self._memory.offline_update_all_entries(score_threshold=0.9)
+        return {"queue_seconds": queued - start, "offline_update_seconds": perf_counter() - queued}
+
+    def memory_records(self) -> list[dict[str, Any]]:
+        return self._memory.embedding_retriever.get_all(with_vectors=False)
+
     def efficiency_metrics(self) -> dict[str, Any]:
         return {
             "generation_client": self._generation_usage.snapshot(),
@@ -92,6 +111,9 @@ class LightMemBaseline:
         close = getattr(self._memory, "close", None)
         if callable(close):
             close()
+        else:
+            self._memory.embedding_retriever.client.close()
+            self._memory.manager.client.close()
 
 
 class HippoRAG2Baseline:

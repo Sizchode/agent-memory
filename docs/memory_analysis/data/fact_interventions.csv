@@ -1,0 +1,873 @@
+model,task,condition,scope,case_id,prediction,score
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no0,United States of America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no1,atheism,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no2,Asia,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no3,New York City,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no4,English,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no5,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no6,Italian,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no7,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no8,University of Southern California,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no9,Jim Bouton,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no10,Asia,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no11,Slough,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no12,New York City,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no13,Roman de la Rose,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no14,South America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no15,"California State University, Long Beach",1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no16,Europe,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no17,Not mentioned,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no18,Chicago,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no19,Berlin,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no20,Answer: Donald Trump,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no21,Europe,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no22,France,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no23,British Broadcasting Corporation,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no24,association football,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no25,South America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no26,North Charleston,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no27,Kabul,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no28,Japan,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no29,Dublin,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no30,The provided Knowledge Pool does not contain information about the,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no31,Stephen Greenblatt is employed by X Prize Foundation (,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no32,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no33,Gérard Blitz,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no34,Paris,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no35,Tokyo,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no36,Milan,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no37,Gérard Blitz,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no38,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no39,Pontifical Catholic University of Peru,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no40,No information provided.,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no41,Madonna,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no42,Dhaka,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no43,Urdu,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no44,United Kingdom,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no45,New York City,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no46,Helsinki,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no47,New York City,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no48,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no49,A. A. Milne,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no50,Peugeot,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no51,politician,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no52,Europe,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no53,Guy Vattier,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no54,Nashville,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no55,Middelburg,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no56,Tadey Eder,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no57,Baden bei Wien,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no58,Thomas Paine,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no59,Chicago,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no60,J. M. Barrie,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no61,Edinburgh,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no62,Tupac Shakur,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no63,London,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no64,Brythonic languages,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no65,science fiction,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no66,North America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no67,University of Southern California,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no68,Japan,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no69,New York City,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no70,Australia,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no71,Francis Parkman worked in the Office of Strategic,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no72,Rovaniemi,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no73,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no74,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no75,Europe,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no76,England,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no77,Santa Cruz de Succhubamba,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no78,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no79,Israel,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no80,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no81,Italy,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no82,London,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no83,crime boss,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no84,Asunción,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no85,politician,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no86,Methodism,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no87,Sweden,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no88,Donald Trump,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no89,New York City,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no90,Dzhokhar Dudayev is affiliated with,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no91,Carl XVI Gustaf,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no92,Sushma Swaraj,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no93,Havana,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no94,English,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no95,Apple Inc.,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no96,United States of America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no97,midfielder,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no98,"Washington, D.C.",0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no99,Florence,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,current,local_case,factconsolidation_mh_262k_no45,London,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,old_authorship,local_case,factconsolidation_mh_262k_no45,New York City,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-MH,restored,local_case,factconsolidation_mh_262k_no45,London,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no0,Federal University of Rio de Janeiro,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no1,salsa,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no2,Iceland,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no3,Boeing,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no4,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no5,Methodism,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no6,English,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no7,first baseman,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no8,Kūkai,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no9,World Wide Web Consortium,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no10,United States of America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no11,Kingdom of the Netherlands,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no12,United States of America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no13,Marc Benioff,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no14,Matt Groening,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no15,The Church of Jesus Christ of Latter-day Saints,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no16,Graham Linehan,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no17,Dutch,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no18,Microsoft,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no19,association football,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no20,United States of America,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no21,Harvard University,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no22,United Kingdom,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no23,United States of America,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no24,association football,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no25,United States of America,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no26,United States of America,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no27,Edi Rama,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no28,United Kingdom,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no29,baseball,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no30,Madonna,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no31,Pebbles Flintstone,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no32,Berlin,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no33,Pál Teleki,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no34,midfielder,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no35,British Broadcasting Corporation,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no36,Ford Motor Company,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no37,Catholic Church,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no38,MSNBC,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no39,Salome,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no40,Christopher Nolan,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no41,France,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no42,Ecuador,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no43,country music,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no44,"Helsinki, Memphis",1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no45,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no46,The Church of Jesus Christ of Latter-day Saints,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no47,basketball,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no48,France,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no49,Providence,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no50,association football,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no51,Catholic Church,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no52,University of Mississippi,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no53,German,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no54,Hartford,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no55,United States of America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no56,Europe,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no57,"baseball, basketball",1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no58,association football,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no59,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no60,Bridget Jones's Diary,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no61,University of Belgrade,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no62,North America,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no63,English,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no64,Italy,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no65,Stephen McNeil,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no66,Lancaster,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no67,Microsoft,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no68,British Broadcasting Corporation,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no69,Nepal,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no70,United States of America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no71,No official language is listed for Nokia in the provided,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no72,British Broadcasting Corporation,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no73,basketball player,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no74,United Kingdom,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no75,quarterback,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no76,United States of America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no77,Muay Thai,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no78,Nuapada,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no79,defenceman,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no80,London,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no81,United States of America,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no82,Russian,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no83,association football,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no84,Krysten Ritter,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no85,Flensburg,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no86,Federalist Papers,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no87,The Wharton School,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no88,Danny Danon,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no89,L. Ron Hubbard,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no90,Universal City,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no91,"Christopher Monck, 2nd Duke of Alb",0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no92,McDonald's,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no93,Robert Hooke,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no94,Bruce Bochy,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no95,United States of America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no96,Charaka Samhita,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no97,Catholic Church,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no98,shooting guard,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no99,Finnish,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,current,local_case,factconsolidation_sh_262k_no12,United Kingdom,1.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,remove_current_fact,local_case,factconsolidation_sh_262k_no12,United States of America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,old_country_fact,local_case,factconsolidation_sh_262k_no12,United States of America,0.0
+Qwen_Qwen3.5-4B,FactConsolidation-SH,restored,local_case,factconsolidation_sh_262k_no12,United Kingdom,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no0,Italy,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no1,Atheism,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no2,Africa,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no3,New York City,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no4,English,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no5,English,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no6,Italian,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no7,English,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no8,University of Southern California,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no9,Jim Bouton,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no10,Asia,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no11,Los Angeles,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no12,New York City,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no13,Roman de la Rose,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no14,South America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no15,Vancouver,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no16,Europe,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no17,Cannot be determined from the provided knowledge pool.,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no18,Los Angeles,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no19,Voronezh,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no20,Reuven Rivlin,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no21,Africa,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no22,People's Republic of China,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no23,British Broadcasting Corporation,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no24,basketball,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no25,South America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no26,North Charleston,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no27,Chiavari,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no28,"Washington, D.C.",0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no29,Dublin,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no30,United Kingdom,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no31,Devlet Bahçeli,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no32,English,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no33,Gérard Blitz,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no34,Paris,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no35,Brussels,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no36,Douglas,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no37,Gérard Blitz,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no38,English,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no39,Pontifical Catholic University of Peru,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no40,Arabic,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no41,Madonna,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no42,Skierniewice,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no43,Urdu,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no44,London,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no45,Manchester,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no46,Helsinki,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no47,New York City,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no48,Amharic,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no49,Hodgenville,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no50,Carlos Slim,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no51,politician,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no52,Africa,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no53,Guy Vattier,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no54,Saint Petersburg,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no55,Middelburg,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no56,Tadey Eder,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no57,Baden bei Wien,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no58,Thomas Paine,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no59,Chicago,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no60,No historical or religious figure is listed in the knowledge,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no61,Edinburgh,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no62,Tupac Shakur,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no63,London,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no64,English,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no65,The provided Knowledge Pool does not contain information about the,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no66,North America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no67,No information provided.,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no68,Japan,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no69,Frankfurt,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no70,United States of America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no71,Office of Strategic Services; Peter Diamandis,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no72,Rovaniemi,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no73,English,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no74,English,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no75,Asia,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no76,England,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no77,Santa Cruz de Succhubamba,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no78,English,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no79,University of Southern California,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no80,English,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no81,North America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no82,"Washington, D.C.",0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no83,Politician,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no84,Asunción,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no85,politician,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no86,Methodism,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no87,United States of America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no88,Nguema Mbasogo Teodoro Obiang,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no89,New York City,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no90,Saint Patrick,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no91,Carl XVI Gustaf of Sweden,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no92,Sushma Swaraj,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no93,Dhaka,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no94,English,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no95,Apple Inc.,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no96,Nigeria,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no97,Association football,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no98,No place of employment found in the knowledge pool.,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no99,Florence,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,current,local_case,factconsolidation_mh_262k_no45,London,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,old_authorship,local_case,factconsolidation_mh_262k_no45,Manchester,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-MH,restored,local_case,factconsolidation_mh_262k_no45,London,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no0,University of Florida,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no1,salsa,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no2,Iceland,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no3,Boeing,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no4,Kannada,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no5,Methodism,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no6,English,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no7,first baseman,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no8,William Waynflete,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no9,World Wide Web Consortium,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no10,Russia,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no11,Kingdom of the Netherlands,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no12,United States of America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no13,Marc Benioff,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no14,Ray Bradbury,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no15,The Church of Jesus Christ of Latter-day Saints,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no16,Graham Linehan,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no17,Dutch,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no18,Microsoft,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no19,association football,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no20,United States of America,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no21,Harvard University,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no22,United Kingdom,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no23,United States of America,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no24,association football,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no25,United States of America,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no26,United States of America,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no27,Edi Rama,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no28,United Kingdom,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no29,baseball,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no30,Madonna,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no31,Eric Garcetti,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no32,Berlin,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no33,Pál Teleki,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no34,midfielder,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no35,American Broadcasting Company,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no36,Ford Motor Company,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no37,Catholic Church,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no38,MSNBC,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no39,"Francis Russell, 4th Earl of Bedford",1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no40,Christopher Nolan,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no41,France,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no42,Ecuador,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no43,country music,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no44,Helsinki,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no45,English,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no46,The Church of Jesus Christ of Latter-day Saints,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no47,basketball,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no48,France,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no49,No city is mentioned for where H. P.,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no50,association football,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no51,Jainism,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no52,University of Mississippi,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no53,French,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no54,Hartford,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no55,United States of America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no56,Europe,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no57,basketball,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no58,association football,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no59,Hindi,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no60,Bridget Jones's Diary,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no61,University of Belgrade,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no62,North America,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no63,English,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no64,Italy,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no65,Khalifa bin Zayed Al Nahyan,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no66,Lancaster,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no67,Nissan,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no68,British Broadcasting Corporation,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no69,Nepal,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no70,United States of America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no71,No official language is recorded for Nokia in the provided,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no72,American Broadcasting Company,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no73,basketball player,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no74,United Kingdom,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no75,quarterback,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no76,United States of America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no77,Muay Thai,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no78,Nuapada,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no79,defenceman,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no80,London,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no81,United States of America,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no82,Russian,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no83,association football,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no84,Krysten Ritter,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no85,Flensburg,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no86,Federalist Papers,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no87,The Wharton School,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no88,Danny Danon,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no89,L. Ron Hubbard,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no90,Universal City,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no91,"Christopher Monck, 2nd Duke of Alb",0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no92,McDonald's,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no93,Brothers Grimm,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no94,Thiago Motta,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no95,United States of America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no96,A Wrinkle in Time,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no97,Catholic Church,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no98,shooting guard,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no99,Esperanto,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,current,local_case,factconsolidation_sh_262k_no12,United Kingdom of Great Britain and Ireland,1.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,remove_current_fact,local_case,factconsolidation_sh_262k_no12,United States of America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,old_country_fact,local_case,factconsolidation_sh_262k_no12,United States of America,0.0
+Qwen_Qwen3.5-9B,FactConsolidation-SH,restored,local_case,factconsolidation_sh_262k_no12,United Kingdom of Great Britain and Ireland,1.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no0,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no1,Austria-Hungary,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no2,Africa,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no3,New York City,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no4,English,1.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no5,French,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no6,Italian,1.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no7,English,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no8,University of Southern California,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no9,The headquarters of FC Viikingit is located in,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no10,Africa,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no11,Salisbury,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no12,WTTW,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no13,Roman de la Rose,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no14,United Kingdom,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no15,"California State University, Long Beach",1.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no16,Europe,1.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no17,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no18,Chicago,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no19,Quchan,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no20,Reuven Rivlin,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no21,Finland,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no22,association football,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no23,Carl Sagan,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no24,defensive back,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no25,Japan,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no26,North Charleston,1.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no27,Kabul,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no28,Japan,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no29,Dublin,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no30,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no31,X Prize Foundation,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no32,English,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no33,Gérard Blitz,1.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no34,Paris,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no35,Japan,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no36,Vienna,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no37,Catholic Church,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no38,English,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no39,Pontifical Catholic University of Peru,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no40,Islam,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no41,Madonna,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no42,New York City,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no43,French,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no44,United Kingdom,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no45,George Eliot,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no46,Helsinki,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no47,Dhaka,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no48,Italian,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no49,A. A. Milne,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no50,Peugeot,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no51,politician,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no52,Africa,1.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no53,Answer: Yvette Cooper,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no54,Saint Petersburg,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no55,Chicago,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no56,Federal Bureau of Investigation,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no57,Answer: United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no58,Thomas Paine,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no59,Chicago,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no60,The Church of Jesus Christ of Latter-day Saints,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no61,Edinburgh,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no62,Tupac Shakur,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no63,London,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no64,United Kingdom,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no65,William Shakespeare,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no66,Los Angeles,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no67,High School of Art and Design,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no68,Boeing,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no69,New York City,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no70,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no71,"Office of Strategic Services, Office of Strategic Services",0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no72,Athens,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no73,English,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no74,Telugu,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no75,Europe,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no76,England,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no77,United Kingdom of Great Britain and Ireland,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no78,United Kingdom,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no79,Academy of Fine Arts Vienna,1.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no80,English,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no81,United Kingdom,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no82,Independence,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no83,Goldust,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no84,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no85,politician,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no86,Methodism,1.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no87,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no88,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no89,New York City,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no90,Catholic Church,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no91,Brad Stevens,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no92,Jean-Marc Le Rudulier,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no93,Moscow,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no94,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no95,Mariinsky Theatre,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no96,Stevenage F.C.,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no97,association football,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no98,Church of Scotland,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no99,Madrid,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,current,local_case,factconsolidation_mh_262k_no45,London,1.0
+google_gemma-3-4b-it,FactConsolidation-MH,old_authorship,local_case,factconsolidation_mh_262k_no45,George Eliot,0.0
+google_gemma-3-4b-it,FactConsolidation-MH,restored,local_case,factconsolidation_mh_262k_no45,London,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no0,University of Florida,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no1,salsa,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no2,Iceland,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no3,Boeing,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no4,"English, Kannada",1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no5,Catholic Church,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no6,English,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no7,placekicker,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no8,Kūkai,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no9,World Wide Web Consortium,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no10,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no11,Kingdom of the Netherlands,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no12,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no13,Brendan Iribe,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no14,Matt Groening,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no15,The Church of Jesus Christ of Latter-day Saints,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no16,Graham Linehan,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no17,Dutch,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no18,Microsoft,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no19,association football,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no20,United States of America,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no21,Harvard University,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no22,United Kingdom,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no23,United States of America,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no24,association football,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no25,United States of America,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no26,United States of America,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no27,Edi Rama,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no28,Singapore,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no29,baseball,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no30,Madonna,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no31,Pebbles Flintstone,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no32,Antwerp,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no33,Pál Teleki,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no34,midfielder,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no35,American Broadcasting Company,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no36,Ford Motor Company,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no37,Christian Science,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no38,MSNBC,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no39,Salome,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no40,Christopher Nolan,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no41,Israel,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no42,Ecuador,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no43,country music,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no44,Memphis,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no45,English,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no46,The Church of Jesus Christ of Latter-day Saints,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no47,basketball,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no48,United Kingdom,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no49,Providence,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no50,association football,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no51,Jainism,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no52,University of Mississippi,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no53,German,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no54,Hartford,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no55,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no56,North America,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no57,baseball,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no58,association football,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no59,English,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no60,Bridget Jones's Diary,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no61,WWE,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no62,North America,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no63,Spanish,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no64,Italy,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no65,Khalifa bin Zayed Al Nahyan,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no66,Rome,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no67,Microsoft,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no68,British Broadcasting Corporation,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no69,Nepal,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no70,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no71,"Nokia, produced, PlayStation",0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no72,American Broadcasting Company,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no73,basketball player,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no74,United Kingdom,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no75,goalkeeper,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no76,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no77,Muay Thai,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no78,Nuapada,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no79,goalkeeper,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no80,London,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no81,United States of America,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no82,Russian,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no83,association football,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no84,Krysten Ritter,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no85,Flensburg,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no86,Federalist Papers,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no87,The Wharton School,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no88,Peter Dutton,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no89,L. Ron Hubbard,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no90,Universal City,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no91,"Christopher Monck, 2nd Duke of Alb",0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no92,McDonald's,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no93,Robert Hooke,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no94,Thiago Motta,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no95,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no96,A Wrinkle in Time,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no97,Catholic Church,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no98,shooting guard,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no99,Finnish,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,current,local_case,factconsolidation_sh_262k_no12,United Kingdom,1.0
+google_gemma-3-4b-it,FactConsolidation-SH,remove_current_fact,local_case,factconsolidation_sh_262k_no12,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,old_country_fact,local_case,factconsolidation_sh_262k_no12,United States of America,0.0
+google_gemma-3-4b-it,FactConsolidation-SH,restored,local_case,factconsolidation_sh_262k_no12,United Kingdom,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no0,10908.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no1,1199. Dell Inc. was founded by Michael,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no2,112,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no3,New York City,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no4,English,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no5,"Based on the provided knowledge pool, I will find",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no6,English,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no7,1054.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no8,14943. The author of Measure for Measure is,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no9,1186. The headquarters of Northwestern University is located,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no10,"[Knowledge Pool]
+
+The newest fact with larger serial",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no11,Giulio Alberoni is affiliated with Method,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no12,15213. The origianl broadcaster of Adventures,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no13,852. Miley Stewart was performed by Miley,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no14,14149. Fernando Lugo is a citizen of,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no15,University of Arizona,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no16,"[Knowledge Pool]
+
+To answer the question, I",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no17,"[Knowledge Pool]
+
+From the knowledge pool, I",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no18,16048. The company that produced Ford Ranger is,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no19,15020. Bo Ryan is associated with the sport,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no20,"[Evidence 1]
+Source position: 8",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no21,8627. Gerry Conway is a citizen of Australia,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no22,16411. Copa del Rey is associated with the,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no23,4991. Lynn Margulis is married to Carl,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no24,Defensive back,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no25,"[Knowledge Pool]
+
+The serial numbers of facts about",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no26,North Charleston,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no27,11221,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no28,14971. Family Force 5 was created in,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no29,14484. The author of Carmilla is Sheridan,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no30,17419.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no31,1850. The organization where Stephen Greenblatt,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no32,"[Knowledge Pool]
+
+ Evidence 1 
+Source position",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no33,17838. The univeristy where James Michael,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no34,Paris,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no35,"[Knowledge Pool]
+
+The serial numbers of facts are",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no36,"[Knowledge Pool]
+
+ Evidence 2: 
+Source",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no37,Gérard Blitz,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no38,10253.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no39,13875. Sigismund is affiliated with the,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no40,Malik Kafur is affiliated with the religion of,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no41,Madonna,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no42,"[Knowledge Pool]
+
+To answer the question, we",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no43,"[Knowledge Pool]
+
+ Serial Number 9544:",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no44,"[Knowledge Pool]
+
+To answer the question, we",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no45,422,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no46,14814. Sailfish OS was developed by J,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no47,1857.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no48,13518.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no49,16885. Indiana Jones was created by A.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no50,11355. The company that produced Chevrolet Chevelle,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no51,politician,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no52,"[Knowledge Pool]
+
+ Serial number 11440:",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no53,"[Sentence 1]
+Source position: 419",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no54,11861. Steve Cooley is affiliated with the,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no55,18624.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no56,Tadey Eder,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no57,Saint Eligius was affiliated with the religion of Catholic,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no58,Allen Ginsberg,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no59,Chicago,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no60,"Based on the knowledge pool, the newest fact with",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no61,8885. The author of Ivanhoe is Walter,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no62,13904. The type of music that Andy Griffith,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no63,3790. Joely Richardson was born in the,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no64,English,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no65,"The literary genre of the book ""Dune""",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no66,10255,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no67,15998,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no68,Chevrolet Caprice was produced by Boeing.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no69,"[Knowledge Pool]
+
+The genre that Benjamin Sisko",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no70,6767. The author of David Copperfield is,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no71,"Office of Strategic Services, The Trump Organization",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no72,15955. The univeristy where Jonathan Edwards,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no73,English,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no74,14560. Tomokazu Seki is a,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no75,"[Knowledge Pool]
+
+Unfortunately, I cannot find the",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no76,18296,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no77,14266,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no78,15998.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no79,"[Knowledge Pool]
+
+Answer: Israel",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no80,English,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no81,18252.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no82,Edward Mooney is affiliated with the religion of Christian,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no83,Goldust,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no84,2079. Lennie Tristano is a,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no85,1592,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no86,13606. Morgan Tsvangirai is,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no87,17835. WWE Tough Enough was created by William,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no88,15989.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no89,New York City,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no90,Catholic Church,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no91,"Brad Stevens is associated with basketball. 
+The head",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no92,1985 NBA Draft is associated with the sport of,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no93,"[Knowledge Pool]
+
+To find the answer, I",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no94,10364. The author of io9 is Ann,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no95,"[Knowledge Pool]
+
+4957. The origian",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no96,15998,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no97,"[Knowledge Pool]
+
+Answer: association football",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no98,187. The religion practiced by Jacqueline Kennedy Onassis,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,all_fact_candidates,population,factconsolidation_mh_262k_no99,11080. University of St. Thomas is affiliated,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,current,local_case,factconsolidation_mh_262k_no45,London,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,old_authorship,local_case,factconsolidation_mh_262k_no45,422,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-MH,restored,local_case,factconsolidation_mh_262k_no45,London,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no0,Federal University of Rio de Janeiro,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no1,salsa.,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no2,12218,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no3,15279,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no4,Kannada,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no5,Catholic Church,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no6,English,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no7,placekicker.,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no8,8531.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no9,14180.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no10,United States of America,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no11,The country of citizenship of Davina McCall is,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no12,4797.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no13,158,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no14,16296.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no15,The newest fact with a larger serial number is,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no16,Graham Linehan.,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no17,Dutch.,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no18,Microsoft,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no19,15,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no20,4416. Trudie Styler is a,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no21,Helen Vendler is employed by Harvard University.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no22,United Kingdom,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no23,United States of America.,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no24,15543. Diego Milito is associated with the,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no25,United States of America,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no26,15542.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no27,Edi Rama,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no28,United Kingdom,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no29,baseball,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no30,11395,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no31,Eric Garcetti,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no32,Antwerp.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no33,10297. Armani was founded by Pál,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no34,16535.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no35,American Broadcasting Company,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no36,Colt's Manufacturing Company,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no37,11616.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no38,9982,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no39,"Francis Russell, 4th Earl of Bedford",1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no40,Christopher Nolan,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no41,France,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no42,Ecuador,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no43,3305. The type of music that Andy Griffith,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no44,"[Knowledge Pool]
+
+The newest fact with larger serial",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no45,11572. Don Draper speaks the language of,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no46,The religion that Joseph Lyons is affiliated with is The,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no47,13765.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no48,115,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no49,Paris,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no50,Grêmio Barueri Futebol is,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no51,2964. Pius VI is affiliated with the,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no52,"12342. 
+The univeristy where Frank",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no53,15409. The author of King Lear is The,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no54,Hartford,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no55,United States of America.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no56,"[Knowledge Pool]
+
+The newest fact with larger serial",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no57,10866.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no58,8565.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no59,13006. The univeristy where Michael Mad,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no60,9734.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no61,University of Belgrade,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no62,North America,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no63,English,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no64,"Gianni Morbidelli, is a citizen of",0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no65,12024.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no66,15930,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no67,9092.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no68,Central Intelligence Agency,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no69,The Unit was created in the country of United States,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no70,United States of America,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no71,13,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no72,1147. The origianl broadcaster of Fantasy,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no73,N. Chandrababu Naidu is head,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no74,George R. R. Martin,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no75,14773. Shay Given plays the position of quarterback,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no76,United States of America,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no77,Muay Thai,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no78,Nuapada,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no79,Defenceman.,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no80,London,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no81,United States of America.,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no82,14923,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no83,Larry Bird is associated with basketball.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no84,13112. Jessica Jones was performed by Kryst,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no85,Flensburg,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no86,Federalist Papers,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no87,11318. The univeristy where Pablo Ner,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no88,16183. The company that produced Ford Escort is,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no89,L. Ron Hubbard,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no90,1071.,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no91,Chiang Ching-kuo,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no92,The company that produced Big Mac is McDonald's.,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no93,3497. Margaery Tyrell was created,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no94,10009. The head coach of San Francisco Giants,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no95,United Kingdom,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no96,Charaka Samhita,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no97,11516. Samuel Richardson is affiliated with the religion,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no98,shooting guard,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,all_context_facts,population,factconsolidation_sh_262k_no99,11918. The official language of Tampere,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,current,local_case,factconsolidation_sh_262k_no12,United Kingdom,1.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,remove_current_fact,local_case,factconsolidation_sh_262k_no12,1867. United States of America,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,old_country_fact,local_case,factconsolidation_sh_262k_no12,Witches of East End was created in the country,0.0
+meta-llama_Llama-3.1-8B-Instruct,FactConsolidation-SH,restored,local_case,factconsolidation_sh_262k_no12,United Kingdom,1.0

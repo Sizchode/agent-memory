@@ -1,0 +1,241 @@
+task,model,method,questions,metric,score
+SH-Doc_QA,Qwen_Qwen3.5-4B,bm25,100,Substring EM,79.0
+SH-Doc_QA,Qwen_Qwen3.5-4B,dense,100,Substring EM,49.0
+SH-Doc_QA,Qwen_Qwen3.5-4B,hipporag2,100,Substring EM,85.0
+SH-Doc_QA,Qwen_Qwen3.5-4B,catrag,100,Substring EM,72.0
+SH-Doc_QA,Qwen_Qwen3.5-4B,mem0,100,Substring EM,83.0
+SH-Doc_QA,Qwen_Qwen3.5-4B,lightmem_offline,100,Substring EM,52.0
+SH-Doc_QA,Qwen_Qwen3.5-4B,anchormem_official,100,Substring EM,82.0
+SH-Doc_QA,Qwen_Qwen3.5-4B,libra,100,Substring EM,93.0
+SH-Doc_QA,Qwen_Qwen3.5-4B,without_propagation,100,Substring EM,84.0
+SH-Doc_QA,Qwen_Qwen3.5-4B,without_context_augmentation,100,Substring EM,89.0
+SH-Doc_QA,Qwen_Qwen3.5-9B,bm25,100,Substring EM,79.0
+SH-Doc_QA,Qwen_Qwen3.5-9B,dense,100,Substring EM,53.0
+SH-Doc_QA,Qwen_Qwen3.5-9B,hipporag2,100,Substring EM,88.0
+SH-Doc_QA,Qwen_Qwen3.5-9B,catrag,100,Substring EM,74.0
+SH-Doc_QA,Qwen_Qwen3.5-9B,mem0,100,Substring EM,87.0
+SH-Doc_QA,Qwen_Qwen3.5-9B,lightmem_offline,100,Substring EM,53.0
+SH-Doc_QA,Qwen_Qwen3.5-9B,anchormem_official,100,Substring EM,88.0
+SH-Doc_QA,Qwen_Qwen3.5-9B,libra,100,Substring EM,93.0
+SH-Doc_QA,Qwen_Qwen3.5-9B,without_propagation,100,Substring EM,82.0
+SH-Doc_QA,Qwen_Qwen3.5-9B,without_context_augmentation,100,Substring EM,91.0
+SH-Doc_QA,google_gemma-3-4b-it,bm25,100,Substring EM,77.0
+SH-Doc_QA,google_gemma-3-4b-it,dense,100,Substring EM,54.0
+SH-Doc_QA,google_gemma-3-4b-it,hipporag2,100,Substring EM,84.0
+SH-Doc_QA,google_gemma-3-4b-it,catrag,100,Substring EM,72.0
+SH-Doc_QA,google_gemma-3-4b-it,mem0,100,Substring EM,84.0
+SH-Doc_QA,google_gemma-3-4b-it,lightmem_offline,100,Substring EM,48.0
+SH-Doc_QA,google_gemma-3-4b-it,anchormem_official,100,Substring EM,84.0
+SH-Doc_QA,google_gemma-3-4b-it,libra,100,Substring EM,89.0
+SH-Doc_QA,google_gemma-3-4b-it,without_propagation,100,Substring EM,79.0
+SH-Doc_QA,google_gemma-3-4b-it,without_context_augmentation,100,Substring EM,85.0
+SH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,bm25,100,Substring EM,78.0
+SH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,dense,100,Substring EM,51.0
+SH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,hipporag2,100,Substring EM,84.0
+SH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,catrag,100,Substring EM,73.0
+SH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,mem0,100,Substring EM,86.0
+SH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,lightmem_offline,100,Substring EM,52.0
+SH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,anchormem_official,100,Substring EM,89.0
+SH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,libra,100,Substring EM,86.0
+SH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,without_propagation,100,Substring EM,78.0
+SH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,without_context_augmentation,100,Substring EM,85.0
+MH-Doc_QA,Qwen_Qwen3.5-4B,bm25,100,Substring EM,44.0
+MH-Doc_QA,Qwen_Qwen3.5-4B,dense,100,Substring EM,39.0
+MH-Doc_QA,Qwen_Qwen3.5-4B,hipporag2,100,Substring EM,55.0
+MH-Doc_QA,Qwen_Qwen3.5-4B,catrag,100,Substring EM,50.0
+MH-Doc_QA,Qwen_Qwen3.5-4B,mem0,100,Substring EM,46.0
+MH-Doc_QA,Qwen_Qwen3.5-4B,lightmem_offline,100,Substring EM,39.0
+MH-Doc_QA,Qwen_Qwen3.5-4B,anchormem_official,100,Substring EM,46.0
+MH-Doc_QA,Qwen_Qwen3.5-4B,libra,100,Substring EM,59.0
+MH-Doc_QA,Qwen_Qwen3.5-4B,without_propagation,100,Substring EM,46.0
+MH-Doc_QA,Qwen_Qwen3.5-4B,without_context_augmentation,100,Substring EM,57.0
+MH-Doc_QA,Qwen_Qwen3.5-9B,bm25,100,Substring EM,49.0
+MH-Doc_QA,Qwen_Qwen3.5-9B,dense,100,Substring EM,47.0
+MH-Doc_QA,Qwen_Qwen3.5-9B,hipporag2,100,Substring EM,62.0
+MH-Doc_QA,Qwen_Qwen3.5-9B,catrag,100,Substring EM,54.0
+MH-Doc_QA,Qwen_Qwen3.5-9B,mem0,100,Substring EM,48.0
+MH-Doc_QA,Qwen_Qwen3.5-9B,lightmem_offline,100,Substring EM,39.0
+MH-Doc_QA,Qwen_Qwen3.5-9B,anchormem_official,100,Substring EM,53.0
+MH-Doc_QA,Qwen_Qwen3.5-9B,libra,100,Substring EM,63.0
+MH-Doc_QA,Qwen_Qwen3.5-9B,without_propagation,100,Substring EM,50.0
+MH-Doc_QA,Qwen_Qwen3.5-9B,without_context_augmentation,100,Substring EM,63.0
+MH-Doc_QA,google_gemma-3-4b-it,bm25,100,Substring EM,43.0
+MH-Doc_QA,google_gemma-3-4b-it,dense,100,Substring EM,35.0
+MH-Doc_QA,google_gemma-3-4b-it,hipporag2,100,Substring EM,50.0
+MH-Doc_QA,google_gemma-3-4b-it,catrag,100,Substring EM,41.0
+MH-Doc_QA,google_gemma-3-4b-it,mem0,100,Substring EM,47.0
+MH-Doc_QA,google_gemma-3-4b-it,lightmem_offline,100,Substring EM,34.0
+MH-Doc_QA,google_gemma-3-4b-it,anchormem_official,100,Substring EM,42.0
+MH-Doc_QA,google_gemma-3-4b-it,libra,100,Substring EM,54.0
+MH-Doc_QA,google_gemma-3-4b-it,without_propagation,100,Substring EM,45.0
+MH-Doc_QA,google_gemma-3-4b-it,without_context_augmentation,100,Substring EM,52.0
+MH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,bm25,100,Substring EM,48.0
+MH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,dense,100,Substring EM,39.0
+MH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,hipporag2,100,Substring EM,56.0
+MH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,catrag,100,Substring EM,45.0
+MH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,mem0,100,Substring EM,50.0
+MH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,lightmem_offline,100,Substring EM,42.0
+MH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,anchormem_official,100,Substring EM,52.0
+MH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,libra,100,Substring EM,61.0
+MH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,without_propagation,100,Substring EM,46.0
+MH-Doc_QA,meta-llama_Llama-3.1-8B-Instruct,without_context_augmentation,100,Substring EM,57.0
+FactConsolidation-SH,Qwen_Qwen3.5-4B,bm25,100,Substring EM,50.0
+FactConsolidation-SH,Qwen_Qwen3.5-4B,dense,100,Substring EM,24.0
+FactConsolidation-SH,Qwen_Qwen3.5-4B,hipporag2,100,Substring EM,40.0
+FactConsolidation-SH,Qwen_Qwen3.5-4B,catrag,100,Substring EM,31.0
+FactConsolidation-SH,Qwen_Qwen3.5-4B,mem0,100,Substring EM,55.0
+FactConsolidation-SH,Qwen_Qwen3.5-4B,lightmem_offline,100,Substring EM,47.0
+FactConsolidation-SH,Qwen_Qwen3.5-4B,anchormem_official,100,Substring EM,45.0
+FactConsolidation-SH,Qwen_Qwen3.5-4B,libra,100,Substring EM,75.0
+FactConsolidation-SH,Qwen_Qwen3.5-4B,without_propagation,100,Substring EM,71.0
+FactConsolidation-SH,Qwen_Qwen3.5-4B,without_context_augmentation,100,Substring EM,50.0
+FactConsolidation-SH,Qwen_Qwen3.5-9B,bm25,100,Substring EM,52.0
+FactConsolidation-SH,Qwen_Qwen3.5-9B,dense,100,Substring EM,23.0
+FactConsolidation-SH,Qwen_Qwen3.5-9B,hipporag2,100,Substring EM,42.0
+FactConsolidation-SH,Qwen_Qwen3.5-9B,catrag,100,Substring EM,29.0
+FactConsolidation-SH,Qwen_Qwen3.5-9B,mem0,100,Substring EM,66.0
+FactConsolidation-SH,Qwen_Qwen3.5-9B,lightmem_offline,100,Substring EM,49.0
+FactConsolidation-SH,Qwen_Qwen3.5-9B,anchormem_official,100,Substring EM,54.0
+FactConsolidation-SH,Qwen_Qwen3.5-9B,libra,100,Substring EM,82.0
+FactConsolidation-SH,Qwen_Qwen3.5-9B,without_propagation,100,Substring EM,73.0
+FactConsolidation-SH,Qwen_Qwen3.5-9B,without_context_augmentation,100,Substring EM,53.0
+FactConsolidation-SH,google_gemma-3-4b-it,bm25,100,Substring EM,51.0
+FactConsolidation-SH,google_gemma-3-4b-it,dense,100,Substring EM,26.0
+FactConsolidation-SH,google_gemma-3-4b-it,hipporag2,100,Substring EM,45.0
+FactConsolidation-SH,google_gemma-3-4b-it,catrag,100,Substring EM,31.0
+FactConsolidation-SH,google_gemma-3-4b-it,mem0,100,Substring EM,55.0
+FactConsolidation-SH,google_gemma-3-4b-it,lightmem_offline,100,Substring EM,59.0
+FactConsolidation-SH,google_gemma-3-4b-it,anchormem_official,100,Substring EM,43.0
+FactConsolidation-SH,google_gemma-3-4b-it,libra,100,Substring EM,71.0
+FactConsolidation-SH,google_gemma-3-4b-it,without_propagation,100,Substring EM,70.0
+FactConsolidation-SH,google_gemma-3-4b-it,without_context_augmentation,100,Substring EM,49.0
+FactConsolidation-SH,meta-llama_Llama-3.1-8B-Instruct,bm25,100,Substring EM,34.0
+FactConsolidation-SH,meta-llama_Llama-3.1-8B-Instruct,dense,100,Substring EM,13.0
+FactConsolidation-SH,meta-llama_Llama-3.1-8B-Instruct,hipporag2,100,Substring EM,25.0
+FactConsolidation-SH,meta-llama_Llama-3.1-8B-Instruct,catrag,100,Substring EM,18.0
+FactConsolidation-SH,meta-llama_Llama-3.1-8B-Instruct,mem0,100,Substring EM,1.0
+FactConsolidation-SH,meta-llama_Llama-3.1-8B-Instruct,lightmem_offline,100,Substring EM,0.0
+FactConsolidation-SH,meta-llama_Llama-3.1-8B-Instruct,anchormem_official,100,Substring EM,26.0
+FactConsolidation-SH,meta-llama_Llama-3.1-8B-Instruct,libra,100,Substring EM,43.0
+FactConsolidation-SH,meta-llama_Llama-3.1-8B-Instruct,without_propagation,100,Substring EM,33.0
+FactConsolidation-SH,meta-llama_Llama-3.1-8B-Instruct,without_context_augmentation,100,Substring EM,30.0
+FactConsolidation-MH,Qwen_Qwen3.5-4B,bm25,100,Substring EM,4.0
+FactConsolidation-MH,Qwen_Qwen3.5-4B,dense,100,Substring EM,3.0
+FactConsolidation-MH,Qwen_Qwen3.5-4B,hipporag2,100,Substring EM,2.0
+FactConsolidation-MH,Qwen_Qwen3.5-4B,catrag,100,Substring EM,3.0
+FactConsolidation-MH,Qwen_Qwen3.5-4B,mem0,100,Substring EM,3.0
+FactConsolidation-MH,Qwen_Qwen3.5-4B,lightmem_offline,100,Substring EM,4.0
+FactConsolidation-MH,Qwen_Qwen3.5-4B,anchormem_official,100,Substring EM,5.0
+FactConsolidation-MH,Qwen_Qwen3.5-4B,libra,100,Substring EM,14.0
+FactConsolidation-MH,Qwen_Qwen3.5-4B,without_propagation,100,Substring EM,5.0
+FactConsolidation-MH,Qwen_Qwen3.5-4B,without_context_augmentation,100,Substring EM,12.0
+FactConsolidation-MH,Qwen_Qwen3.5-9B,bm25,100,Substring EM,4.0
+FactConsolidation-MH,Qwen_Qwen3.5-9B,dense,100,Substring EM,2.0
+FactConsolidation-MH,Qwen_Qwen3.5-9B,hipporag2,100,Substring EM,5.0
+FactConsolidation-MH,Qwen_Qwen3.5-9B,catrag,100,Substring EM,3.0
+FactConsolidation-MH,Qwen_Qwen3.5-9B,mem0,100,Substring EM,2.0
+FactConsolidation-MH,Qwen_Qwen3.5-9B,lightmem_offline,100,Substring EM,3.0
+FactConsolidation-MH,Qwen_Qwen3.5-9B,anchormem_official,100,Substring EM,5.0
+FactConsolidation-MH,Qwen_Qwen3.5-9B,libra,100,Substring EM,16.0
+FactConsolidation-MH,Qwen_Qwen3.5-9B,without_propagation,100,Substring EM,4.0
+FactConsolidation-MH,Qwen_Qwen3.5-9B,without_context_augmentation,100,Substring EM,13.0
+FactConsolidation-MH,google_gemma-3-4b-it,bm25,100,Substring EM,3.0
+FactConsolidation-MH,google_gemma-3-4b-it,dense,100,Substring EM,4.0
+FactConsolidation-MH,google_gemma-3-4b-it,hipporag2,100,Substring EM,3.0
+FactConsolidation-MH,google_gemma-3-4b-it,catrag,100,Substring EM,6.0
+FactConsolidation-MH,google_gemma-3-4b-it,mem0,100,Substring EM,4.0
+FactConsolidation-MH,google_gemma-3-4b-it,lightmem_offline,100,Substring EM,4.0
+FactConsolidation-MH,google_gemma-3-4b-it,anchormem_official,100,Substring EM,3.0
+FactConsolidation-MH,google_gemma-3-4b-it,libra,100,Substring EM,10.0
+FactConsolidation-MH,google_gemma-3-4b-it,without_propagation,100,Substring EM,4.0
+FactConsolidation-MH,google_gemma-3-4b-it,without_context_augmentation,100,Substring EM,8.0
+FactConsolidation-MH,meta-llama_Llama-3.1-8B-Instruct,bm25,100,Substring EM,0.0
+FactConsolidation-MH,meta-llama_Llama-3.1-8B-Instruct,dense,100,Substring EM,0.0
+FactConsolidation-MH,meta-llama_Llama-3.1-8B-Instruct,hipporag2,100,Substring EM,1.0
+FactConsolidation-MH,meta-llama_Llama-3.1-8B-Instruct,catrag,100,Substring EM,0.0
+FactConsolidation-MH,meta-llama_Llama-3.1-8B-Instruct,mem0,100,Substring EM,0.0
+FactConsolidation-MH,meta-llama_Llama-3.1-8B-Instruct,lightmem_offline,100,Substring EM,0.0
+FactConsolidation-MH,meta-llama_Llama-3.1-8B-Instruct,anchormem_official,100,Substring EM,2.0
+FactConsolidation-MH,meta-llama_Llama-3.1-8B-Instruct,libra,100,Substring EM,6.0
+FactConsolidation-MH,meta-llama_Llama-3.1-8B-Instruct,without_propagation,100,Substring EM,1.0
+FactConsolidation-MH,meta-llama_Llama-3.1-8B-Instruct,without_context_augmentation,100,Substring EM,2.0
+LoCoMo,Qwen_Qwen3.5-4B,bm25,1986,LoCoMo native mixed score,43.05798700866035
+LoCoMo,Qwen_Qwen3.5-4B,dense,1986,LoCoMo native mixed score,47.877308920782596
+LoCoMo,Qwen_Qwen3.5-4B,hipporag2,1986,LoCoMo native mixed score,48.61113507072868
+LoCoMo,Qwen_Qwen3.5-4B,catrag,1986,LoCoMo native mixed score,48.7633158739245
+LoCoMo,Qwen_Qwen3.5-4B,mem0,1986,LoCoMo native mixed score,49.58957030472535
+LoCoMo,Qwen_Qwen3.5-4B,lightmem_offline,1986,LoCoMo native mixed score,41.112090491014705
+LoCoMo,Qwen_Qwen3.5-4B,anchormem_official,1986,LoCoMo native mixed score,50.55277808706824
+LoCoMo,Qwen_Qwen3.5-4B,libra,1986,LoCoMo native mixed score,49.62551568053952
+LoCoMo,Qwen_Qwen3.5-4B,without_propagation,1986,LoCoMo native mixed score,51.50549017471154
+LoCoMo,Qwen_Qwen3.5-4B,without_context_augmentation,1986,LoCoMo native mixed score,46.125046031578094
+LoCoMo,Qwen_Qwen3.5-9B,bm25,1986,LoCoMo native mixed score,47.40408982787848
+LoCoMo,Qwen_Qwen3.5-9B,dense,1986,LoCoMo native mixed score,49.56621166234166
+LoCoMo,Qwen_Qwen3.5-9B,hipporag2,1986,LoCoMo native mixed score,51.22767718976657
+LoCoMo,Qwen_Qwen3.5-9B,catrag,1986,LoCoMo native mixed score,51.374285016305656
+LoCoMo,Qwen_Qwen3.5-9B,mem0,1986,LoCoMo native mixed score,53.34352070218658
+LoCoMo,Qwen_Qwen3.5-9B,lightmem_offline,1986,LoCoMo native mixed score,44.11665353621192
+LoCoMo,Qwen_Qwen3.5-9B,anchormem_official,1986,LoCoMo native mixed score,54.64977093387052
+LoCoMo,Qwen_Qwen3.5-9B,libra,1986,LoCoMo native mixed score,55.833810471810196
+LoCoMo,Qwen_Qwen3.5-9B,without_propagation,1986,LoCoMo native mixed score,56.3481578960295
+LoCoMo,Qwen_Qwen3.5-9B,without_context_augmentation,1986,LoCoMo native mixed score,49.46678123075515
+LoCoMo,google_gemma-3-4b-it,bm25,1986,LoCoMo native mixed score,34.71882882672863
+LoCoMo,google_gemma-3-4b-it,dense,1986,LoCoMo native mixed score,39.11468607837581
+LoCoMo,google_gemma-3-4b-it,hipporag2,1986,LoCoMo native mixed score,39.93020718719445
+LoCoMo,google_gemma-3-4b-it,catrag,1986,LoCoMo native mixed score,40.86780668354565
+LoCoMo,google_gemma-3-4b-it,mem0,1986,LoCoMo native mixed score,39.93227162141003
+LoCoMo,google_gemma-3-4b-it,lightmem_offline,1986,LoCoMo native mixed score,36.57061759807718
+LoCoMo,google_gemma-3-4b-it,anchormem_official,1986,LoCoMo native mixed score,38.455105445525014
+LoCoMo,google_gemma-3-4b-it,libra,1986,LoCoMo native mixed score,38.424866007502494
+LoCoMo,google_gemma-3-4b-it,without_propagation,1986,LoCoMo native mixed score,37.956181755064506
+LoCoMo,google_gemma-3-4b-it,without_context_augmentation,1986,LoCoMo native mixed score,36.920877015181446
+LoCoMo,meta-llama_Llama-3.1-8B-Instruct,bm25,1986,LoCoMo native mixed score,41.34465084560574
+LoCoMo,meta-llama_Llama-3.1-8B-Instruct,dense,1986,LoCoMo native mixed score,45.5051083491236
+LoCoMo,meta-llama_Llama-3.1-8B-Instruct,hipporag2,1986,LoCoMo native mixed score,46.845160457788644
+LoCoMo,meta-llama_Llama-3.1-8B-Instruct,catrag,1986,LoCoMo native mixed score,46.492560991977584
+LoCoMo,meta-llama_Llama-3.1-8B-Instruct,mem0,1986,LoCoMo native mixed score,47.19121499560579
+LoCoMo,meta-llama_Llama-3.1-8B-Instruct,lightmem_offline,1986,LoCoMo native mixed score,40.63701644829102
+LoCoMo,meta-llama_Llama-3.1-8B-Instruct,anchormem_official,1986,LoCoMo native mixed score,48.00300840305967
+LoCoMo,meta-llama_Llama-3.1-8B-Instruct,libra,1986,LoCoMo native mixed score,49.59565529798863
+LoCoMo,meta-llama_Llama-3.1-8B-Instruct,without_propagation,1986,LoCoMo native mixed score,49.23081072867068
+LoCoMo,meta-llama_Llama-3.1-8B-Instruct,without_context_augmentation,1986,LoCoMo native mixed score,45.045590784841906
+2WikiMultiHopQA,Qwen_Qwen3.5-4B,bm25,1000,Answer F1,42.839374514374526
+2WikiMultiHopQA,Qwen_Qwen3.5-4B,dense,1000,Answer F1,46.02812548562548
+2WikiMultiHopQA,Qwen_Qwen3.5-4B,hipporag2,1000,Answer F1,49.81230547230546
+2WikiMultiHopQA,Qwen_Qwen3.5-4B,catrag,1000,Answer F1,48.316552614052604
+2WikiMultiHopQA,Qwen_Qwen3.5-4B,mem0,1000,Answer F1,40.43691760853527
+2WikiMultiHopQA,Qwen_Qwen3.5-4B,lightmem_offline,1000,Answer F1,33.37893187222135
+2WikiMultiHopQA,Qwen_Qwen3.5-4B,anchormem_official,1000,Answer F1,42.15616808028574
+2WikiMultiHopQA,Qwen_Qwen3.5-4B,libra,1000,Answer F1,59.139430814283735
+2WikiMultiHopQA,Qwen_Qwen3.5-4B,without_propagation,1000,Answer F1,45.862553557553554
+2WikiMultiHopQA,Qwen_Qwen3.5-4B,without_context_augmentation,1000,Answer F1,57.883253380606284
+2WikiMultiHopQA,Qwen_Qwen3.5-9B,bm25,1000,Answer F1,45.68151706092068
+2WikiMultiHopQA,Qwen_Qwen3.5-9B,dense,1000,Answer F1,49.48568171285199
+2WikiMultiHopQA,Qwen_Qwen3.5-9B,hipporag2,1000,Answer F1,52.34850523118094
+2WikiMultiHopQA,Qwen_Qwen3.5-9B,catrag,1000,Answer F1,51.61420796657347
+2WikiMultiHopQA,Qwen_Qwen3.5-9B,mem0,1000,Answer F1,43.12656145853818
+2WikiMultiHopQA,Qwen_Qwen3.5-9B,lightmem_offline,1000,Answer F1,34.40131819199667
+2WikiMultiHopQA,Qwen_Qwen3.5-9B,anchormem_official,1000,Answer F1,42.38727748498226
+2WikiMultiHopQA,Qwen_Qwen3.5-9B,libra,1000,Answer F1,59.22873943937345
+2WikiMultiHopQA,Qwen_Qwen3.5-9B,without_propagation,1000,Answer F1,46.90135497925947
+2WikiMultiHopQA,Qwen_Qwen3.5-9B,without_context_augmentation,1000,Answer F1,58.267863640765064
+2WikiMultiHopQA,google_gemma-3-4b-it,bm25,1000,Answer F1,39.45377241751384
+2WikiMultiHopQA,google_gemma-3-4b-it,dense,1000,Answer F1,40.93104357630674
+2WikiMultiHopQA,google_gemma-3-4b-it,hipporag2,1000,Answer F1,44.35268859795176
+2WikiMultiHopQA,google_gemma-3-4b-it,catrag,1000,Answer F1,41.50834554334555
+2WikiMultiHopQA,google_gemma-3-4b-it,mem0,1000,Answer F1,37.28997974247975
+2WikiMultiHopQA,google_gemma-3-4b-it,lightmem_offline,1000,Answer F1,31.507456607719774
+2WikiMultiHopQA,google_gemma-3-4b-it,anchormem_official,1000,Answer F1,37.319123449649766
+2WikiMultiHopQA,google_gemma-3-4b-it,libra,1000,Answer F1,49.1540417915418
+2WikiMultiHopQA,google_gemma-3-4b-it,without_propagation,1000,Answer F1,38.98415473415474
+2WikiMultiHopQA,google_gemma-3-4b-it,without_context_augmentation,1000,Answer F1,48.735922133422136
+2WikiMultiHopQA,meta-llama_Llama-3.1-8B-Instruct,bm25,1000,Answer F1,38.92596984331136
+2WikiMultiHopQA,meta-llama_Llama-3.1-8B-Instruct,dense,1000,Answer F1,39.52872711572832
+2WikiMultiHopQA,meta-llama_Llama-3.1-8B-Instruct,hipporag2,1000,Answer F1,42.07353927822747
+2WikiMultiHopQA,meta-llama_Llama-3.1-8B-Instruct,catrag,1000,Answer F1,41.838559795893495
+2WikiMultiHopQA,meta-llama_Llama-3.1-8B-Instruct,mem0,1000,Answer F1,37.40942623382467
+2WikiMultiHopQA,meta-llama_Llama-3.1-8B-Instruct,lightmem_offline,1000,Answer F1,26.032153807044203
+2WikiMultiHopQA,meta-llama_Llama-3.1-8B-Instruct,anchormem_official,1000,Answer F1,36.17722046421214
+2WikiMultiHopQA,meta-llama_Llama-3.1-8B-Instruct,libra,1000,Answer F1,50.61708770110126
+2WikiMultiHopQA,meta-llama_Llama-3.1-8B-Instruct,without_propagation,1000,Answer F1,40.927082487174935
+2WikiMultiHopQA,meta-llama_Llama-3.1-8B-Instruct,without_context_augmentation,1000,Answer F1,51.57070798224196

@@ -3,3 +3,19 @@ __pycache__/
 .venv/
 venv/
 .env
+
+# Local caches and filesystem metadata.
+._*
+/short_sum_cache
+
+# Local manuscript build and delivery artifacts.
+/docs/memory_analysis/*.aux
+/docs/memory_analysis/*.blg
+/docs/memory_analysis/*.log
+/docs/memory_analysis/*.out
+/docs/memory_analysis/*.bbl
+/docs/memory_analysis/preview.pdf
+/docs/memory_analysis/supporting.pdf
+/docs/memory_analysis/preview_page-*.png
+/docs/memory_analysis/email_*
+/docs/memory_analysis/agent_memory_analysis_source_data.zip

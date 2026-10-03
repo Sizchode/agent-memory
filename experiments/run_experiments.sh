@@ -217,7 +217,15 @@ if [[ "${RETRIEVAL_PHASE}" == "retrieve" && ( "${BASELINE}" == "lightmem" || "${
 elif [[ "${RETRIEVAL_PHASE}" == "retrieve-existing" && "${BASELINE}" == "hipporag2" ]]; then
   NEEDS_GENERATOR=1
 fi
-if [[ "${RETRIEVAL_PHASE}" == "retrieve-existing" && "${BASELINE}" != "hipporag2" ]]; then
+ENTRYPOINT="${PROJECT_DIR}/main.py"
+if [[ "${LIGHTMEM_OFFLINE_UPDATE:-0}" == "1" ]]; then
+  [[ "${BASELINE}" == "lightmem" && "${RETRIEVAL_PHASE}" == "retrieve-existing" ]] || {
+    echo "LIGHTMEM_OFFLINE_UPDATE requires an existing LightMem store." >&2; exit 2;
+  }
+  NEEDS_GENERATOR=1
+  ENTRYPOINT="${PROJECT_DIR}/experiments/consolidate_lightmem.py"
+fi
+if [[ "${RETRIEVAL_PHASE}" == "retrieve-existing" && "${NEEDS_GENERATOR}" == "0" ]]; then
   export REUSE_MEMORY_API_KEY="not-used"
   GENERATOR_API_KEY_ENV="REUSE_MEMORY_API_KEY"
 fi
@@ -322,7 +330,7 @@ if [[ "${BASELINE}" != "bm25" ]]; then
   nvidia-smi
 fi
 
-"${PYTHON_BIN}" "${PROJECT_DIR}/main.py" \
+"${PYTHON_BIN}" "${ENTRYPOINT}" \
   --phase "${RETRIEVAL_PHASE}" \
   --task "${TASK}" \
   --baseline "${BASELINE}" \

@@ -1,0 +1,9 @@
+task,model,condition,questions,current,control
+FactConsolidation-MH,Qwen_Qwen3.5-4B,all_fact_candidates,100,14.0,11.0
+FactConsolidation-MH,Qwen_Qwen3.5-9B,all_fact_candidates,100,16.0,12.0
+FactConsolidation-MH,google_gemma-3-4b-it,all_fact_candidates,100,10.0,9.0
+FactConsolidation-MH,meta-llama_Llama-3.1-8B-Instruct,all_fact_candidates,100,6.0,3.0
+FactConsolidation-SH,Qwen_Qwen3.5-4B,all_context_facts,100,75.0,60.0
+FactConsolidation-SH,Qwen_Qwen3.5-9B,all_context_facts,100,82.0,68.0
+FactConsolidation-SH,google_gemma-3-4b-it,all_context_facts,100,71.0,56.0
+FactConsolidation-SH,meta-llama_Llama-3.1-8B-Instruct,all_context_facts,100,43.0,26.0

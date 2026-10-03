@@ -1,6 +1,14 @@
 # 算法总结：以实际代码为准
 
-更新：2026-09-22。实验见 [results.md](results.md)，论文叙事见 [story.md](story.md)。
+更新：2026-09-29。实验见 [results.md](results.md)，论文叙事见 [story.md](story.md)。
+
+## 本轮简化候选（全量验证完成）
+
+下文仍保留旧完整 AMOR 的定义。本轮用户批准验证的候选仅保留实体与原文之间的连接，并使用完整 AMOR 在这些连接上的事实累积权重；删除投影新增的其他连接，不将所有剩余边改成二值边。实现见 [connection_controls](experiments/ablate_components.py) 的 `without_projected_connections`，在线加载见 [iterative_backend](experiments/ablate_memory.py)。抽取、关系归一、事实选择、候选事实、识别、PPR、BM25 融合及上下文增强均不改变。
+
+`experiments/ablate_memory.py --simplified` 评估四 LLM、六任务的 one-shot 和 IRCoT cap 1/3/5。w/o recommendation 用 dense 排序代替 PPR，保留 BM25 和增强；w/o context augmentation 保留选中文本及 IRCoT 轨迹，仅移除邻居和事实附录，不移除原文位置/时间标记。完整与无 recommendation 的 IRCoT 各自重新生成轨迹，无增强复用对应完整轨迹。One-shot 72 格和 IRCoT 216 格均已完成并逐题核验，八条新轨迹路径各覆盖 3,386 题，旧图和结果不覆盖。
+
+简化候选在 one-shot 21/24 格超过最强原生 baseline；IRCoT 对原生 BM25 在 1/3/5 轮分别为 24/24、21/24、20/24 严格胜出，对同增强 BM25 分别为 20/24、17/24、19/24。直接相对旧完整 AMOR 的结果有升有降，不声明等价或全面占优。完整方法、两项消融、支持覆盖、token 和重复运行差异见 `results.md` 首节；全部结果位于 `optimization_simplified_amor_seed42_20260929/`。本轮验证没有把旧通用入口静默切换到新图。
 
 ## 1. 当前方法是什么
 
@@ -61,7 +69,7 @@ A = C + F
 
 例如，事实 (Alice, works at, Lab X) 来自原文 p，三名成员为 Alice、Lab X、p。F 为三对连接各增加 1/2；若 C 含两条实体到 p 的成员连接，则最终权重分别为 1.5、1.5、0.5。多个不同事实的贡献相加。
 
-最终在线图只保留原实体和原文节点。关系文本仍在事实索引中，但 PPR 的边不编码谓词方向；因此不能称为无损高阶推理。当前“最后出处”策略通常只为一个三元组保留一个出处，不能把跨出处的同事实连接宣传为主配置的核心。
+最终在线图只保留原实体和原文节点。关系文本仍在事实索引中，但 PPR 的边不编码谓词方向；因此不能称为无损高阶推理。当前“最后出处”策略通常只为一个三元组保留一个出处，不能把跨出处的同事实连接宣传为主配置的核心。2026-09-29 的完整构图核查发现，2Wiki 有两条归一化后三元组保留两个出处：大小写不同的原始关系标签被 schema 分配到不同名称，事实文本标准化后再合并关联。因此精确的超边定义应包含该三元组的所有保留出处，而不能断言每条超边始终恰有三个成员。此项仅修正描述，未修改冻结图或运行方法。
 
 [build_graph.py](optimization/build_graph.py) 负责组装上述操作，产出：
 

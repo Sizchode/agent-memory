@@ -542,5 +542,100 @@ class StatementIncidenceTests(unittest.TestCase):
         self.assertTrue(result.is_simple())
 
 
+class ComponentRemovalTests(unittest.TestCase):
+    def test_context_ablation_preserves_selected_sources_and_order(self):
+        from experiments.ablate_memory import original_text_only
+        from experiments.runner import RetrievedCase
+        from baseline.base import RetrievedItem
+
+        sources = [RetrievedItem("augmented b", 0.9, dict(original_source_text="b", source_position=2, timestamp=None,
+                       context_representation="original_source_and_frozen_window")),
+                   RetrievedItem("augmented a", 0.8, dict(original_source_text="a", source_position=1, timestamp="time",
+                       context_representation="original_source_and_frozen_window")),
+                   RetrievedItem("fact", 0.7, dict(context_representation="retrieved_triples"))]
+        row = RetrievedCase("group", None, tuple(sources), 5, 0.2)
+        result = original_text_only(row)
+        self.assertEqual([item.text for item in result.retrieved],
+                         ["Source position: 2\nOriginal source record:\nb",
+                          "Source position: 1\nSource timestamp: time\nOriginal source record:\na"])
+        self.assertEqual([item.score for item in result.retrieved], [0.9, 0.8])
+        self.assertEqual(result.top_k, row.top_k)
+        self.assertEqual(result.retrieval_seconds, row.retrieval_seconds)
+        self.assertEqual([item.text for item in row.retrieved], ["augmented b", "augmented a", "fact"])
+
+    def test_connection_controls_remove_only_the_named_contribution(self):
+        from experiments.ablate_components import connection_controls
+
+        full = ig.Graph(n=4, edges=[(0, 1), (0, 2), (1, 2)])
+        full.vs["name"] = ["a", "b", "p0", "p1"]
+        full.es["weight"] = [2.0, 3.0, 4.0]
+        membership = ig.Graph(n=4, edges=[(0, 2), (1, 2)])
+        membership.vs["name"] = full.vs["name"]
+        membership.es["weight"] = [1.0, 1.0]
+        controls = connection_controls(full, membership)
+        no_entity = controls["without_projected_connections"]
+        no_weight = controls["without_source_reweighting"]
+        self.assertEqual(no_entity.get_edgelist(), membership.get_edgelist())
+        self.assertEqual(no_entity.es["weight"], [3.0, 4.0])
+        self.assertEqual(no_weight.get_edgelist(), full.get_edgelist())
+        self.assertEqual(no_weight.es["weight"], [2.0, 1.0, 1.0])
+        np.testing.assert_array_equal(no_entity.get_adjacency_sparse(attribute="weight").toarray() +
+            no_weight.get_adjacency_sparse(attribute="weight").toarray(),
+            full.get_adjacency_sparse(attribute="weight").toarray() +
+            membership.get_adjacency_sparse(attribute="weight").toarray())
+        self.assertEqual(full.es["weight"], [2.0, 3.0, 4.0])
+        self.assertEqual(membership.es["weight"], [1.0, 1.0])
+
+    def test_binary_weight_control_preserves_topology_and_original_weights(self):
+        from experiments.ablate_memory import binary_weights
+
+        graph = ig.Graph(n=4, edges=[(0, 1), (0, 2), (1, 2)])
+        graph.vs["name"] = ["a", "b", "p0", "p1"]
+        graph.es["weight"] = [0.5, 1.5, 3.0]
+        result = binary_weights(graph)
+        self.assertEqual(result.get_edgelist(), graph.get_edgelist())
+        self.assertEqual(result.vs["name"], graph.vs["name"])
+        self.assertEqual(result.es["weight"], [1, 1, 1])
+        self.assertEqual(graph.es["weight"], [0.5, 1.5, 3.0])
+
+    def test_without_projection_keeps_only_selected_binary_source_edges(self):
+        from experiments.ablate_components import membership_graph
+
+        graph = ig.Graph(n=4, edges=[(0, 1), (0, 2), (1, 2), (0, 3), (1, 3)])
+        graph.vs["name"] = ["a", "b", "p0", "p1"]
+        graph.es["weight"] = [7, 1, 1, 1, 1]
+        graph.es["passage_source"] = [None, "p0", "p0", "p1", "p1"]
+        graph.es["synonym_score"] = [0.7, 0, 0, 0, 0]
+        contents = {"p0": {"retained_triples": []},
+                    "p1": {"retained_triples": [["a", "r", "b"], ["a", "s", "b"]]}}
+        result, _ = membership_graph(graph, contents, {"a": "a", "b": "b"}, lambda x: x)
+        self.assertEqual(result.vs["name"], graph.vs["name"])
+        self.assertEqual(result.get_edgelist(), [(0, 3), (1, 3)])
+        self.assertEqual(result.es["weight"], [1, 1])
+        self.assertEqual(graph.es["weight"], [7, 1, 1, 1, 1])
+
+    def test_without_propagation_returns_dense_without_calling_ppr(self):
+        from experiments.ablate_components import PropagationControl
+        from unittest.mock import Mock
+
+        dense_result = (np.array([1, 0]), np.array([1.0, 0.0]))
+        hippo = SimpleNamespace(dense_passage_retrieval=Mock(return_value=dense_result), run_ppr=Mock())
+        original_ppr = hippo.run_ppr
+        control = PropagationControl(hippo)
+        control.begin(disabled=True)
+        with self.assertRaises(RuntimeError):
+            hippo.run_ppr(np.array([0.5, 0.5]))
+        hippo.dense_passage_retrieval("q")
+        result = hippo.run_ppr(np.array([0.2, 0.8]))
+        self.assertIs(result, dense_result)
+        np.testing.assert_array_equal(control.reset, [0.2, 0.8])
+        original_ppr.assert_not_called()
+        control.begin()
+        hippo.run_ppr(np.array([0.1, 0.9]), damping=0.5)
+        original_ppr.assert_called_once()
+        control.close()
+        self.assertIs(hippo.run_ppr, original_ppr)
+
+
 if __name__ == "__main__":
     unittest.main()
