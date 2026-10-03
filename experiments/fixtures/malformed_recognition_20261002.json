@@ -1,5 +1,0 @@
-{
-  "response": "[[ ## fact_after_filter ## ]]\n{\"fact\": [[\"hiking with evan\", \"is described as\", \"a fun challenge\"], [\"hiking with evan\", \"is described as\", \"a great opportunity to appreciate the beauty of nature\"]}}\n\n[[ ## completed ## ]]",
-  "cache_hit": true,
-  "native_expected": []
-}

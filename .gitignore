@@ -19,3 +19,14 @@ venv/
 /docs/memory_analysis/preview_page-*.png
 /docs/memory_analysis/email_*
 /docs/memory_analysis/agent_memory_analysis_source_data.zip
+
+# Keep the remote focused on algorithm code and its runtime dependencies.
+/algorithm.md
+/results.md
+/story.md
+/docs/
+/figures/
+/experiments/*
+!/experiments/runner.py
+!/experiments/configs/
+/optimization/test_*.py

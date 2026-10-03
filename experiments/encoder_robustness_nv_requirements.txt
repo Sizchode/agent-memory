@@ -1,8 +1,0 @@
-numpy==1.26.4
-torch==2.2.0
-transformers==4.42.4
-sentence-transformers==2.7.0
-datasets==2.21.0
-einops==0.8.2
-accelerate==0.34.2
-huggingface-hub==0.34.4
